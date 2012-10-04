@@ -1,0 +1,14 @@
+
+
+Entry point:
+
+  Match request to any routes.
+
+
+Routes are:
+get html        root
+post json       make room 
+get json        room/###
+get html        room/###/client
+get json        room/###/stack/###
+get json        room/###/drawing/###
