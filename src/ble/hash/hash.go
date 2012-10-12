@@ -1,16 +1,16 @@
-package main
+package hash
 
 import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/binary"
-	"hash"
+	hh "hash"
 	"time"
 )
 
 type HashEasy struct {
-	hash.Hash
+	hh.Hash
 }
 
 func NewHashEasy() HashEasy {

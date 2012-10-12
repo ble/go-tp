@@ -1,6 +1,7 @@
 package main
 
 import (
+	. "ble/hash"
 	"encoding/json"
 	"fmt"
 	"time"
