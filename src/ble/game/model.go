@@ -2,7 +2,6 @@ package game
 
 import "encoding/json"
 
-
 type Artist struct {
 	Id   string
 	Name string
@@ -41,4 +40,3 @@ func (s sequenceMap) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(obj)
 }
-

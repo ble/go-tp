@@ -15,7 +15,6 @@ func (g *Game) addArtist(name string) *Artist {
 	return &a
 }
 
-
 func (g *Game) start() bool {
 	//game is now started
 	if g.Started {
@@ -37,30 +36,42 @@ func (g *Game) start() bool {
 		s := g.makeSequence(a)
 		_ = g.addDrawingToSequence(s, a)
 	}
+
 	return true
 
 }
 
 func (g *Game) passSequence(artistId string) bool {
-  //determine which sequence is being passed
-  sequences := g.SequenceByHolder[artistId]
-  if len(sequences) < 1 {
-    return false
-  }
-  sequenceId := sequences[0]
-  sequence := g.Sequences[sequenceId]
-  if sequence == nil {
-    return false
-  }
+	//determine which sequence is being passed
+	sequences := g.SequenceByHolder[artistId]
+	if len(sequences) < 1 {
+		return false
+	}
+	sequenceId := sequences[0]
+	sequence := g.Sequences[sequenceId]
+	if sequence == nil {
+		return false
+	}
 
-  //remove the sequence from its current holder and add it to its next holder
-  g.SequenceByHolder[artistId] = sequences[1:]
-  nextArtistId := g.NextArtist[artistId]
-  g.SequenceByHolder[nextArtistId] = append(g.SequenceByHolder[nextArtistId], sequenceId)
+	//remove the sequence from its current holder
+	g.SequenceByHolder[artistId] = sequences[1:]
 
-  //add a new drawing for the new artist
-  g.addDrawingToSequence(sequence, g.Artists[nextArtistId])
-  return true
+	//if everyone has drawn, the sequence is done
+	if len(sequence.Drawings) >= len(g.Artists) {
+		g.SequencesComplete[sequenceId] = true
+		if len(g.SequencesComplete) == len(g.Artists) {
+			g.Finished = true
+		}
+	} else {
+
+		//otherwise, it's on to the next artist.
+		nextArtistId := g.NextArtist[artistId]
+		g.SequenceByHolder[nextArtistId] = append(g.SequenceByHolder[nextArtistId], sequenceId)
+
+		//add a new drawing for the new artist
+		g.addDrawingToSequence(sequence, g.Artists[nextArtistId])
+	}
+	return true
 }
 
 type GameEvent struct {
@@ -69,15 +80,18 @@ type GameEvent struct {
 }
 
 type Game struct {
+	Started     bool
+	Finished    bool
 	Artists     artistMap
 	ArtistOrder []string
 
-	Started           bool
-	NextArtist        map[string]string
-	PrevArtist        map[string]string
+	NextArtist map[string]string
+	PrevArtist map[string]string
+
 	Sequences         sequenceMap
 	SequenceByStarter map[string]string
 	SequenceByHolder  map[string][]string
+	SequencesComplete map[string]bool
 	Drawings          map[string]*Drawing
 
 	Events chan<- GameEvent
@@ -85,14 +99,16 @@ type Game struct {
 
 func newGame(ch chan GameEvent) *Game {
 	return &Game{
+		Started:           false,
+		Finished:          false,
 		Artists:           make(map[string]Artist),
 		ArtistOrder:       make([]string, 0, 0),
-		Started:           false,
 		NextArtist:        make(map[string]string),
 		PrevArtist:        make(map[string]string),
 		Sequences:         make(map[string]*Sequence),
 		SequenceByStarter: make(map[string]string),
 		SequenceByHolder:  make(map[string][]string),
+		SequencesComplete: make(map[string]bool),
 		Drawings:          make(map[string]*Drawing),
 		Events:            ch}
 }
@@ -136,11 +152,13 @@ func (g *Game) addDrawingToSequence(s *Sequence, a Artist) *Drawing {
 func (g *Game) viewJSON() interface{} {
 	obj := make(map[string]interface{})
 	obj["started"] = g.Started
+	obj["finished"] = g.Finished
 	obj["artistNames"] = g.Artists
 	obj["artistOrder"] = g.ArtistOrder
 	if g.Started {
 		obj["sequenceByHolder"] = g.SequenceByHolder
 		obj["drawingsBySequence"] = g.Sequences
+		obj["sequencesComplete"] = g.SequencesComplete
 	}
-  return obj
+	return obj
 }

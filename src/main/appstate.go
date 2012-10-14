@@ -1,8 +1,8 @@
 package main
 
 import (
-  . "ble/success"
 	. "ble/hash"
+	. "ble/success"
 	"fmt"
 	"net/http"
 	"time"
@@ -23,8 +23,8 @@ type createUser struct {
 }
 type userExists struct {
 	Success
-	id string
-  result bool
+	id     string
+	result bool
 }
 type getRooms struct {
 	Success
@@ -32,8 +32,8 @@ type getRooms struct {
 }
 type existsRoom struct {
 	Success
-	id string
-  result bool
+	id     string
+	result bool
 }
 type createRoom struct {
 	Success
@@ -117,7 +117,7 @@ func (a AppHandle) UserExists(id string) (bool, error) {
 	req := userExists{make(Success), id, false}
 	a.connection <- req
 	error := req.SucceededIn(1 * time.Second)
-  return req.result, error
+	return req.result, error
 }
 
 func (a AppHandle) getRooms() (map[string]*Room, error) {
