@@ -1,6 +1,7 @@
 package main
 
 import (
+  . "ble/success"
 	. "ble/hash"
 	"fmt"
 	"net/http"
@@ -17,23 +18,25 @@ type appState struct {
 }
 
 type createUser struct {
-	success
+	Success
 	id string
 }
 type userExists struct {
-	success
+	Success
 	id string
+  result bool
 }
 type getRooms struct {
-	success
+	Success
 	rooms map[string]*Room
 }
 type existsRoom struct {
-	success
+	Success
 	id string
+  result bool
 }
 type createRoom struct {
-	success
+	Success
 	id   string
 	room *Room
 }
@@ -66,21 +69,21 @@ func (a appState) serve(connection <-chan interface{}) {
 		switch vv := v.(type) {
 		case createUser:
 			a.users[vv.id] = true
-			vv.success <- a.users[vv.id]
+			vv.Success <- a.users[vv.id]
 		case userExists:
 			fmt.Printf("User %s exists: %s", vv.id, a.users[vv.id])
-			vv.success <- a.users[vv.id]
+			vv.Success <- a.users[vv.id]
 		case getRooms:
 			vv.rooms = make(map[string]*Room)
 			for k, v := range a.rooms {
 				vv.rooms[k] = v
 			}
-			vv.success <- true
+			vv.Success <- true
 		case existsRoom:
-			vv.success <- (a.rooms[vv.id] != nil)
+			vv.Success <- (a.rooms[vv.id] != nil)
 		case createRoom:
 			a.rooms[vv.id] = vv.room
-			vv.success <- true
+			vv.Success <- true
 		default:
 			fmt.Println("unknown type")
 		}
@@ -104,23 +107,23 @@ func (a AppHandle) CreateUserId(r *http.Request) string {
 }
 
 func (a AppHandle) AssignUserId(id string) error {
-	req := createUser{make(success), id}
+	req := createUser{make(Success), id}
 	a.connection <- req
-	_, error := req.succeededIn(1 * time.Second)
+	error := req.SucceededIn(1 * time.Second)
 	return error
 }
 
 func (a AppHandle) UserExists(id string) (bool, error) {
-	req := userExists{make(success), id}
+	req := userExists{make(Success), id, false}
 	a.connection <- req
-	ok, error := req.succeededIn(1 * time.Second)
-	return ok, error
+	error := req.SucceededIn(1 * time.Second)
+  return req.result, error
 }
 
 func (a AppHandle) getRooms() (map[string]*Room, error) {
-	req := getRooms{make(success), make(map[string]*Room)}
+	req := getRooms{make(Success), make(map[string]*Room)}
 	a.connection <- req
-	_, error := req.succeededIn(1 * time.Second)
+	error := req.SucceededIn(1 * time.Second)
 	return req.rooms, error
 }
 
@@ -151,16 +154,16 @@ func (a AppHandle) CreateRoom(r *http.Request, userId string, j map[string]inter
 }
 
 func (a AppHandle) RoomExists(id string) (bool, error) {
-	req := existsRoom{make(success), id}
+	req := existsRoom{make(Success), id, false}
 	a.connection <- req
-	ok, error := req.succeededIn(1 * time.Second)
-	return ok, error
+	error := req.SucceededIn(1 * time.Second)
+	return req.result, error
 }
 
 func (a AppHandle) AssignRoomId(r *Room, id string) error {
-	req := createRoom{make(success), id, r}
+	req := createRoom{make(Success), id, r}
 	a.connection <- req
-	_, error := req.succeededIn(1 * time.Second)
+	error := req.SucceededIn(1 * time.Second)
 	return error
 }
 

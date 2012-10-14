@@ -1,32 +1,20 @@
-package main
+package game
 
 import (
 	. "ble/hash"
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
-func Marshal(o interface{}) ([]byte, error) {
-	return json.MarshalIndent(o, "", "\t")
+func (g *Game) addArtist(name string) *Artist {
+	if g.Started {
+		return nil
+	}
+	a := Artist{g.makeArtistId(), name}
+	g.Artists[a.Id] = a
+	g.ArtistOrder = append(g.ArtistOrder, a.Id)
+	return &a
 }
 
-func main() {
-	ch := make(chan GameEvent)
-	g := NewGame(ch)
-	gJson, _ := Marshal(g.view())
-	fmt.Println(string(gJson))
-
-	g.addArtist("asdf")
-	g.addArtist("w0pak")
-	g.addArtist("without_spaces")
-	gJson, _ = Marshal(g.view())
-	fmt.Println(string(gJson))
-
-	g.start()
-	gJson, _ = Marshal(g.view())
-	fmt.Println(string(gJson))
-}
 
 func (g *Game) start() bool {
 	//game is now started
@@ -53,38 +41,32 @@ func (g *Game) start() bool {
 
 }
 
-func (g *Game) passSequence(id string) bool {
-	seq := g.Sequences[id]
-	if seq == nil {
-		return false
-	}
+func (g *Game) passSequence(artistId string) bool {
+  //determine which sequence is being passed
+  sequences := g.SequenceByHolder[artistId]
+  if len(sequences) < 1 {
+    return false
+  }
+  sequenceId := sequences[0]
+  sequence := g.Sequences[sequenceId]
+  if sequence == nil {
+    return false
+  }
 
-	return true
+  //remove the sequence from its current holder and add it to its next holder
+  g.SequenceByHolder[artistId] = sequences[1:]
+  nextArtistId := g.NextArtist[artistId]
+  g.SequenceByHolder[nextArtistId] = append(g.SequenceByHolder[nextArtistId], sequenceId)
+
+  //add a new drawing for the new artist
+  g.addDrawingToSequence(sequence, g.Artists[nextArtistId])
+  return true
 }
 
 type GameEvent struct {
 	time.Time
 	Payload interface{}
 }
-
-type Artist struct {
-	Id   string
-	Name string
-}
-
-type Drawing struct {
-	Id       string
-	ArtistId string
-	//....
-}
-
-type Sequence struct {
-	Id       string
-	Drawings []*Drawing
-}
-
-type artistMap map[string]Artist
-type sequenceMap map[string]*Sequence
 
 type Game struct {
 	Artists     artistMap
@@ -101,7 +83,7 @@ type Game struct {
 	Events chan<- GameEvent
 }
 
-func NewGame(ch chan GameEvent) *Game {
+func newGame(ch chan GameEvent) *Game {
 	return &Game{
 		Artists:           make(map[string]Artist),
 		ArtistOrder:       make([]string, 0, 0),
@@ -120,16 +102,6 @@ func (g *Game) makeArtistId() string {
 		WriteStrAnd("artist").
 		Nonce().
 		WriteIntAnd(len(g.Artists)).String()
-}
-
-func (g *Game) addArtist(name string) *Artist {
-	if g.Started {
-		return nil
-	}
-	a := Artist{g.makeArtistId(), name}
-	g.Artists[a.Id] = a
-	g.ArtistOrder = append(g.ArtistOrder, a.Id)
-	return &a
 }
 
 func (g *Game) makeSequenceId() string {
@@ -161,33 +133,7 @@ func (g *Game) addDrawingToSequence(s *Sequence, a Artist) *Drawing {
 	return &d
 }
 
-func (m artistMap) MarshalJSON() ([]byte, error) {
-	obj := make(map[string]string)
-	for id, artist := range m {
-		obj[id] = artist.Name
-	}
-	return json.Marshal(obj)
-}
-
-func (s sequenceMap) MarshalJSON() ([]byte, error) {
-	obj := make(map[string][]string)
-	for id, seq := range s {
-		drawingIds := make([]string, len(seq.Drawings), len(seq.Drawings))
-		for i, d := range seq.Drawings {
-			drawingIds[i] = d.Id
-		}
-		obj[id] = drawingIds
-	}
-	return json.Marshal(obj)
-}
-
-type gameView struct{ *Game }
-
-func (g *Game) view() gameView {
-	return gameView{g}
-}
-
-func (g gameView) MarshalJSON() ([]byte, error) {
+func (g *Game) viewJSON() interface{} {
 	obj := make(map[string]interface{})
 	obj["started"] = g.Started
 	obj["artistNames"] = g.Artists
@@ -196,5 +142,5 @@ func (g gameView) MarshalJSON() ([]byte, error) {
 		obj["sequenceByHolder"] = g.SequenceByHolder
 		obj["drawingsBySequence"] = g.Sequences
 	}
-	return json.Marshal(obj)
+  return obj
 }
