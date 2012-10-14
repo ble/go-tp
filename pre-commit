@@ -1,0 +1,9 @@
+#!/bin/bash
+files_changed=`./fmt-all`
+change_count=`echo $files_changed | wc -l`
+if [ -n "$files_changed" ]
+then
+  echo files misformatted:
+  echo $files_changed
+  exit 1
+fi

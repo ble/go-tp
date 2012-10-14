@@ -1,0 +1,11 @@
+#!/bin/bash
+for SRCDIR in `find src -type d`
+do
+  GOFILES=`find $SRCDIR -name "*.go" -maxdepth 1`
+#  echo "{$GOFILES}"
+  if [ -n "$GOFILES" ]
+  then
+    go fmt $GOFILES
+  fi
+
+done
