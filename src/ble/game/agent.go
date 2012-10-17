@@ -17,6 +17,12 @@ type GameAgent struct {
 	Messages   chan<- interface{}
 }
 
+func (g GameAgent) IsStarted() (bool, error) {
+	msg := mStart{make(Success), false}
+	g.Messages <- &msg
+	err := msg.SucceededIn(Second)
+	return msg.started, err
+}
 func (g GameAgent) Start() (bool, error) {
 	msg := mStart{make(Success), false}
 	g.Messages <- &msg
@@ -24,13 +30,19 @@ func (g GameAgent) Start() (bool, error) {
 	return msg.started, err
 }
 
-func (g GameAgent) AddArtist(name string) (string, error) {
-	msg := mAddArtist{make(Success), name, ""}
+func (g GameAgent) AddArtist(name string) (Artist, error) {
+	msg := mAddArtist{make(Success), name, nil}
 	g.Messages <- &msg
 	err := msg.SucceededIn(Second)
-	return msg.id, err
+	return *msg.created, err
 }
 
+func (g GameAgent) HasArtist(id string) (bool, error) {
+	msg := mHasArtist{make(Success), id, false}
+	g.Messages <- &msg
+	err := msg.SucceededIn(Second)
+	return msg.present, err
+}
 func (g GameAgent) View() (interface{}, error) {
 	msg := mView{make(Success), nil}
 	g.Messages <- &msg
@@ -45,16 +57,25 @@ func (g GameAgent) PassSequence(artistId string) (bool, error) {
 	return msg.passed, err
 }
 
+//implementation
 func (g GameAgent) run(messages <-chan interface{}) {
 	for msg := range messages {
 		switch m := msg.(type) {
+		case *mIsStarted:
+			m.started = g.Started
+			m.Success <- true
+
 		case *mStart:
 			m.started = g.start()
 			m.Success <- true
 
+		case *mHasArtist:
+			//ugly that this is so indirect
+			m.present = g.NextArtist[m.id] != ""
+			m.Success <- true
+
 		case *mAddArtist:
-			a := g.addArtist(m.name)
-			m.id = a.Id
+			m.created = g.addArtist(m.name)
 			m.Success <- true
 
 		case *mView:
@@ -68,14 +89,23 @@ func (g GameAgent) run(messages <-chan interface{}) {
 	}
 }
 
+type mIsStarted struct {
+	Success
+	started bool
+}
 type mStart struct {
 	Success
 	started bool
 }
+type mHasArtist struct {
+	Success
+	id      string
+	present bool
+}
 type mAddArtist struct {
 	Success
-	name string
-	id   string
+	name    string
+	created *Artist
 }
 type mView struct {
 	Success
