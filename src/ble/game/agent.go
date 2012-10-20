@@ -7,6 +7,10 @@ import (
 )
 
 func NewGame() GameAgent {
+	return newGameAgent(30*time.Second, 5*time.Second)
+}
+
+func newGameAgent(queueAge, tickPeriod time.Duration) GameAgent {
 	chOut := make(chan GameEvent, 100)
 	chIn := make(chan interface{})
 	chQ := make(chan *eventQuery)
@@ -17,7 +21,9 @@ func NewGame() GameAgent {
 		chIn,
 		chQ,
 		new(bool),
-		new(bool)}
+		new(bool),
+		queueAge,
+		tickPeriod}
 	go agent.run()
 	go agent.runEvents()
 	return agent
@@ -29,6 +35,7 @@ type GameAgent struct {
 	messages                   chan interface{}
 	queries                    chan *eventQuery
 	gameStopped, eventsStopped *bool
+	queueAge, tickPeriod       time.Duration
 }
 
 func (g GameAgent) GetGameEvents(last time.Time) ([]GameEvent, time.Time) {
@@ -155,19 +162,41 @@ func (g GameAgent) runEvents() {
 	var event GameEvent
 	queue := make([]GameEvent, 0, 10)
 	running := true
-	ticks := time.Tick(time.Second)
+	ticks := time.Tick(g.tickPeriod)
+
+	purgeEvents := func(events []GameEvent) []GameEvent {
+		t := time.Now()
+		eventsPrime := make([]GameEvent, 0, len(events))
+		for _, v := range events {
+			if t.Sub(v.Time) < g.queueAge {
+				eventsPrime = append(eventsPrime, v)
+			}
+		}
+		return eventsPrime
+	}
+
+	filterEvents := func(events []GameEvent, cutoff time.Time) []GameEvent {
+		eventsPrime := make([]GameEvent, 0, len(events))
+		for _, v := range events {
+			if !v.Time.Before(cutoff) {
+				eventsPrime = append(eventsPrime, v)
+			}
+		}
+		return eventsPrime
+	}
 
 	for running {
+		queue = purgeEvents(queue)
 		select {
 		case <-ticks:
-			//clean up old messages
+			//loop again, purging events
 		case event, running = <-g.events:
 			queue = append(queue, event)
 			if !running {
 				*g.eventsStopped = true
 			}
 		case query := <-g.queries:
-			query.reply <- queue[:]
+			query.reply <- filterEvents(queue, query.lastQueried)
 			query.lastQueried = time.Now()
 		}
 	}
