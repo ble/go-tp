@@ -2,7 +2,6 @@ package game
 
 import (
 	. "ble/success"
-	"errors"
 	"time"
 )
 
@@ -64,12 +63,12 @@ func (g GameAgent) Start() (bool, error) {
 }
 
 func (g GameAgent) AddArtist(name string) (Artist, error) {
-	msg := mAddArtist{make(Success), name, nil}
+	msg := mAddArtist{make(Success), name, nil, nil}
 	g.messages <- &msg
 	err := msg.SucceededIn(Second)
-	if msg.created == nil {
+	if msg.err != nil {
 		var artist0 Artist
-		return artist0, errors.New("failed to add artist")
+		return artist0, msg.err
 	}
 	return *msg.created, err
 }
@@ -113,7 +112,7 @@ func (g GameAgent) run() {
 			m.Success <- true
 
 		case *mAddArtist:
-			m.created = g.addArtist(m.name)
+			m.created, m.err = g.addArtist(m.name)
 			m.Success <- true
 
 		case *mView:
@@ -146,6 +145,7 @@ type mAddArtist struct {
 	Success
 	name    string
 	created *Artist
+	err     error
 }
 type mView struct {
 	Success

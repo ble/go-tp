@@ -5,23 +5,23 @@ import (
 	"time"
 )
 
-func startEvent() GameEvent {
-	e := event{EventType: "GameStart"}
+func StartEvent() GameEvent {
+	e := Event{EventType: "GameStart"}
 	return GameEvent{time.Now(), e}
 }
 
-func finishEvent() GameEvent {
-	e := event{EventType: "GameFinish"}
+func FinishEvent() GameEvent {
+	e := Event{EventType: "GameFinish"}
 	return GameEvent{time.Now(), e}
 }
 
-func joinEvent(name, id string) GameEvent {
-	e := event{EventType: "JoinGame", Name: name, Who: id}
+func JoinEvent(name, id string) GameEvent {
+	e := Event{EventType: "JoinGame", Name: name, Who: id}
 	return GameEvent{time.Now(), e}
 }
 
-func passEvent(fromId, toId, seqId string) GameEvent {
-	e := event{
+func PassEvent(fromId, toId, seqId string) GameEvent {
+	e := Event{
 		EventType: "PassSequence",
 		FromWho:   fromId,
 		ToWhom:    toId,
@@ -39,11 +39,12 @@ func (g GameEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(g.Payload)
 }
 
-type event struct {
+type Event struct {
 	EventType string
 	Name      string `json:",omitempty"`
 	Who       string `json:",omitempty"`
 	FromWho   string `json:",omitempty"`
 	ToWhom    string `json:",omitempty"`
 	What      string `json:",omitempty"`
+	Error     string `json:",omitempty"`
 }

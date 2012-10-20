@@ -2,17 +2,26 @@ package game
 
 import (
 	. "ble/hash"
+	"errors"
+	"regexp"
 )
 
-func (g *Game) addArtist(name string) *Artist {
+func (g *Game) addArtist(name string) (*Artist, error) {
 	if g.Started {
-		return nil
+		return nil, errors.New("can't join after game has started")
+	}
+	if g.nameTaken(name) {
+		return nil, errors.New("can't use a name already taken")
+	}
+	if !g.acceptableName(name) {
+		return nil, errors.New("can't use that name")
 	}
 	a := Artist{g.makeArtistId(), name}
 	g.Artists[a.Id] = a
+	g.ArtistNames[a.Name] = true
 	g.ArtistOrder = append(g.ArtistOrder, a.Id)
-	g.Events <- joinEvent(a.Name, a.Id)
-	return &a
+	g.Events <- JoinEvent(a.Name, a.Id)
+	return &a, nil
 }
 
 func (g *Game) start() bool {
@@ -37,7 +46,7 @@ func (g *Game) start() bool {
 		_ = g.addDrawingToSequence(s, a)
 	}
 
-	g.Events <- startEvent()
+	g.Events <- StartEvent()
 	return true
 
 }
@@ -60,11 +69,11 @@ func (g *Game) passSequence(artistId string) bool {
 	//if everyone has drawn, the sequence is done
 	if len(sequence.Drawings) >= len(g.Artists) {
 		g.SequencesComplete[sequenceId] = true
-		g.Events <- passEvent(artistId, "", sequenceId)
+		g.Events <- PassEvent(artistId, "", sequenceId)
 
 		if len(g.SequencesComplete) == len(g.Artists) {
 			g.Finished = true
-			g.Events <- finishEvent()
+			g.Events <- FinishEvent()
 		}
 	} else {
 
@@ -74,7 +83,7 @@ func (g *Game) passSequence(artistId string) bool {
 
 		//add a new drawing for the new artist
 		g.addDrawingToSequence(sequence, g.Artists[nextArtistId])
-		g.Events <- passEvent(artistId, nextArtistId, sequenceId)
+		g.Events <- PassEvent(artistId, nextArtistId, sequenceId)
 	}
 	return true
 }
@@ -83,6 +92,7 @@ type Game struct {
 	Started     bool
 	Finished    bool
 	Artists     artistMap
+	ArtistNames map[string]bool
 	ArtistOrder []string
 
 	NextArtist map[string]string
@@ -102,6 +112,7 @@ func newGame(ch chan GameEvent) *Game {
 		Started:           false,
 		Finished:          false,
 		Artists:           make(map[string]Artist),
+		ArtistNames:       make(map[string]bool),
 		ArtistOrder:       make([]string, 0, 0),
 		NextArtist:        make(map[string]string),
 		PrevArtist:        make(map[string]string),
@@ -111,6 +122,18 @@ func newGame(ch chan GameEvent) *Game {
 		SequencesComplete: make(map[string]bool),
 		Drawings:          make(map[string]*Drawing),
 		Events:            ch}
+}
+func (g *Game) nameTaken(name string) bool {
+	return g.ArtistNames[name]
+}
+
+var visibleAsciiChars *regexp.Regexp = regexp.MustCompile("[!-~]+")
+
+func (g *Game) acceptableName(name string) bool {
+	//need more logic here for excluding invalid names?
+	return len(name) <= 128 &&
+		len(name) >= 5 &&
+		visibleAsciiChars.MatchString(name)
 }
 
 func (g *Game) makeArtistId() string {
