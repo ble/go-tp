@@ -2,7 +2,6 @@ package game
 
 import (
 	. "ble/hash"
-	"time"
 )
 
 func (g *Game) addArtist(name string) *Artist {
@@ -12,6 +11,7 @@ func (g *Game) addArtist(name string) *Artist {
 	a := Artist{g.makeArtistId(), name}
 	g.Artists[a.Id] = a
 	g.ArtistOrder = append(g.ArtistOrder, a.Id)
+	g.Events <- joinEvent(a.Name, a.Id)
 	return &a
 }
 
@@ -37,6 +37,7 @@ func (g *Game) start() bool {
 		_ = g.addDrawingToSequence(s, a)
 	}
 
+	g.Events <- startEvent()
 	return true
 
 }
@@ -59,8 +60,11 @@ func (g *Game) passSequence(artistId string) bool {
 	//if everyone has drawn, the sequence is done
 	if len(sequence.Drawings) >= len(g.Artists) {
 		g.SequencesComplete[sequenceId] = true
+		g.Events <- passEvent(artistId, "", sequenceId)
+
 		if len(g.SequencesComplete) == len(g.Artists) {
 			g.Finished = true
+			g.Events <- finishEvent()
 		}
 	} else {
 
@@ -70,13 +74,9 @@ func (g *Game) passSequence(artistId string) bool {
 
 		//add a new drawing for the new artist
 		g.addDrawingToSequence(sequence, g.Artists[nextArtistId])
+		g.Events <- passEvent(artistId, nextArtistId, sequenceId)
 	}
 	return true
-}
-
-type GameEvent struct {
-	time.Time
-	Payload interface{}
 }
 
 type Game struct {

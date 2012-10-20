@@ -1,65 +1,96 @@
 package game
 
-import . "ble/success"
+import (
+	. "ble/success"
+	"errors"
+	"time"
+)
 
 func NewGame() GameAgent {
-	chOut := make(chan GameEvent)
+	chOut := make(chan GameEvent, 100)
 	chIn := make(chan interface{})
+	chQ := make(chan *eventQuery)
 
-	agent := GameAgent{newGame(chOut), chOut, chIn}
-	go agent.run(chIn)
+	agent := GameAgent{
+		newGame(chOut),
+		chOut,
+		chIn,
+		chQ,
+		new(bool),
+		new(bool)}
+	go agent.run()
+	go agent.runEvents()
 	return agent
 }
 
 type GameAgent struct {
 	*Game
-	GameEvents <-chan GameEvent
-	Messages   chan<- interface{}
+	events                     <-chan GameEvent
+	messages                   chan interface{}
+	queries                    chan *eventQuery
+	gameStopped, eventsStopped *bool
+}
+
+func (g GameAgent) GetGameEvents(last time.Time) ([]GameEvent, time.Time) {
+	query := &eventQuery{last, make(chan []GameEvent)}
+	g.queries <- query
+	events := <-query.reply
+	return events, query.lastQueried
+}
+
+func (g GameAgent) Shutdown() {
+	close(g.Game.Events)
+	close(g.messages)
 }
 
 func (g GameAgent) IsStarted() (bool, error) {
-	msg := mStart{make(Success), false}
-	g.Messages <- &msg
+	msg := mIsStarted{make(Success), false}
+	g.messages <- &msg
 	err := msg.SucceededIn(Second)
 	return msg.started, err
 }
 func (g GameAgent) Start() (bool, error) {
 	msg := mStart{make(Success), false}
-	g.Messages <- &msg
+	g.messages <- &msg
 	err := msg.SucceededIn(Second)
 	return msg.started, err
 }
 
 func (g GameAgent) AddArtist(name string) (Artist, error) {
 	msg := mAddArtist{make(Success), name, nil}
-	g.Messages <- &msg
+	g.messages <- &msg
 	err := msg.SucceededIn(Second)
+	if msg.created == nil {
+		var artist0 Artist
+		return artist0, errors.New("failed to add artist")
+	}
 	return *msg.created, err
 }
 
 func (g GameAgent) HasArtist(id string) (bool, error) {
 	msg := mHasArtist{make(Success), id, false}
-	g.Messages <- &msg
+	g.messages <- &msg
 	err := msg.SucceededIn(Second)
 	return msg.present, err
 }
+
 func (g GameAgent) View() (interface{}, error) {
 	msg := mView{make(Success), nil}
-	g.Messages <- &msg
+	g.messages <- &msg
 	err := msg.SucceededIn(Second)
 	return msg.view, err
 }
 
 func (g GameAgent) PassSequence(artistId string) (bool, error) {
 	msg := mPassSequence{make(Success), artistId, false}
-	g.Messages <- &msg
+	g.messages <- &msg
 	err := msg.SucceededIn(Second)
 	return msg.passed, err
 }
 
-//implementation
-func (g GameAgent) run(messages <-chan interface{}) {
-	for msg := range messages {
+//implementation: game state
+func (g GameAgent) run() {
+	for msg := range g.messages {
 		switch m := msg.(type) {
 		case *mIsStarted:
 			m.started = g.Started
@@ -87,8 +118,10 @@ func (g GameAgent) run(messages <-chan interface{}) {
 			m.Success <- true
 		}
 	}
+	*g.gameStopped = true
 }
 
+//game state messages
 type mIsStarted struct {
 	Success
 	started bool
@@ -115,4 +148,33 @@ type mPassSequence struct {
 	Success
 	artistId string
 	passed   bool
+}
+
+//implementation: event buffer
+func (g GameAgent) runEvents() {
+	var event GameEvent
+	queue := make([]GameEvent, 0, 10)
+	running := true
+	ticks := time.Tick(time.Second)
+
+	for running {
+		select {
+		case <-ticks:
+			//clean up old messages
+		case event, running = <-g.events:
+			queue = append(queue, event)
+			if !running {
+				*g.eventsStopped = true
+			}
+		case query := <-g.queries:
+			query.reply <- queue[:]
+			query.lastQueried = time.Now()
+		}
+	}
+	*g.eventsStopped = true
+}
+
+type eventQuery struct {
+	lastQueried time.Time
+	reply       chan []GameEvent
 }
