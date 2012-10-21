@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	. "testing"
@@ -16,6 +17,7 @@ var join handlerFactory = func(g GameAgent) http.Handler {
 }
 
 func Test_Join_Handler(t *T) {
+
 	testMethods := func(t *T, g GameAgent, url string, c http.Client) {
 		responseGet, _ := c.Get(url)
 		if responseGet.StatusCode != http.StatusMethodNotAllowed {
@@ -33,7 +35,7 @@ func Test_Join_Handler(t *T) {
 		//add artist
 		name0 := "sammy"
 		urlStr := urlBase + "/room/ARoomIdHere/join"
-		_, _ = url.Parse(urlStr)
+		theUrl, _ := url.Parse(urlStr)
 
 		postBody, _ := json.Marshal(JoinEvent(name0, ""))
 		t.Log("sending(0): ", string(postBody))
@@ -53,24 +55,6 @@ func Test_Join_Handler(t *T) {
 		if err != nil {
 			t.Fatal("failed to unmarshal response")
 		}
-
-		//should have cookie for artistId
-		/*
-					hadCookie := false
-					for _, cookie := range response.Cookies() {
-			      if cookie == nil {
-			        continue
-			      }
-						if cookie.Name == "artistId" {
-							hadCookie = true
-						}
-					}
-					if !hadCookie {
-						t.Error("didn't have artistId cookie")
-					}
-					c.Jar.SetCookies(url, response.Cookies())
-		*/
-
 		//would be nice to have convenience methods around these bodies...
 		bs, _ := json.Marshal(received)
 		t.Log("receiving(0): ", string(bs))
@@ -83,6 +67,22 @@ func Test_Join_Handler(t *T) {
 		if received.EventType != "JoinGame" {
 			t.Error("response is not the right event type")
 		}
+
+		//should have cookie for artistId
+		hadCookie := false
+		for _, cookie := range response.Cookies() {
+			if cookie == nil {
+				continue
+			}
+			if cookie.Name == "artistId" {
+				hadCookie = true
+			}
+		}
+		if !hadCookie {
+			t.Error("didn't have artistId cookie")
+		}
+		c.Jar.SetCookies(theUrl, response.Cookies())
+		t.Log("Cookies for ", theUrl, c.Jar.Cookies(theUrl))
 
 		//add duplicate artist
 		t.Log("sending(1): ", string(postBody))
@@ -148,5 +148,6 @@ func testInContext(t *T, h handlerFactory, test testAction) {
 	defer server.Close()
 
 	client := http.Client{}
+	client.Jar = cookiejar.NewDefaultJar()
 	test(t, agent, server.URL, client)
 }

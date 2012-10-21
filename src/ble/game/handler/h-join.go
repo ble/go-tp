@@ -23,8 +23,7 @@ func (h handlerJoin) ServeHTTP(w ResponseWriter, r *Request) {
 
 	//reject if cookie shows that one has already joined
 	existingId, err := getExistingArtistId(h.GameAgent, r)
-	hasArtist, err := h.GameAgent.HasArtist(existingId)
-	if hasArtist {
+	if existingId != "" {
 		w.WriteHeader(StatusOK)
 		errorResponse := new(Event)
 		errorResponse.EventType = "Error"
