@@ -108,7 +108,7 @@ func (g GameAgent) run() {
 
 		case *mHasArtist:
 			//ugly that this is so indirect
-			m.present = g.NextArtist[m.id] != ""
+			m.present = g.Artists[m.id].Name != ""
 			m.Success <- true
 
 		case *mAddArtist:
