@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	. "testing"
 )
 
@@ -28,24 +29,47 @@ func Test_Join_Handler(t *T) {
 
 	}
 
-	theTest := func(t *T, g GameAgent, url string, c http.Client) {
+	theTest := func(t *T, g GameAgent, urlBase string, c http.Client) {
 		//add artist
 		name0 := "sammy"
+		urlStr := urlBase + "/room/ARoomIdHere/join"
+		_, _ = url.Parse(urlStr)
+
 		postBody, _ := json.Marshal(JoinEvent(name0, ""))
 		t.Log("sending(0): ", string(postBody))
-		response, _ := c.Post(url, "application/json", bytes.NewReader(postBody))
+		response, _ := c.Post(urlStr, "application/json", bytes.NewReader(postBody))
 
+		//should be ok
 		if response.StatusCode != http.StatusOK {
 			t.Log(response.StatusCode, response.Status)
 			t.Error("error on legit post")
 			bytes, _ := ioutil.ReadAll(response.Body)
 			t.Log("body: ", string(bytes))
 		}
+
+		//should be json
 		received := new(Event)
 		err := json.NewDecoder(response.Body).Decode(received)
 		if err != nil {
 			t.Fatal("failed to unmarshal response")
 		}
+
+		//should have cookie for artistId
+		/*
+					hadCookie := false
+					for _, cookie := range response.Cookies() {
+			      if cookie == nil {
+			        continue
+			      }
+						if cookie.Name == "artistId" {
+							hadCookie = true
+						}
+					}
+					if !hadCookie {
+						t.Error("didn't have artistId cookie")
+					}
+					c.Jar.SetCookies(url, response.Cookies())
+		*/
 
 		//would be nice to have convenience methods around these bodies...
 		bs, _ := json.Marshal(received)
@@ -62,7 +86,7 @@ func Test_Join_Handler(t *T) {
 
 		//add duplicate artist
 		t.Log("sending(1): ", string(postBody))
-		response, _ = c.Post(url, "application/json", bytes.NewReader(postBody))
+		response, _ = c.Post(urlStr, "application/json", bytes.NewReader(postBody))
 		if response.StatusCode != http.StatusOK {
 			t.Error("error on legit post")
 		}
@@ -88,7 +112,7 @@ func Test_Join_Handler(t *T) {
 		postBody, _ = json.Marshal(JoinEvent(name1, ""))
 		t.Log("sending(2): ", string(postBody))
 
-		response, _ = c.Post(url, "application/json", bytes.NewReader(postBody))
+		response, _ = c.Post(urlStr, "application/json", bytes.NewReader(postBody))
 		if response.StatusCode != http.StatusOK {
 			t.Error("error on legit post")
 		}

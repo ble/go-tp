@@ -3,8 +3,9 @@ package handler
 import (
 	. "ble/game"
 	"encoding/json"
-	"fmt"
 	. "net/http"
+	"net/url"
+	"path"
 	"strings"
 )
 
@@ -13,48 +14,78 @@ type handlerJoin struct {
 }
 
 func (h handlerJoin) ServeHTTP(w ResponseWriter, r *Request) {
+	//reject non-post
 	if strings.ToUpper(r.Method) != "POST" {
 		w.WriteHeader(StatusMethodNotAllowed)
 		w.Write([]byte("only POST"))
 		return
 	}
+
+	//reject if cookie shows that one has already joined
+	existingId, err := getExistingArtistId(h.GameAgent, r)
+	hasArtist, err := h.GameAgent.HasArtist(existingId)
+	if hasArtist {
+		w.WriteHeader(StatusOK)
+		errorResponse := new(Event)
+		errorResponse.EventType = "Error"
+		errorResponse.Error = "you've already joined this game"
+		_ = json.NewEncoder(w).Encode(errorResponse)
+	}
+
+	//accept only json
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" && contentType != "" {
-		w.WriteHeader(406)
+		w.WriteHeader(StatusNotAcceptable)
 		w.Write([]byte("not json"))
 		return
 	}
 
+	//try to interpret json
 	sent := new(Event)
-	err := json.NewDecoder(r.Body).Decode(sent)
+	err = json.NewDecoder(r.Body).Decode(sent)
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(StatusInternalServerError)
 		w.Write([]byte("couldn't decode"))
 		return
 	}
 
+	//call into game
 	artist, err := h.GameAgent.AddArtist(sent.Name)
-	fmt.Println(artist)
-	fmt.Println(err)
 	if err != nil {
+
+		//try to send descriptive error
 		sent.EventType = "Error"
 		sent.Error = err.Error()
-		err = json.NewEncoder(w).Encode(sent)
+		jsonBytes, err := json.Marshal(sent)
+
+		//somehow fail to encode JSON
 		if err != nil {
-			w.WriteHeader(500)
+			w.WriteHeader(StatusInternalServerError)
 			w.Write([]byte("couldn't encode"))
 			return
 		}
-		w.WriteHeader(200)
+		w.WriteHeader(StatusOK)
+		w.Write(jsonBytes)
 		return
 	}
+
+	//call into game succeeded;
+
+	//make the cookie
+	//we assume that request path is like /path/to/room/join
+	//and that in such a case, the path of all room resources is
+	//path/to/room.
+	cookiePath, err := url.Parse(path.Dir(r.URL.Path))
+	aIdCookie := &Cookie{
+		Name:     "artistId",
+		Value:    artist.Id,
+		Path:     cookiePath.String(),
+		HttpOnly: true}
+	SetCookie(w, aIdCookie)
+	w.WriteHeader(StatusOK)
+
+	//prepare the response body
 	sent.Who = artist.Id
 	w.Header().Add("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(sent)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-	w.WriteHeader(StatusOK)
-	fmt.Println("asdf")
+	_ = json.NewEncoder(w).Encode(sent)
 }
