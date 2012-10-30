@@ -6,7 +6,7 @@ import (
 )
 
 func NewGame() GameAgent {
-	return newGameAgent(30*time.Second, 5*time.Second)
+	return newGameAgent(120*time.Second, 10*time.Second)
 }
 
 func newGameAgent(queueAge, tickPeriod time.Duration) GameAgent {
@@ -160,7 +160,7 @@ type mPassSequence struct {
 //implementation: event buffer
 func (g GameAgent) runEvents() {
 	var event GameEvent
-	queue := make([]GameEvent, 0, 10)
+	queue := make([]GameEvent, 0, 100)
 	running := true
 	ticks := time.Tick(g.tickPeriod)
 

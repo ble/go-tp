@@ -39,6 +39,11 @@ func (g GameEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(g.Payload)
 }
 
+func (g *GameEvent) UnmarshalJSON(bs []byte) error {
+	g.Payload = Event{}
+	return json.Unmarshal(bs, &g.Payload)
+}
+
 type Event struct {
 	EventType string
 	Name      string `json:",omitempty"`
