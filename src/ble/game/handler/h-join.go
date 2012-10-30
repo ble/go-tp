@@ -21,6 +21,29 @@ func (h handlerJoin) ServeHTTP(w ResponseWriter, r *Request) {
 		return
 	}
 
+	//reject overly-long post
+	if r.ContentLength >= 1024 {
+		w.WriteHeader(StatusRequestEntityTooLarge)
+		return
+	}
+
+	//accept only json
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" && contentType != "" {
+		w.WriteHeader(StatusUnsupportedMediaType)
+		w.Write([]byte("not json"))
+		return
+	}
+
+	//try to interpret json
+	sent := new(Event)
+	err := json.NewDecoder(r.Body).Decode(sent)
+	if err != nil {
+		w.WriteHeader(StatusInternalServerError)
+		w.Write([]byte("couldn't decode"))
+		return
+	}
+
 	//reject if cookie shows that one has already joined
 	existingId, err := getExistingArtistId(h.GameAgent, r)
 	if existingId != "" {
@@ -29,23 +52,6 @@ func (h handlerJoin) ServeHTTP(w ResponseWriter, r *Request) {
 		errorResponse.EventType = "Error"
 		errorResponse.Error = "you've already joined this game"
 		_ = json.NewEncoder(w).Encode(errorResponse)
-	}
-
-	//accept only json
-	contentType := r.Header.Get("Content-Type")
-	if contentType != "application/json" && contentType != "" {
-		w.WriteHeader(StatusNotAcceptable)
-		w.Write([]byte("not json"))
-		return
-	}
-
-	//try to interpret json
-	sent := new(Event)
-	err = json.NewDecoder(r.Body).Decode(sent)
-	if err != nil {
-		w.WriteHeader(StatusInternalServerError)
-		w.Write([]byte("couldn't decode"))
-		return
 	}
 
 	//call into game
