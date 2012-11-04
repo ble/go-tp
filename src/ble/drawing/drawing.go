@@ -12,6 +12,7 @@ import (
 type DrawPart struct {
 	Tag         string `json:"_tag"`
 	Coordinates []int  `json:"coordinates"`
+	StartTime   int    `json:"startTime"`
 	Times       []int  `json:"times"`
 	Controls    []int  `json:"controls",omitempty`
 	LineWidth   int    `json:"lineWidth"`
@@ -29,11 +30,15 @@ var DefaultDrawPart DrawPart = DrawPart{
 	FillStyle:   rgba(0, 0, 0, 0),
 }
 
-func (d DrawPart) ToJSON() ([]byte, error) {
+func (d DrawPart) MarshalJSON() ([]byte, error) {
 	resultObj := make(map[string]interface{})
 	resultObj["_tag"] = d.Tag
-	resultObj["coordinates"] = d.Coordinates
-	resultObj["times"] = d.Times
+	if d.Coordinates != nil && len(d.Coordinates) > 0 {
+		resultObj["coordinates"] = d.Coordinates
+	}
+	if d.Times != nil && len(d.Times) > 0 {
+		resultObj["times"] = d.Times
+	}
 	if d.Controls != nil && len(d.Controls) > 0 {
 		resultObj["controls"] = d.Controls
 	}
