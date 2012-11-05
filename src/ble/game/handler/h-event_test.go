@@ -2,6 +2,7 @@ package handler
 
 import (
 	"ble/game"
+	. "ble/testing/http"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
@@ -9,27 +10,23 @@ import (
 	. "testing"
 )
 
-func hEventF(g game.GameAgent) Handler {
-	return handlerEvents{g}
-}
-
 func TestJsonEvents(t *T) {
-	th := NewHarness(t)
-	th.start(hEventF)
-	defer th.stop()
+	g := game.NewGame()
+	th := NewHarness(t, FromHandler(handlerEvents{g}))
+	defer th.Stop()
 
-	biff, _ := th.GameAgent.AddArtist("biffhh")
-	sally, _ := th.GameAgent.AddArtist("sally")
-	th.GameAgent.AddArtist("biffhh")
-	wizzud, _ := th.GameAgent.AddArtist("wizzud")
-	th.GameAgent.Start()
-	th.GameAgent.PassSequence(biff.Id)
-	th.GameAgent.PassSequence(sally.Id)
-	th.GameAgent.PassSequence(sally.Id)
-	th.GameAgent.PassSequence(biff.Id)
-	th.GameAgent.PassSequence(wizzud.Id)
+	biff, _ := g.AddArtist("biffhh")
+	sally, _ := g.AddArtist("sally")
+	g.AddArtist("biffhh")
+	wizzud, _ := g.AddArtist("wizzud")
+	g.Start()
+	g.PassSequence(biff.Id)
+	g.PassSequence(sally.Id)
+	g.PassSequence(sally.Id)
+	g.PassSequence(biff.Id)
+	g.PassSequence(wizzud.Id)
 
-	client := plainClient()
+	client := PlainClient()
 	url := th.URL.String()
 	req, _ := NewRequest("GET", url, nil)
 	resp, _ := client.Do(req)

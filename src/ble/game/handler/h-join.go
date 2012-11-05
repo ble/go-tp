@@ -39,7 +39,7 @@ func (h handlerJoin) ServeHTTP(w ResponseWriter, r *Request) {
 	sent := new(Event)
 	err := json.NewDecoder(r.Body).Decode(sent)
 	if err != nil {
-		w.WriteHeader(StatusInternalServerError)
+		w.WriteHeader(StatusBadRequest)
 		w.Write([]byte("couldn't decode"))
 		return
 	}

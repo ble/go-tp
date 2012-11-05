@@ -2,6 +2,7 @@ package handler
 
 import (
 	"ble/game"
+	. "ble/testing/http"
 	"bytes"
 	"encoding/json"
 	. "net/http"
@@ -24,18 +25,18 @@ import (
 func hJoinF(g game.GameAgent) Handler { return handlerJoin{g} }
 
 func TestJoinSimple(t *T) {
-	th := NewHarness(t)
-	th.start(hJoinF)
-	defer th.stop()
+	g := game.NewGame()
+	th := NewHarness(t, FromHandler(handlerJoin{g}))
+	defer th.Stop()
 	url := th.URL.String()
 
-	tests := []simpleCase{}
+	tests := []SimpleCase{}
 
 	//All methods except for post are not allowed.
 	s := StatusMethodNotAllowed
 	for _, method := range []string{"POST", "GET", "HEAD", "PUT", "OPTIONS"} {
 		r, _ := NewRequest(method, url, nil)
-		t := simpleCase{"Allowed methods", r, ShouldStatusBe(s, method != "POST")}
+		t := SimpleCase{"Allowed methods", r, ShouldStatusBe(s, method != "POST")}
 		tests = append(tests, t)
 	}
 
@@ -44,7 +45,7 @@ func TestJoinSimple(t *T) {
 	for _, v := range []int{1, 128, 1023, 1024, 4096} {
 		body := strings.NewReader(strings.Repeat(" ", v))
 		r, _ := NewRequest("POST", url, body)
-		t := simpleCase{"Post length", r, ShouldStatusBe(s, v >= 1024)}
+		t := SimpleCase{"Post length", r, ShouldStatusBe(s, v >= 1024)}
 		tests = append(tests, t)
 	}
 
@@ -57,7 +58,7 @@ func TestJoinSimple(t *T) {
 		for _, v := range []string{json, form, multipart} {
 			r, _ := NewRequest("POST", url, nil)
 			r.Header["Content-Type"] = []string{v}
-			t := simpleCase{"Content type", r, ShouldStatusBe(s, v != json)}
+			t := SimpleCase{"Content type", r, ShouldStatusBe(s, v != json)}
 			tests = append(tests, t)
 		}
 	}
@@ -70,76 +71,20 @@ func TestJoinSimple(t *T) {
 		b1, _ := json.Marshal(j1)
 		b2, _ := json.Marshal(j2)
 		b3 := []byte("{\"kinda\":\"json\",\"not\":really}")
-		for _, v := range [][]byte{b1, b2, b3} {
-			err := json.Unmarshal(v, make(map[string]interface{}))
+		for _, vv := range [][]byte{b1, b2, b3} {
+      v := vv
+      var z *interface{} = new(interface{})
+			err := json.Unmarshal(v, z)
+      t.Log(*z, err, err != nil)
 			r, _ := NewRequest("POST", url, bytes.NewReader(v))
 			r.Header["Content-Type"] = []string{"application/json"}
-			t := simpleCase{"(In)valid JSON", r, ShouldStatusBe(s, err != nil)}
+			t := SimpleCase{"(In)valid JSON", r, ShouldStatusBe(s, err != nil)}
 			tests = append(tests, t)
 		}
 	}
 
-	client := plainClient()
+	client := PlainClient()
 	for _, test := range tests {
-		th.simpleTest(test.string, client, test.Request, test.responsePred)
+		th.SimpleTest(test, client)
 	}
 }
-
-/*
-func TestJoinMethods(t *T) {
-  th := NewHarness(t)
-  th.start(hJoinF)
-  defer th.stop()
-  client := plainClient()
-
-  for _, method := range []string{"GET", "HEAD", "PUT", "OPTIONS"} {
-    request, _ := NewRequest(method, th.URL.String(), nil)
-    th.simpleTest(client, request, StatusShouldBe(StatusMethodNotAllowed))
-  }
-
-  request, _ := NewRequest("POST", th.URL.String(), nil)
-  th.simpleTest(client, request, StatusShouldNotBe(StatusMethodNotAllowed))
-}
-
-func TestJoinLimit(t *T) {
-  th := NewHarness(t)
-  th.start(hJoinF)
-  defer th.stop()
-  client := plainClient()
-
-  contentLengths := []int{1, 128, 1023,  1024, 4096}
-  tooLarge := StatusRequestEntityTooLarge
-  for _, v := range contentLengths {
-    body := strings.NewReader(strings.Repeat(" ", v))
-    request, _ := NewRequest("POST", th.URL.String(), body)
-    th.simpleTest(client, request, ShouldStatusBe(tooLarge, v >= 1024))
-  }
-
-}
-*/
-/*
-func TestJoinJSON(t *T) {
-  testFun := func(contentType string) harnessTest {
-    return func(t *T, u url.URL, g game.GameAgent, c clientF) {
-      request, _ := NewRequest("POST", u.String(), nil)
-      client := c()
-      response, _ := client.Do(request)
-      defer response.Body.Close()
-      if (len(bodyContent) < 1024) ==
-         (response.StatusCode == StatusRequestEntityTooLarge) {
-        t.Error(
-          "Bad response code ",
-          response.StatusCode,
-          " for content of length ",
-          len(bodyContent))
-      }
-    }
-  }
-  contentLengths := []int{1, 128, 1023,  1024, 4096}
-  for _, v := range contentLengths {
-    bodyContent := strings.Repeat(" ", v)
-    gameTestHarness(t, hJoinF, plainClient, testFun(bodyContent))
-  }
-
-}
-*/
