@@ -72,10 +72,10 @@ func TestJoinSimple(t *T) {
 		b2, _ := json.Marshal(j2)
 		b3 := []byte("{\"kinda\":\"json\",\"not\":really}")
 		for _, vv := range [][]byte{b1, b2, b3} {
-      v := vv
-      var z *interface{} = new(interface{})
+			v := vv
+			var z *interface{} = new(interface{})
 			err := json.Unmarshal(v, z)
-      t.Log(*z, err, err != nil)
+			t.Log(*z, err, err != nil)
 			r, _ := NewRequest("POST", url, bytes.NewReader(v))
 			r.Header["Content-Type"] = []string{"application/json"}
 			t := SimpleCase{"(In)valid JSON", r, ShouldStatusBe(s, err != nil)}

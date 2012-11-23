@@ -1,0 +1,13 @@
+WHAT'S THAT NEXT STEP?
+
+Add a handler with get and post behavior for drawings
+Write a simple test for it
+WRITE A CLIENT FOR IT, TOO
+
+
+Handler has single field, a DrawingHandle
+
+Add an interface for validation of drawing parts?
+Add an interface for validation of other http request bits?
+
+Add an implementation of DrawingHandle where the mutation of the drawing is performed by a single goroutine multiplexing over multiple drawings?
