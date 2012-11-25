@@ -1,0 +1,3 @@
+[submodule "deps/subcanvas"]
+	path = deps/subcanvas
+	url = git@github.com:ble/subcanvas.git
