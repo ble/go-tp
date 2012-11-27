@@ -1,44 +1,21 @@
 package main
 
 import (
-	. "ble/game"
-	"encoding/json"
-	"fmt"
+	. "ble/drawing"
+	"log"
+	. "net/http"
 )
 
-func Marshal(o interface{}) ([]byte, error) {
-	return json.Marshal(o)
-	//	return json.MarshalIndent(o, "", "\t")
-}
-
 func main() {
-	g := NewGame()
-	v, _ := g.View()
-	gJson, _ := Marshal(v)
-	fmt.Println(string(gJson))
-
-	a1id, _ := g.AddArtist("asdf")
-	a2id, _ := g.AddArtist("w0pak")
-	a3id, _ := g.AddArtist("without_spaces")
-	v, _ = g.View()
-	gJson, _ = Marshal(v)
-	fmt.Println(string(gJson))
-
-	g.Start()
-	v, _ = g.View()
-	gJson, _ = Marshal(v)
-	fmt.Println(string(gJson))
-	g.PassSequence(a1id)
-	g.PassSequence(a2id)
-	g.PassSequence(a2id)
-	g.PassSequence(a3id)
-	g.PassSequence(a3id)
-	g.PassSequence(a3id)
-	g.PassSequence(a1id)
-	g.PassSequence(a1id)
-	g.PassSequence(a2id)
-	v, _ = g.View()
-	gJson, _ = Marshal(v)
-	fmt.Println(string(gJson))
-
+	drawing := NewDrawingHandle()
+	Handle("/", AsHandler(drawing))
+	HandleFunc("/client", func(w ResponseWriter, r *Request) {
+		ServeFile(w, r, "./static/drawing-client.html")
+	})
+	//TODO: implement static resources other than client
+	//with http.StripPrefix, http.Dir
+	HandleFunc("/drawing-ui.js", func(w ResponseWriter, r *Request) {
+		ServeFile(w, r, "./static/drawing-ui.js")
+	})
+	log.Fatal(ListenAndServe(":24769", nil))
 }

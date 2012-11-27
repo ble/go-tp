@@ -1,13 +1,20 @@
 package drawing
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	. "net/http"
 	"strings"
 )
 
 type drawingHandler struct {
 	DrawingHandle
+}
+
+func AsHandler(d DrawingHandle) Handler {
+	return drawingHandler{d}
 }
 
 func (d drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
@@ -47,9 +54,13 @@ func (d drawingHandler) ServePost(w ResponseWriter, r *Request) {
 		return
 	}
 
+	//bodyBytes, err := ioutil.ReadAll(r.Body)
 	posted := new(DrawPart)
-	err := json.NewDecoder(r.Body).Decode(posted)
+	//err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(posted)
+	err = json.NewDecoder(r.Body).Decode(posted)
+	//fmt.Println(string(bodyBytes))
 	if err != nil {
+		fmt.Println(err.Error())
 		w.WriteHeader(StatusBadRequest)
 		w.Write([]byte("json failed to parse"))
 		return
