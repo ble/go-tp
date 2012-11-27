@@ -1,10 +1,10 @@
 package drawing
 
 import (
-	"bytes"
+	//	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	//	"io/ioutil"
 	. "net/http"
 	"strings"
 )
@@ -57,7 +57,7 @@ func (d drawingHandler) ServePost(w ResponseWriter, r *Request) {
 	//bodyBytes, err := ioutil.ReadAll(r.Body)
 	posted := new(DrawPart)
 	//err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(posted)
-	err = json.NewDecoder(r.Body).Decode(posted)
+	err := json.NewDecoder(r.Body).Decode(posted)
 	//fmt.Println(string(bodyBytes))
 	if err != nil {
 		fmt.Println(err.Error())
