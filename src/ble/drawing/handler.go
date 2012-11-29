@@ -55,7 +55,8 @@ func (d drawingHandler) ServePost(w ResponseWriter, r *Request) {
 	}
 
 	//bodyBytes, err := ioutil.ReadAll(r.Body)
-	posted := new(DrawPart)
+	drawPart := DefaultDrawPart
+	posted := &drawPart
 	//err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(posted)
 	err := json.NewDecoder(r.Body).Decode(posted)
 	//fmt.Println(string(bodyBytes))
