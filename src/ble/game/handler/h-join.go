@@ -52,6 +52,7 @@ func (h handlerJoin) ServeHTTP(w ResponseWriter, r *Request) {
 		errorResponse.EventType = "Error"
 		errorResponse.Error = "you've already joined this game"
 		_ = json.NewEncoder(w).Encode(errorResponse)
+		return
 	}
 
 	//call into game

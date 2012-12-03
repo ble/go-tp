@@ -1,0 +1,69 @@
+<html>
+<head></head>
+<body>
+
+<form id="theform" method="post" action="join">
+  <input name="EventType" value="JoinGame" type="hidden"/>
+  <input autocomplete="off" autofocus="true" name="Name" type="text"/>
+  <input type="submit"/>
+</form>
+
+
+<script>
+  var f = document.getElementById('theform');
+
+  f.addEventListener(
+      "submit",
+      function(event) {
+        event.preventDefault();
+        disableForm(this);
+        var json = JSON.stringify(formToObject(this));
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener("error", Function.bind(enableForm, null, this));
+        xhr.addEventListener("load", onXhrLoad);
+        xhr.open("POST", this.action);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(json);
+      });
+
+  var onXhrLoad = function(event) {
+    console.log(event);
+    console.log(this);
+    console.log(this.responseText);
+    var o = JSON.parse(this.responseText);
+    if(o.EventType == "JoinGame" || o.Error == "you've already joined this game")
+      window.location = "./client"
+
+    if(o.EventType == "Error")
+      enableForm(f);
+  };
+      
+  var formToObject = function(form) {
+    var obj = {};
+    for(var i = 0; i < form.elements.length; i++) {
+      var e = form.elements[i];
+      if(e.name)
+        obj[e.name] = e.value;
+    }
+    return obj;
+  };
+
+  var disableForm = function(form) {
+    for(var i = 0; i < form.elements.length; i++) {
+      if('disabled' in form.elements[i])
+        form.elements[i].disabled = true;
+    }
+  };
+
+  var enableForm = function(form) {
+    for(var i = 0; i < form.elements.length; i++) {
+      if('disabled' in form.elements[i])
+        form.elements[i].disabled = false;
+    }
+  };
+
+</script>
+
+
+</body>
+</html>
