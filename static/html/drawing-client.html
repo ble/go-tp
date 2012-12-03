@@ -1,46 +1,10 @@
 <html>
   <head>
-    <script src="/static/js/drawing-ui.js"></script>
     <link href="/static/css/hsvapalette.css" rel="stylesheet" type="text/css"/>
     <link href="/static/css/slider.css" rel="stylesheet" type="text/css"/>
   </head>
   <body>
     Oh boy.
-    <script id="preSetup" type="text/javascript">
-      var postAPart = function(e) {
-        var part = e.drawn;
-        var theXHR = new XMLHttpRequest();
-        theXHR.open("POST", ".");
-        theXHR.setRequestHeader("content-type", "application/json");
-        theXHR.send(JSON.stringify(part));
-      };
-      var onLoadingDrawing = function(e) {
-        var json = JSON.parse(e.target.responseText);
-        console.log(e.target.responseText);
-        var parts = [];
-        var time = Infinity;
-        var d = ble.scribbleDeserializer;
-        for(var i = 0; i < json.length; i++) {
-          var part = d.deserialize(json[i]); 
-          if(part) {
-            time = Math.min(time, part.start());
-            parts.push(part);
-          }
-        }
-        var drawing = new ble.scribble.MutableDrawing(time, parts);
-        ui = new ble.scribble.UI(320, 240);
-        ui.render(document.body);
-        ui.canvas.drawing = drawing;
-        ui.canvas.withContext(ui.canvas.repaintComplete);
-        ui.addEventListener(ble.scribble.EventType.DRAW_END, postAPart);
-      };
-    </script>
-    <script id="runFirst" type="text/javascript">
-      var theXHR = new XMLHttpRequest();
-      theXHR.open("GET", ".");
-      theXHR.addEventListener("error", function(e) { console.log(JSON.stringify(e)); ff=e;})
-      theXHR.addEventListener("load", onLoadingDrawing);
-      theXHR.send();
-    </script>
+    <script src="http://localhost:9810/compile?id=drawing&mode=RAW"></script>
   </body>
 </html>

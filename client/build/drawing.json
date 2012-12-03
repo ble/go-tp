@@ -1,0 +1,5 @@
+{
+  "inherits": "root-config.ijson",
+  "id": "drawing",
+  "inputs": ["../src/draw-client.js"]
+}
