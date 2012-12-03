@@ -1,3 +1,6 @@
-[submodule "deps/subcanvas"]
-	path = deps/subcanvas
+[submodule "client/deps/subcanvas"]
+	path = client/deps/subcanvas
 	url = git@github.com:ble/subcanvas.git
+[submodule "client/deps/google-closure-library"]
+	path = client/deps/google-closure-library
+	url = git@github.com:ble/google-closure-library.git
