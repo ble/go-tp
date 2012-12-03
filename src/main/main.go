@@ -14,7 +14,7 @@ func main() {
 			FileServer(Dir("./static"))))
 
 	HandleFunc("/client", func(w ResponseWriter, r *Request) {
-		ServeFile(w, r, "./static/drawing-client.html")
+		ServeFile(w, r, "./static/html/drawing-client.html")
 	})
 
 	drawing := NewDrawingHandle()
