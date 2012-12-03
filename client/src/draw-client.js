@@ -20,6 +20,7 @@ var nEventType = goog.net.EventType;
 
 var Event = goog.events.Event;
 var listen = goog.events.listen;
+var listenOnce = goog.events.listenOnce;
 
 var UI = ble.scribble.UI;
 var Drawing = ble.scribble.MutableDrawing;
@@ -33,7 +34,7 @@ scope.height = 240;
 
 scope.setupClient = function() {
   var x = new XhrIo();
-  listen(x, nEventType.SUCCESS, scope.createUI, false, x);
+  listenOnce(x, nEventType.SUCCESS, scope.createUI, false, x);
   x.send("./", "GET");
 };
 
