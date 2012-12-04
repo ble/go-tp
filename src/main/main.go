@@ -1,24 +1,13 @@
 package main
 
 import (
-	. "ble/drawing"
+	"ble/game"
+	"ble/game/handler"
 	"log"
 	. "net/http"
 )
 
 func main() {
-	Handle(
-		"/static/",
-		StripPrefix(
-			"/static/",
-			FileServer(Dir("./static"))))
-
-	HandleFunc("/client", func(w ResponseWriter, r *Request) {
-		ServeFile(w, r, "./static/html/drawing-client.html")
-	})
-
-	drawing := NewDrawingHandle()
-	Handle("/", AsHandler(drawing))
-
-	log.Fatal(ListenAndServe(":24769", nil))
+	handlerGame := handler.NewRoomHandler(game.NewGame())
+	log.Fatal(ListenAndServe(":24769", handlerGame))
 }

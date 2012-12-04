@@ -25,7 +25,6 @@ func (h handlerClient) ServeHTTP(w ResponseWriter, r *Request) {
 		}
 	}
 
-	w.WriteHeader(200)
-	w.Write([]byte("would serve the client here..."))
+	ServeFile(w, r, "./static/html/game-client.html")
 
 }

@@ -4,9 +4,8 @@ import (
 	. "ble/game"
 	"encoding/json"
 	. "net/http"
-	"strings"
-	//  "net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -35,6 +34,13 @@ func (h handlerEvents) ServeHTTP(w ResponseWriter, r *Request) {
 		}
 		lastQuery = time.Unix(0, lastQueryNanos)
 	}
-	events, time := h.GameAgent.GetGameEvents(lastQuery)
-	json.NewEncoder(w).Encode(eventsResponse{time.UnixNano(), events})
+	events, eTime := h.GameAgent.GetGameEvents(lastQuery)
+	elapsed := time.Since(lastQuery)
+	if len(events) == 0 {
+		if elapsed.Seconds() < 10 {
+			<-time.After(5 * time.Second)
+			events, eTime = h.GameAgent.GetGameEvents(lastQuery)
+		}
+	}
+	json.NewEncoder(w).Encode(eventsResponse{eTime.UnixNano(), events})
 }

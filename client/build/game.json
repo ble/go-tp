@@ -1,0 +1,5 @@
+{
+  "inherits": "root-config.ijson",
+  "id": "game",
+  "inputs": ["../src/game-client.js"]
+}
