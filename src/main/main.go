@@ -1,8 +1,9 @@
 package main
 
 import (
-	"code.google.com/p/gosqlite/sqlite"
+	"database/sql"
 	"errors"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
 
@@ -14,54 +15,58 @@ func dieOnError(err error, stuff ...interface{}) {
 }
 
 func main() {
-	dbFileName := "counter.sqlite"
-	conn, err := sqlite.Open(dbFileName)
-	defer conn.Close()
-	dieOnError(err, "opening database")
-
-	//Make statement creating table
-	createTableIfNecessary, err := conn.Prepare("CREATE TABLE IF NOT EXISTS count (x INTEGER PRIMARY KEY, c INTEGER)")
-	dieOnError(err, "preparing createTableIfNecessary")
-	//Clean it up when done
-	defer createTableIfNecessary.Finalize()
-	//Actually run it
-	createTableIfNecessary.Next()
-
 	magicRowNumber := 42
-	readRow, err := conn.Prepare("SELECT * FROM count WHERE x == ?")
-	dieOnError(err, "preparing readRow")
-	defer readRow.Finalize()
-	dieOnError(readRow.Exec(magicRowNumber), "executing readRow")
-	isThereARow := readRow.Next()
-
 	theCount := -1
+
+	dbFileName := "counter.sqlite"
+	db, err := sql.Open("sqlite3", dbFileName)
+	dieOnError(err, "opening database")
+	defer db.Close()
+
+	result, err := db.Exec(
+		"CREATE TABLE IF NOT EXISTS count (x INTEGER PRIMARY KEY, c INTEGER)")
+	dieOnError(err, "creating table if necessary")
+
+	readRow, err := db.Prepare("SELECT * FROM count WHERE x == ?")
+	dieOnError(err, "preparing readRow")
+	rows, err := readRow.Query(magicRowNumber)
+	dieOnError(err, "querying readRow")
+	isThereARow := rows.Next()
+
 	if !isThereARow {
-		writeFirstRow, err := conn.Prepare("INSERT INTO count VALUES (?, ?);")
-		dieOnError(err, "preparing writeFirstRow")
-		defer writeFirstRow.Finalize()
-		dieOnError(writeFirstRow.Exec(magicRowNumber, 0), "executing writeFirstRow")
-		writeFirstRow.Next()
-		dieOnError(readRow.Exec(magicRowNumber), "executing readRow")
-		isThereARow = readRow.Next()
+		insertRow, err := db.Prepare("INSERT INTO count VALUES (?, ?);")
+		dieOnError(err, "preparing insertRow")
+
+		theCount = 0
+		result, err = insertRow.Exec(magicRowNumber, theCount)
+		dieOnError(err, "inserting first row")
+
+		rows, err = readRow.Query(magicRowNumber)
+		dieOnError(err, "querying readRow")
+		isThereARow = rows.Next()
 	}
 
 	if !isThereARow {
 		dieOnError(errors.New("row doesn't exist despite being created or previously existing?"))
 	}
-	dieOnError(readRow.Scan(&magicRowNumber, &theCount), "scanning readRow")
+	dieOnError(rows.Scan(&magicRowNumber, &theCount), "scanning readRow")
+	rows.Close()
+
+	updateRow, err := db.Prepare("UPDATE count SET c = ? WHERE x = ?")
+	dieOnError(err, "preparing updateRow")
+
 	theCount++
+	result, err = updateRow.Exec(theCount, magicRowNumber)
+	dieOnError(err, "updating the row")
 
-	updateRow, err := conn.Prepare("UPDATE count SET c = ? WHERE x = ?")
-	dieOnError(err, "updating row")
-	defer updateRow.Finalize()
-	dieOnError(updateRow.Exec(theCount, magicRowNumber))
-	updateRow.Next()
+	rows, err = readRow.Query(magicRowNumber)
+	dieOnError(err, "querying readRow")
+	isThereARow = rows.Next()
 
-	dieOnError(readRow.Exec(magicRowNumber))
-	isThereARow = readRow.Next()
 	if !isThereARow {
 		dieOnError(errors.New("row doesn't exist despite being created or previously existing?"))
 	}
-	dieOnError(readRow.Scan(&magicRowNumber, &theCount))
+	dieOnError(rows.Scan(&magicRowNumber, &theCount))
+	rows.Close()
 	log.Print("id: ", magicRowNumber, " count: ", theCount)
 }
