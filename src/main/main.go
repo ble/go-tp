@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
-	_ "github.com/mattn/go-sqlite3"
+  _ "github.com/ble/go-sqlite3"
 	"log"
 )
 
@@ -23,7 +23,7 @@ func main() {
 	dieOnError(err, "opening database")
 	defer db.Close()
 
-	result, err := db.Exec(
+	_, err = db.Exec(
 		"CREATE TABLE IF NOT EXISTS count (x INTEGER PRIMARY KEY, c INTEGER)")
 	dieOnError(err, "creating table if necessary")
 
@@ -38,7 +38,7 @@ func main() {
 		dieOnError(err, "preparing insertRow")
 
 		theCount = 0
-		result, err = insertRow.Exec(magicRowNumber, theCount)
+		_, err = insertRow.Exec(magicRowNumber, theCount)
 		dieOnError(err, "inserting first row")
 
 		rows, err = readRow.Query(magicRowNumber)
@@ -56,7 +56,7 @@ func main() {
 	dieOnError(err, "preparing updateRow")
 
 	theCount++
-	result, err = updateRow.Exec(theCount, magicRowNumber)
+	_, err = updateRow.Exec(theCount, magicRowNumber)
 	dieOnError(err, "updating the row")
 
 	rows, err = readRow.Query(magicRowNumber)
