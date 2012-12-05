@@ -1,0 +1,15 @@
+What's our major malfunction here?
+Stacks and drawings should have unique URLs.
+The mapping from drawing or stack to URL should not be ad-hoc; it should be
+an interface specified _somewhere_.
+
+What is this interface going to look like or what will it mean?
+
+More generically than just a drawing or a stack, this interface is going
+to provide URLs for objects that encapsulate a resource.
+
+So... Locator?
+
+
+PERSISTENCE:
+start with https://github.com/mattn/go-sqlite3
