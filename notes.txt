@@ -13,3 +13,35 @@ So... Locator?
 
 PERSISTENCE:
 start with https://github.com/mattn/go-sqlite3
+
+
+What's our persistent data model?
+USERS
+DRAWINGS
+GAMES
+STACKS
+PLAYERS
+
+
+USER: email, alias, password
+PLAYER: USER, GAME, pseudonym
+STACK: PLAYER holding, GAME
+DRAWING: PLAYER, complete, STACK, stackOrder
+  DRAWPARTS: DRAWING, received time, json blob
+GAME:
+  GAMEPLAYERORDER: index, PLAYER
+
+
+relations:
+
+PLAYER -> USER
+PLAYER -> GAME
+STACK -> GAME
+STACK -> holdingPLAYER
+DRAWING -> STACK
+DRAWING -> PLAYER
+DRAWPARTS -> DRAWING
+GAMEPLAYERORDER -> GAME
+
+
+
