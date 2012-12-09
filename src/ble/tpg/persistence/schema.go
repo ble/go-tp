@@ -4,11 +4,11 @@ import (
 	. "database/sql"
 )
 
-func createTables(db *DB) ([]Result, []error) {
+func createTables(b Backend) ([]Result, []error) {
 	rs := make([]Result, len(tableCreationStatements))
 	es := make([]error, len(tableCreationStatements))
 	for ix, qString := range tableCreationStatements {
-		rs[ix], es[ix] = db.Exec(qString)
+		rs[ix], es[ix] = b.conn.Exec(qString)
 	}
 	return rs, es
 }
@@ -19,6 +19,8 @@ var tableCreationStatements []string = []string{
     email  TEXT(255) NOT NULL CONSTRAINT uniqueEmail UNIQUE ON CONFLICT FAIL,
     alias  TEXT(32)  NOT NULL CONSTRAINT uniqueAlias UNIQUE ON CONFLICT FAIL,
     pwHash TEXT(20)  NOT NULL);`,
+
+	`CREATE INDEX userByAlias ON users (alias)`,
 
 	`CREATE TABLE games (
     gid      INTEGER PRIMARY KEY,

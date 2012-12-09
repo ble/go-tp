@@ -19,3 +19,17 @@ So we've been thinking about how the data will be structured on the database sid
 There are at least two other ideas to consider:
   * when will data be persisted and read?
   * what interface will be presented by the persistence system?
+
+
+One half-baked idea:
+
+There is an object/service for each of the main domain object types and most behavior is methods on that handle
+Not strictly necessary; could return objects that hold ref / their methods make things work
+
+I'd rather not have to think about what's going on at the persistence level as I do bizness,
+at least I'd like to think the least possible about what's going on; few, strong assumptions about behavior
+
+Only users and games can be created outside of a game's execution;
+everything modified is modified in a game
+A game's execution guarantees single-threaded behavior
+so... basically everything is safe
