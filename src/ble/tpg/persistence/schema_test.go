@@ -11,17 +11,8 @@ func TestCreateTables(t *T) {
 	defer os.Remove("testdb")
 	defer backend.conn.Close()
 	t.Log(err)
-	rs, es := createTables(backend)
-	for ix := range rs {
-		//r := rs[ix]
-		e := es[ix]
-		if e == nil {
-			continue
-		}
-		s := tableCreationStatements[ix]
-		t.Log(e, s)
+	err = createTables(backend)
+	if err != nil {
+		t.Fatal(err)
 	}
-	t.Log(rs)
-	t.Log(es)
-	t.Log("HI!")
 }

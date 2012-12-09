@@ -1,16 +1,17 @@
 package persistence
 
 import (
-	. "database/sql"
+	"errors"
 )
 
-func createTables(b Backend) ([]Result, []error) {
-	rs := make([]Result, len(tableCreationStatements))
-	es := make([]error, len(tableCreationStatements))
-	for ix, qString := range tableCreationStatements {
-		rs[ix], es[ix] = b.conn.Exec(qString)
+func createTables(b Backend) error {
+	for _, qString := range tableCreationStatements {
+		_, err := b.conn.Exec(qString)
+		if err != nil {
+			return errors.New(err.Error() + "\nSQL = " + qString)
+		}
 	}
-	return rs, es
+	return nil
 }
 
 var tableCreationStatements []string = []string{

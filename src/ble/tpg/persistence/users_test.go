@@ -10,12 +10,20 @@ func TestCreateUser(t *T) {
 	b.RegisterLogger(t)
 	t.Log(err)
 	defer os.Remove("testdb")
-	rs, es := createTables(b)
-	t.Log(rs, es)
+	err = createTables(b)
+	if err != nil {
+		t.Fatal(err)
+	}
 	u, err := b.CreateUser("the.bomb@thebomb.com", "scatman juan", "asdfquxl")
-	t.Log(err, u)
+	if err != nil || u == nil {
+		t.Fatal("couldn't create user")
+	}
 	u2, err := b.LogInUser(u.Alias(), "asdfquxll")
-	t.Log(err, u2)
+	if err == nil || u2 != nil {
+		t.Fatal("logged in with a bad password")
+	}
 	u3, err := b.LogInUser(u.Alias(), "asdfquxl")
-	t.Log(err, u3)
+	if err != nil || u3 == nil {
+		t.Fatal("failed to log in")
+	}
 }

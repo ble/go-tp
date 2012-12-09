@@ -18,16 +18,11 @@ func (u user) Alias() string {
 
 func (b *Backend) LogInUser(alias, pw string) (model.User, error) {
 	pwHash := b.hashPw(pw)
-	if b.logInUser == nil {
-		logInUser, err := b.conn.Prepare(
-			`SELECT uid, email FROM users
-       WHERE alias = ? AND pwHash = ?;`)
-		if err != nil {
-			b.logError("preparing `logInUser` statement", err)
-			return nil, err
-		}
-		b.logInUser = logInUser
-	}
+	b.prepStatement(
+		"logInUser",
+		`SELECT uid, email FROM users
+     WHERE alias = ? AND pwHash = ?;`,
+		&b.logInUser)
 	row := b.logInUser.QueryRow(alias, pwHash)
 	var uid int
 	var email string
@@ -55,24 +50,19 @@ func (b *Backend) CreateUser(email, alias, pw string) (model.User, error) {
 	}
 
 	pwHash := b.hashPw(pw)
-	if b.createUser == nil {
-		createUser, err := b.conn.Prepare(
-			`INSERT INTO users
-         (email, alias, pwHash) VALUES (?, ?, ?)`)
-		if err != nil {
-			b.logError("preparing `createUser` statement", err)
-			return nil, err
-		}
-		b.createUser = createUser
+	if err = b.prepStatement(
+		"createUser",
+		`INSERT INTO users
+         (email, alias, pwHash) VALUES (?, ?, ?)`,
+		&b.createUser); err != nil {
+		return nil, err
 	}
-	if b.getUserByAlias == nil {
-		getUserByAlias, err := b.conn.Prepare(
-			`SELECT * FROM users WHERE alias == ?`)
-		if err != nil {
-			b.logError("preparing `getUserByAlias` statement", err)
-			return nil, err
-		}
-		b.getUserByAlias = getUserByAlias
+
+	if err = b.prepStatement(
+		"getUserByAlias",
+		`SELECT * FROM users WHERE alias == ?`,
+		&b.getUserByAlias); err != nil {
+		return nil, err
 	}
 	tx, err := b.conn.Begin()
 	if err != nil {
