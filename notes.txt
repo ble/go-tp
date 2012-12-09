@@ -14,34 +14,8 @@ So... Locator?
 PERSISTENCE:
 start with https://github.com/mattn/go-sqlite3
 
+So we've been thinking about how the data will be structured on the database side.
 
-What's our persistent data model?
-USERS
-DRAWINGS
-GAMES
-STACKS
-PLAYERS
-
-
-USER: email, alias, password
-PLAYER: USER, GAME, pseudonym
-STACK: PLAYER holding, GAME
-DRAWING: PLAYER, complete, STACK, stackOrder
-  DRAWPARTS: DRAWING, received time, json blob
-GAME:
-  GAMEPLAYERORDER: index, PLAYER
-
-
-relations:
-
-PLAYER -> USER
-PLAYER -> GAME
-STACK -> GAME
-STACK -> holdingPLAYER
-DRAWING -> STACK
-DRAWING -> PLAYER
-DRAWPARTS -> DRAWING
-GAMEPLAYERORDER -> GAME
-
-
-
+There are at least two other ideas to consider:
+  * when will data be persisted and read?
+  * what interface will be presented by the persistence system?
