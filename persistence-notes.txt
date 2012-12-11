@@ -11,7 +11,7 @@ to the database;
 Appropriate handles are goroutine-safe, implemented using a message-over-chan
 -nel pattern.
 
-Access pattern:
+Ownership hierarchy:
 ===========================================================================
 Users
 ->User
@@ -20,6 +20,12 @@ Games
   ->Player
   ->Stack
     ->Drawing
+
+Access pattern:
+===========================================================================
+Almost all meaningful mutation of game objects will occur through a call into a
+Game; if calls into a Game are sequentialized via a channel, this means all
+other modifications are safe.
 
 Interfaces:
 ===========================================================================

@@ -16,8 +16,12 @@ func (u user) Alias() string {
 	return u.alias
 }
 
+func (u user) Email() string {
+	return u.email
+}
+
 func (b *Backend) LogInUser(alias, pw string) (model.User, error) {
-	pwHash := b.hashPw(pw)
+	pwHash := b.hashPw(alias, pw)
 	b.prepStatement(
 		"logInUser",
 		`SELECT uid, email FROM users
@@ -49,7 +53,7 @@ func (b *Backend) CreateUser(email, alias, pw string) (model.User, error) {
 		return nil, err
 	}
 
-	pwHash := b.hashPw(pw)
+	pwHash := b.hashPw(alias, pw)
 	if err = b.prepStatement(
 		"createUser",
 		`INSERT INTO users

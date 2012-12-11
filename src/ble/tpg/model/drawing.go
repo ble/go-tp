@@ -1,13 +1,11 @@
 package model
 
-import "encoding/json"
-
 type Drawing interface {
 	Stack() Stack
 	Player() Player
-	Content() json.Marshaler
+	Content() []interface{}
 
-	Add(json.Marshaler) error
+	Add(interface{}) error
 
 	IsComplete() bool
 	Complete() error

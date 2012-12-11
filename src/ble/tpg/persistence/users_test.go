@@ -10,7 +10,7 @@ func TestCreateUser(t *T) {
 	b.RegisterLogger(t)
 	t.Log(err)
 	defer os.Remove("testdb")
-	err = createTables(b)
+	err = b.createTables()
 	if err != nil {
 		t.Fatal(err)
 	}

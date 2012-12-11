@@ -2,5 +2,5 @@ package model
 
 type Player interface {
 	User() User
-	Pseudonym() String
+	Pseudonym() string
 }

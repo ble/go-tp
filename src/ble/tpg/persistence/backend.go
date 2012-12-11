@@ -3,7 +3,6 @@ package persistence
 import (
 	"ble/hash"
 	"database/sql"
-	"fmt"
 	"testing"
 )
 
@@ -13,6 +12,10 @@ type Backend struct {
 	conn                                                                                             *sql.DB
 	loggers                                                                                          []*testing.T
 	countPlayersInGame, createPlayer, createGame, createUser, getUserByAlias, logInUser, getAllGames *sql.Stmt
+}
+
+func (b *Backend) Conn() *sql.DB {
+	return b.conn
 }
 
 func NewBackend(filename string) (*Backend, error) {
@@ -51,8 +54,6 @@ func (b *Backend) prepAllStatements() error {
        VALUES (?, ?, ?, ?)`}}
 	for i := range statements {
 		s := statements[i]
-		fmt.Println(s)
-		fmt.Println(*s.stmt)
 		err := b.prepStatement(s.desc, s.cmd, s.stmt)
 		if err != nil {
 			return err
@@ -100,7 +101,9 @@ func (b Backend) logError(loc string, args ...interface{}) {
 	}
 }
 
-func (b Backend) hashPw(pw string) string {
+func (b Backend) hashPw(alias, pw string) string {
 	h := hash.NewHashEasy()
-	return h.WriteStrAnd(pw).WriteStrAnd(whatIsAMan).String()
+	return h.WriteStrAnd(pw).
+		WriteStrAnd(alias).
+		WriteStrAnd(whatIsAMan).String()
 }

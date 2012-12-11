@@ -11,7 +11,7 @@ func TestCreateTables(t *T) {
 	defer os.Remove("testdb")
 	defer backend.conn.Close()
 	t.Log(err)
-	err = createTables(backend)
+	err = backend.createTables()
 	if err != nil {
 		t.Fatal(err)
 	}
