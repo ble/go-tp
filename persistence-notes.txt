@@ -1,0 +1,77 @@
+
+
+There is an object/service for each of the main domain object types and most
+behavior is methods on those handles;
+
+All values are kept both in-memory and in-database;
+
+All values are consistent; in-memory values change only on a successful change
+to the database;
+
+Appropriate handles are goroutine-safe, implemented using a message-over-chan
+-nel pattern.
+
+Access pattern:
+===========================================================================
+Users
+->User
+Games
+->Game
+  ->Player
+  ->Stack
+    ->Drawing
+
+Interfaces:
+===========================================================================
+type Users interface {
+  CreateUser(email, alias, pw string) (User, error)
+  LogInUser(alias, pw string) (User, error)
+}
+
+type Games interface {
+  AllGames() map[string]Game
+  CreateGame(string) (Game, error)
+}
+
+type User interface {
+  Alias() string
+  Email() string
+}
+
+type Game interface {
+  Players() []Player
+  NextPlayer(Player) Player
+
+  Stacks() []Stack
+  StacksInProgress() map[Player][]Stack
+
+  IsComplete() bool
+  Complete() error
+}
+
+type Player interface {
+  User() User
+  Pseudonym() String 
+}
+
+type Stack interface {
+  Game() Game
+  AllDrawings() []Drawing
+
+  AddDrawing(Player) (Drawing, error)
+
+  IsComplete() bool
+  Complete() error
+}
+
+type Drawing interface {
+  Stack() Stack
+  Player() Player
+  Content() json.Marshaler()
+
+  Add(json.Marshaler()) error
+
+  IsComplete() bool
+  Complete() error
+}
+
