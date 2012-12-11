@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-func createTables(b Backend) error {
+func createTables(b *Backend) error {
 	for _, qString := range tableCreationStatements {
 		_, err := b.conn.Exec(qString)
 		if err != nil {
@@ -24,7 +24,7 @@ var tableCreationStatements []string = []string{
 	`CREATE INDEX userByAlias ON users (alias)`,
 
 	`CREATE TABLE games (
-    gid      INTEGER PRIMARY KEY,
+    gid      STRING PRIMARY KEY,
     roomName TEXT(255) NOT NULL);`,
 
 	`CREATE TABLE players (
@@ -32,13 +32,9 @@ var tableCreationStatements []string = []string{
     pseudonym  TEXT(64) NOT NULL,
     gid        INTEGER REFERENCES games (gid),
     uid        INTEGER REFERENCES users (uid),
-    CONSTRAINT uniqueNamePerGame UNIQUE (gid, pseudonym) ON CONFLICT FAIL);`,
-
-	`CREATE TABLE gamePlayerOrder (
-    gid INTEGER REFERENCES games (gid),
-    pid INTEGER REFERENCES players (pid),
-    orderInGame INTEGER NOT NULL,
-    PRIMARY KEY (gid, orderInGame));`,
+    playOrder  INTEGER,
+    CONSTRAINT uniqueNamePerGame UNIQUE (gid, pseudonym) ON CONFLICT FAIL,
+    CONSTRAINT uniqueOrder UNIQUE (playOrder) ON CONFLICT FAIL);`,
 
 	`CREATE TABLE stacks (
     sid        INTEGER PRIMARY KEY,

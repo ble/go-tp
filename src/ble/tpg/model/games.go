@@ -1,8 +1,8 @@
 package model
 
 type Games interface {
-	AllGames() []Game
-	CreateGame(roomName string) Game
+	AllGames() (map[string]Game, error)
+	CreateGame(roomName string) (Game, error)
 }
 
 type Stacks interface {
@@ -12,7 +12,6 @@ type Stacks interface {
 type Player interface {
 	GetUser() User
 	Pseudonym() string
-	Stacks() []Stack
 }
 
 type Stack interface {
@@ -20,8 +19,7 @@ type Stack interface {
 	DrawingCount() int
 	AllDrawings() []Drawing
 	IsComplete() bool
-
-	AddDrawing() Drawing
+	AddDrawing(Player) Drawing
 	Complete()
 }
 
@@ -32,9 +30,9 @@ type Drawing interface {
 type Game interface {
 	RoomName() string
 	Players() []Player
-	Stacks() map[Player]Stack
+	Stacks() map[Player][]Stack
 
 	PassStack(Player)
-	JoinGame(User) Player
+	JoinGame(User, string) Player
 	Complete()
 }
