@@ -16,8 +16,12 @@ func (d drawingBackend) validateDrawPart(interface{}) bool {
 	return true
 }
 
+func (d drawingBackend) validateDrawing(model.Drawing) bool {
+	return true
+}
+
 type drawing struct {
-	drawingBackend
+	*drawingBackend
 	did       int
 	s         model.Stack
 	p         model.Player
@@ -25,7 +29,7 @@ type drawing struct {
 	completed bool
 }
 
-func typeCheck() model.Drawing {
+func typeCheckDrawing() model.Drawing {
 	return &drawing{}
 }
 
@@ -48,6 +52,9 @@ func (d drawing) IsComplete() bool {
 func (d *drawing) Complete() error {
 	if d.completed {
 		return errors.New("drawing already completed")
+	}
+	if !d.validateDrawing(d) {
+		return errors.New("Drawing can't be completed yet; is it empty?")
 	}
 	if err := d.prepStatement(
 		"completeDrawing",
@@ -98,11 +105,10 @@ func (d *drawing) Add(x interface{}) error {
 	}
 	if err := d.prepStatement(
 		"addDrawPart",
-		`INSERT INTO drawParts (did, ord, json) VALUES
-     ( ?,
-       (SELECT COUNT(ord) FROM drawParts
-        WHERE did = ?),
-       ?);`,
+		`INSERT INTO drawParts (did, ord, json)
+    SELECT ? as did, COUNT(ord) as ord, ? as json
+    FROM drawParts
+    WHERE did = ?;`,
 		&d.drawingBackend.addDrawPart); err != nil {
 		return err
 	}

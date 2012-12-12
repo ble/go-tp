@@ -15,8 +15,10 @@ func (b *Backend) createTables() error {
 		`CREATE INDEX userByAlias ON users (alias)`,
 
 		`CREATE TABLE games (
-      gid      STRING PRIMARY KEY,
-      roomName TEXT(255) NOT NULL);`,
+      gid       STRING PRIMARY KEY,
+      started   BOOLEAN
+      completed BOOLEAN
+      roomName  TEXT(255) NOT NULL);`,
 
 		`CREATE TABLE players (
       pid        INTEGER PRIMARY KEY,
@@ -30,7 +32,16 @@ func (b *Backend) createTables() error {
 		`CREATE TABLE stacks (
       sid        INTEGER PRIMARY KEY,
       gid        INTEGER REFERENCES games (gid),
+      complete   BOOLEAN,
       holdingPid INTEGER REFERENCES players (pid));`,
+
+		`CREATE TABLE stackHoldings (
+      pid        INTEGER REFERENCES players (pid),
+      gid        INTEGER REFERENCES games   (gid),
+      sid        INTEGER REFERENCES stacks  (sid),
+      ord        INTEGER,
+      PRIMARY KEY (sid),
+      CONSTRAINT uniqueStackOrder UNIQUE (pid, ord) on CONFLICT FAIL);`,
 
 		`CREATE TABLE drawings (
       did          INTEGER PRIMARY KEY,

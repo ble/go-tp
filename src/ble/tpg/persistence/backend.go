@@ -12,6 +12,9 @@ type Backend struct {
 	conn                                                                                             *sql.DB
 	loggers                                                                                          []*testing.T
 	countPlayersInGame, createPlayer, createGame, createUser, getUserByAlias, logInUser, getAllGames *sql.Stmt
+
+	*drawingBackend
+	*stackBackend
 }
 
 func (b *Backend) Conn() *sql.DB {
@@ -23,8 +26,10 @@ func NewBackend(filename string) (*Backend, error) {
 	if err != nil {
 		return nil, err
 	}
-	b := Backend{conn: conn, loggers: []*testing.T{}}
-	return &b, nil
+	b := &Backend{conn: conn, loggers: []*testing.T{}}
+	b.drawingBackend = &drawingBackend{Backend: b}
+	b.stackBackend = &stackBackend{Backend: b}
+	return b, nil
 }
 
 func (b *Backend) prepAllStatements() error {
