@@ -20,6 +20,10 @@ func (u user) Email() string {
 	return u.email
 }
 
+func (u user) Uid() int {
+	return u.uid
+}
+
 func (b *Backend) LogInUser(alias, pw string) (model.User, error) {
 	pwHash := b.hashPw(alias, pw)
 	b.prepStatement(

@@ -26,8 +26,9 @@ func (b *Backend) createTables() error {
       gid        INTEGER REFERENCES games (gid),
       uid        INTEGER REFERENCES users (uid),
       playOrder  INTEGER,
-      CONSTRAINT uniqueNamePerGame UNIQUE (gid, pseudonym) ON CONFLICT FAIL,
-      CONSTRAINT uniqueOrder UNIQUE (playOrder) ON CONFLICT FAIL);`,
+      CONSTRAINT uniqueNamePerGame   UNIQUE (gid, pseudonym) ON CONFLICT FAIL,
+      CONSTRAINT uniquePlayerPerUser UNIQUE (gid, uid) ON CONFLICT FAIL,
+      CONSTRAINT uniqueOrder         UNIQUE (playOrder) ON CONFLICT FAIL);`,
 
 		`CREATE TABLE stacks (
       sid        INTEGER PRIMARY KEY,

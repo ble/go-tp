@@ -43,11 +43,12 @@ func (s *stack) AddDrawing(p model.Player) (model.Drawing, error) {
            ? as pid,
            count(ds.pid) as stackOrder,
            false as complete
-    FROM drawings as ds;`,
+    FROM drawings as ds
+    WHERE ds.sid = ?;`,
 		&s.addDrawing); err != nil {
 		return nil, err
 	}
-	result, err := s.addDrawing.Exec(s.sid, p.Pid())
+	result, err := s.addDrawing.Exec(s.sid, p.Pid(), s.sid)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +102,6 @@ func (s *stack) Complete() error {
 		return err
 	}
 
-	//TODO: revisit to see if these fields can just be autopromoted
 	complete := tx.Stmt(s.stackBackend.completeStack)
 	wipe := tx.Stmt(s.stackBackend.wipeOrder)
 	if _, err := complete.Exec(s.sid); err != nil {
