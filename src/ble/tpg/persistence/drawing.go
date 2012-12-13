@@ -61,14 +61,14 @@ func (d *drawing) Complete() error {
 		`UPDATE drawings
       SET completeJson = ?, complete = TRUE
       WHERE did = ?;`,
-		&d.drawingBackend.completeDrawing); err != nil {
+		&d.completeDrawing); err != nil {
 		return err
 	}
 	if err := d.prepStatement(
 		"wipeDrawParts",
 		`DELETE FROM drawParts
       WHERE did = ?;`,
-		&d.drawingBackend.wipeDrawParts); err != nil {
+		&d.wipeDrawParts); err != nil {
 		return err
 	}
 
@@ -82,8 +82,8 @@ func (d *drawing) Complete() error {
 	if err != nil {
 		return err
 	}
-	complete := tx.Stmt(d.drawingBackend.completeDrawing)
-	wipe := tx.Stmt(d.drawingBackend.wipeDrawParts)
+	complete := tx.Stmt(d.completeDrawing)
+	wipe := tx.Stmt(d.wipeDrawParts)
 	if _, err := complete.Exec(contentJson, d.did); err != nil {
 		return err
 		tx.Rollback()
@@ -109,14 +109,14 @@ func (d *drawing) Add(x interface{}) error {
     SELECT ? as did, COUNT(ord) as ord, ? as json
     FROM drawParts
     WHERE did = ?;`,
-		&d.drawingBackend.addDrawPart); err != nil {
+		&d.addDrawPart); err != nil {
 		return err
 	}
 	json, err := json.Marshal(x)
 	if err != nil {
 		return err
 	}
-	if _, err := d.drawingBackend.addDrawPart.Exec(
+	if _, err := d.addDrawPart.Exec(
 		d.did,
 		d.did,
 		json); err != nil {
