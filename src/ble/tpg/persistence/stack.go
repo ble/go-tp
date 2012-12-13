@@ -27,6 +27,10 @@ func typeCheckStack() model.Stack {
 	return &stack{}
 }
 
+func (s *stack) Sid() int {
+	return s.sid
+}
+
 func (s *stack) Game() model.Game {
 	return s.g
 }

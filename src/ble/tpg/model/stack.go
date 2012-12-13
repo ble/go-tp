@@ -1,6 +1,7 @@
 package model
 
 type Stack interface {
+	Sid() int
 	Game() Game
 	AllDrawings() []Drawing
 
