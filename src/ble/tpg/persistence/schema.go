@@ -17,7 +17,7 @@ func (b *Backend) createTables() error {
 		`CREATE TABLE games (
       gid       STRING PRIMARY KEY,
       started   BOOLEAN
-      completed BOOLEAN
+      complete BOOLEAN
       roomName  TEXT(255) NOT NULL);`,
 
 		`CREATE TABLE players (

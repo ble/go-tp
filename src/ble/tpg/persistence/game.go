@@ -8,7 +8,8 @@ import (
 
 type gameBackend struct {
 	*Backend
-	joinGame, passStack *sql.Stmt
+	markGameStarted, makeStacks, markGameComplete, joinGame, passStack *sql.Stmt
+	getStacks                                                          *sql.Stmt
 }
 
 type game struct {
@@ -16,10 +17,10 @@ type game struct {
 	gid          int
 	players      []model.Player
 	inverseOrder map[model.Player]int
+	playersById  map[int]model.Player
 
-	stacks         []model.Stack
-	stacksInPlay   map[model.Player][]model.Stack
-	stacksFinished map[model.Stack]bool
+	stacks       []model.Stack
+	stacksInPlay map[model.Player][]model.Stack
 
 	isComplete, isStarted bool
 }
@@ -39,10 +40,10 @@ func (g *game) NextPlayer(p model.Player) model.Player {
 
 func (g *game) JoinGame(u model.User, pseudonym string) (model.Player, error) {
 	if g.IsStarted() {
-		return errors.New("Sorry, you can't join a game that's already started.")
+		return nil, errors.New("Sorry, you can't join a game that's already started.")
 	}
 	if g.IsComplete() {
-		return errors.New("Sorry, you can't join a completed game.")
+		return nil, errors.New("Sorry, you can't join a completed game.")
 	}
 	if err := g.prepStatement(
 		"joinGame",
@@ -72,6 +73,7 @@ func (g *game) JoinGame(u model.User, pseudonym string) (model.Player, error) {
 	}
 	g.inverseOrder[player] = len(g.players)
 	g.players = append(g.players, player)
+	g.playersById[player.Pid()] = player
 	return player, nil
 }
 
@@ -85,7 +87,12 @@ func (g *game) StacksInProgress() map[model.Player][]model.Stack {
 
 func (g *game) PassStack(pFrom model.Player) error {
 	//preconditions
-	//  if !//started and completed condition here
+	if g.IsComplete() {
+		return errors.New("can't pass a stack in a completed game!")
+	}
+	if !g.IsStarted() {
+		return errors.New("can't pass a stack in a game before it starts!")
+	}
 	if _, playerPresent := g.inverseOrder[pFrom]; !playerPresent {
 		return errors.New("that player isn't in this game!")
 	}
@@ -112,9 +119,17 @@ func (g *game) PassStack(pFrom model.Player) error {
 	}
 	//execute statement
 	_, err := g.passStack.Exec(pTo.Pid(), passedStack.Sid())
+	if err != nil {
+		return err
+	}
 	//change in-memory structure
 	g.stacksInPlay[pFrom] = pFromStacks
-	g.stacksInPlay[pTo] = pToStacks
+
+	//in-memory-only indication that no one is holding this stack any more...
+	if !passedStack.IsComplete() {
+		g.stacksInPlay[pTo] = pToStacks
+	}
+	return nil
 }
 
 func (g *game) IsComplete() bool {
@@ -126,20 +141,126 @@ func (g *game) IsStarted() bool {
 }
 
 func (g *game) Complete() error {
-	//if already complete or not started, that's an error
-	//tx time!
-	//mark this as complete
-	//mark all stacks as complete
-	//remove all stacks from play
-	//update in-memory strucutres
+	if g.IsComplete() {
+		return errors.New("game already completed!")
+	}
+	if !g.IsStarted() {
+		return errors.New("game not yet started!")
+	}
+	//check to see if all stacks are complete
+	for _, stack := range g.stacks {
+		if !stack.IsComplete() {
+			return errors.New("Not all stacks are complete!")
+		}
+	}
+
+	if err := g.prepStatement(
+		"markGameComplete",
+		`UPDATE games
+  SET complete = TRUE
+  WHERE gid = ?;`,
+		&g.markGameComplete); err != nil {
+		return err
+	}
+
+	_, err := g.markGameComplete.Exec(g.gid)
+	if err != nil {
+		return err
+	}
+
+	g.isComplete = true
+	return nil
 }
 
 func (g *game) Start() error {
-	//if already started or completed, that's an error
-	//tx time
-	//mark this as started
-	//create a stack for each player
-	//create a drawing in each stack
+	if g.IsStarted() {
+		return errors.New("game already started!")
+	}
+	if g.IsComplete() {
+		return errors.New("can't start a complete game!")
+	}
+
+	if err := g.prepStatement(
+		"markGameStarted",
+		`UPDATE games
+    SET started = TRUE
+    WHERE gid = ?`,
+		&g.markGameStarted); err != nil {
+		return err
+	}
+
+	if err := g.prepStatement(
+		"makeStacks",
+		`INSERT INTO stacks
+    SELECT ? as gid,
+           false as complete,
+           ps.pid as holdingPid
+    FROM players as ps
+    WHERE ps.gid = ?;`,
+		&g.makeStacks); err != nil {
+		return err
+	}
+
+	if err := g.prepStatement(
+		"getStacks",
+		`SELECT sid, holdingPid
+    FROM stacks
+    WHERE gid = ?`,
+		&g.getStacks); err != nil {
+		return err
+	}
+
+	tx, err := g.Conn().Begin()
+	if err != nil {
+		return err
+	}
+
+	markGame := tx.Stmt(g.markGameStarted)
+	makeStacks := tx.Stmt(g.makeStacks)
+	getStacks := tx.Stmt(g.getStacks)
+
+	if _, err := markGame.Exec(g.gid); err != nil {
+		return err
+		tx.Rollback()
+	}
+
+	if _, err := makeStacks.Exec(g.gid, g.gid); err != nil {
+		return err
+		tx.Rollback()
+	}
+
+	rows, err := getStacks.Query(g.gid)
+	if err != nil {
+		return err
+		tx.Rollback()
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	g.stacks = make([]model.Stack, len(g.players), len(g.players))
+
+	for i := 0; rows.Next(); i++ {
+		var sid, holdingPid int
+		err := rows.Scan(&sid, &holdingPid)
+		if err != nil {
+			return err
+		}
+		startingPlayer := g.playersById[holdingPid]
+		theStack := &stack{
+			g.stackBackend,
+			sid,
+			g,
+			make([]model.Drawing, 0, 0),
+			false}
+		g.stacks[i] = theStack
+		g.stacksInPlay[startingPlayer] = []model.Stack{theStack}
+		if _, err := theStack.AddDrawing(startingPlayer); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 func typecheckGame() model.Game {
 	return &game{}
