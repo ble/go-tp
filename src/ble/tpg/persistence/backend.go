@@ -9,13 +9,13 @@ import (
 var whatIsAMan string = "A mIsErAbLe PiLe Of SeCreTs"
 
 type Backend struct {
-	conn                                                                                             *sql.DB
-	loggers                                                                                          []*testing.T
-	countPlayersInGame, createPlayer, createGame, createUser, getUserByAlias, logInUser, getAllGames *sql.Stmt
+	conn    *sql.DB
+	loggers []*testing.T
 
 	*drawingBackend
 	*stackBackend
 	*gameBackend
+	*userBackend
 }
 
 func (b *Backend) Conn() *sql.DB {
@@ -31,42 +31,8 @@ func NewBackend(filename string) (*Backend, error) {
 	b.drawingBackend = &drawingBackend{Backend: b}
 	b.stackBackend = &stackBackend{Backend: b}
 	b.gameBackend = &gameBackend{Backend: b}
+	b.userBackend = &userBackend{Backend: b}
 	return b, nil
-}
-
-func (b *Backend) prepAllStatements() error {
-	type statementInternal struct {
-		desc string
-		stmt **sql.Stmt
-		cmd  string
-	}
-	statements := []statementInternal{
-		{"createUser",
-			&b.createUser,
-			`INSERT INTO users (email, alias, pwHash) 
-       VALUES (?, ?, ?)`},
-		{"getUserByAlias",
-			&b.getUserByAlias,
-			`SELECT * FROM users WHERE alias == ?`},
-		{"logInUser",
-			&b.logInUser,
-			`SELECT uid, email FROM users
-      WHERE alias = ? and pwHash = ?;`},
-		{"countPlayersInGame",
-			&b.countPlayersInGame,
-			`SELECT COUNT(pid) FROM players WHERE gid = ?;`},
-		{"createPlayer",
-			&b.createPlayer,
-			`INSERT INTO players (pseudonym, playOrder, uid, gid)
-       VALUES (?, ?, ?, ?)`}}
-	for i := range statements {
-		s := statements[i]
-		err := b.prepStatement(s.desc, s.cmd, s.stmt)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (b *Backend) prepStatement(desc, sql string, stmt **sql.Stmt) error {

@@ -6,7 +6,13 @@ import (
 	"errors"
 )
 
+type userBackend struct {
+	*Backend
+	createUser, getUserByAlias, logInUser *sql.Stmt
+}
+
 type user struct {
+	*userBackend
 	uid                  int
 	email, alias, pwHash string
 	b                    *Backend
@@ -38,7 +44,7 @@ func (b *Backend) LogInUser(alias, pw string) (model.User, error) {
 	if err == sql.ErrNoRows {
 		return nil, errors.New("bad alias or password")
 	}
-	return user{uid, email, alias, pwHash, b}, nil
+	return user{b.userBackend, uid, email, alias, pwHash, b}, nil
 }
 
 func (b *Backend) CreateUser(email, alias, pw string) (model.User, error) {
@@ -93,5 +99,5 @@ func (b *Backend) CreateUser(email, alias, pw string) (model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return user{uid, email, alias, pwHash, b}, nil
+	return user{b.userBackend, uid, email, alias, pwHash, b}, nil
 }

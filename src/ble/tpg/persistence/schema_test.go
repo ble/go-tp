@@ -15,8 +15,4 @@ func TestCreateTables(t *T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = backend.prepAllStatements()
-	if err != nil {
-		t.Fatal(err)
-	}
 }
