@@ -59,7 +59,7 @@ func (d *drawing) Complete() error {
 	if err := d.prepStatement(
 		"completeDrawing",
 		`UPDATE drawings
-      SET completeJson = ?, complete = TRUE
+      SET completeJson = ?, complete = 1
       WHERE did = ?;`,
 		&d.completeDrawing); err != nil {
 		return err
@@ -118,8 +118,8 @@ func (d *drawing) Add(x interface{}) error {
 	}
 	if _, err := d.addDrawPart.Exec(
 		d.did,
-		d.did,
-		json); err != nil {
+		json,
+		d.did); err != nil {
 		return err
 	}
 	d.content = append(d.content, x)

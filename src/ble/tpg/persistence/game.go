@@ -263,6 +263,7 @@ func (g *game) Start() error {
 			return err
 		}
 	}
+	g.isStarted = true
 	return nil
 }
 func typecheckGame() model.Game {

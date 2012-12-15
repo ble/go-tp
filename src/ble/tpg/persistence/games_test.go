@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	DD "ble/drawing"
 	"ble/tpg/model"
 	"os"
 	. "testing"
@@ -42,10 +43,22 @@ func TestCreateGame(t *T) {
 		t.Fatal(err)
 	}
 
-	for _, stack := range g.Stacks() {
-		t.Logf("%#v", stack)
-		for _, drawing := range stack.AllDrawings() {
-			t.Logf("%#v", drawing)
-		}
+	theStack := g.Stacks()[0]
+	theDrawing := theStack.AllDrawings()[0]
+	if err := theDrawing.Add(DD.DefaultDrawPart); err != nil {
+		t.Fatal(err)
 	}
+	if err := theDrawing.Add(DD.DefaultDrawPart); err != nil {
+		t.Fatal(err)
+	}
+	if err := theDrawing.Complete(); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.PassStack(p); err != nil {
+		t.Fatal(err)
+	}
+	theStack.AddDrawing(p)
+	t.Logf("%#v", theStack)
+	t.Logf("%#v", theDrawing)
+	t.Logf("%#v", theStack.AllDrawings()[1])
 }
