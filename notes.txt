@@ -1,0 +1,8 @@
+Does it really make sense to put effort into the router+locator pattern?  It
+seems unnecessary to get a first version working.
+
+
+Other things:
+  changing IDs of stacks, games, drawings so that they are (e.g.) base 64
+sha-1s and thus nicer in URLs
+  wiring up handlers for this new persistence model
