@@ -41,3 +41,27 @@ handler that uses that exact same thing. <-- not sure if this is actually a
 good idea; depends on elegance / overhead.
 
 Hokay, explicit duality solves that problem.  Next problem.
+
+THE NEXT PROBLEM IIIISSSSS:
+Ensuring Consistent Concurrent Access
+
+Well this one is disappointingly straightforward, at least for this
+application; some objects are still in the process of being altered and
+others are not; all objects being altered except for games and users are being
+altered in the context of a game and are independent of all objects outside of
+that game.
+
+The trivial way to make this work is to identify whether a request to read or
+alter an object refers to an object in-progress and if it does, to issue a
+request to some struct-plus-goroutine doohickey that accepts concurrent
+requests to do thangs and serializes them in executing them. *whaps hands
+together as if cleaning flour off of them*
+
+In practice, this means that my handler for drawings will need to figure out
+if the drawing is complete or not to decide whether to ask for the drawing
+through its associated game... tolerable, I guess.  We'll give it a shot and
+see how it goes.
+
+In another thought... what is the concurrent-access struct-plus-goroutine
+doohickey?  Is that something that would be worth thinking of as the "room" in
+which the game unfolds?
