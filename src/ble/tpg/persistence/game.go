@@ -14,6 +14,7 @@ type gameBackend struct {
 
 type game struct {
 	*gameBackend
+	roomName     string
 	gid          int
 	players      []model.Player
 	inverseOrder map[model.Player]int
@@ -48,6 +49,7 @@ func (g *game) JoinGame(u model.User, pseudonym string) (model.Player, error) {
 	if err := g.prepStatement(
 		"joinGame",
 		`INSERT INTO players
+    (pseudonym, gid, uid, playOrder)
     SELECT ? as pseudonym,
            ? as gid,
            ? as uid,
@@ -157,7 +159,7 @@ func (g *game) Complete() error {
 	if err := g.prepStatement(
 		"markGameComplete",
 		`UPDATE games
-  SET complete = TRUE
+  SET complete = 1
   WHERE gid = ?;`,
 		&g.markGameComplete); err != nil {
 		return err
@@ -183,7 +185,7 @@ func (g *game) Start() error {
 	if err := g.prepStatement(
 		"markGameStarted",
 		`UPDATE games
-    SET started = TRUE
+    SET started = 1
     WHERE gid = ?`,
 		&g.markGameStarted); err != nil {
 		return err
@@ -192,8 +194,9 @@ func (g *game) Start() error {
 	if err := g.prepStatement(
 		"makeStacks",
 		`INSERT INTO stacks
+    (gid, complete, holdingPid)
     SELECT ? as gid,
-           false as complete,
+           0 as complete,
            ps.pid as holdingPid
     FROM players as ps
     WHERE ps.gid = ?;`,

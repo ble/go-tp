@@ -16,6 +16,7 @@ type Backend struct {
 	*stackBackend
 	*gameBackend
 	*userBackend
+	*gamesBackend
 }
 
 func (b *Backend) Conn() *sql.DB {
@@ -32,6 +33,7 @@ func NewBackend(filename string) (*Backend, error) {
 	b.stackBackend = &stackBackend{Backend: b}
 	b.gameBackend = &gameBackend{Backend: b}
 	b.userBackend = &userBackend{Backend: b}
+	b.gamesBackend = &gamesBackend{Backend: b}
 	return b, nil
 }
 

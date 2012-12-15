@@ -42,11 +42,12 @@ func (s *stack) AllDrawings() []model.Drawing {
 func (s *stack) AddDrawing(p model.Player) (model.Drawing, error) {
 	if err := s.prepStatement(
 		"addDrawing",
-		`INSERT INTO drawings (sid, pid, stackOrder, complete)
+		`INSERT INTO drawings
+    (sid, pid, stackOrder, complete)
     SELECT ? as sid,
            ? as pid,
            count(ds.pid) as stackOrder,
-           false as complete
+           0 as complete
     FROM drawings as ds
     WHERE ds.sid = ?;`,
 		&s.addDrawing); err != nil {

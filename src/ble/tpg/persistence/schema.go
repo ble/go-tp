@@ -16,12 +16,12 @@ func (b *Backend) createTables() error {
 
 		`CREATE TABLE games (
       gid       STRING PRIMARY KEY,
-      started   BOOLEAN
-      complete BOOLEAN
+      started   BOOLEAN,
+      complete  BOOLEAN,
       roomName  TEXT(255) NOT NULL);`,
 
 		`CREATE TABLE players (
-      pid        INTEGER PRIMARY KEY,
+      pid        INTEGER PRIMARY KEY AUTOINCREMENT,
       pseudonym  TEXT(64) NOT NULL,
       gid        INTEGER REFERENCES games (gid),
       uid        INTEGER REFERENCES users (uid),
