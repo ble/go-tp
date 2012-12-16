@@ -12,6 +12,11 @@ type gamesBackend struct {
 	createGame *sql.Stmt
 }
 
+//TODO: discourage running this twice to avoid duplication, etc :)
+func (b *Backend) CreateGamesService() model.Games {
+	return &games{b.gamesBackend, make(map[string]model.Game)}
+}
+
 type games struct {
 	*gamesBackend
 	allGames map[string]model.Game

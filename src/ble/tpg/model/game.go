@@ -8,6 +8,7 @@ type Game interface {
 
 	Stacks() []Stack
 	StacksInProgress() map[Player][]Stack
+	StacksFor(Player) []Stack
 	PassStack(Player) error
 
 	IsStarted() bool

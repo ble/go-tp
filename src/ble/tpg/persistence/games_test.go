@@ -71,7 +71,7 @@ func TestCreateGame(t *T) {
 	var gamesService model.Games
 	var game model.Game
 	{
-		gamesService = &games{backend.gamesBackend, make(map[string]model.Game)}
+		gamesService = backend.CreateGamesService()
 		gameName := "grapnal vs. dognel"
 		game, err = gamesService.CreateGame(gameName)
 		dieOnErr(err, t)
@@ -119,7 +119,7 @@ func TestCreateGame(t *T) {
 			t.Fatal("didn't create one stack per player")
 		}
 
-		stacks0 := game.StacksInProgress()[player1]
+		stacks0 := game.StacksFor(player1)
 		if len(stacks0) != 1 {
 			t.Fatal("player not holding a single stack")
 		}
@@ -139,13 +139,13 @@ func TestCreateGame(t *T) {
 			t.Fatal("player passed stack w/ incomplete drawing")
 		}
 
-		if len(game.StacksInProgress()[player1]) != 0 {
+		if len(game.StacksFor(player1)) != 0 {
 			t.Fatal("player 1 still holding stacks despite passing all of them")
 		}
 		t.Log("player 1 passed 1 stack")
 
 		for i := 0; i < 2; i++ {
-			stacks1 := game.StacksInProgress()[player2]
+			stacks1 := game.StacksFor(player2)
 			theStack = stacks1[0]
 			dieOnErr(theStack.TopDrawing().Complete(), t)
 			dieOnErr(game.PassStack(player2), t)
@@ -153,12 +153,12 @@ func TestCreateGame(t *T) {
 			dieOnErr(err, t)
 		}
 
-		if len(game.StacksInProgress()[player2]) != 0 {
+		if len(game.StacksFor(player2)) != 0 {
 			t.Fatal("player 2 still holding stacks despite passing all of them")
 		}
 		t.Log("player 2 passed 2 stacks")
 
-		stacks2 := game.StacksInProgress()[player3]
+		stacks2 := game.StacksFor(player3)
 		if len(stacks2) != 3 {
 			t.Fatal("player 3 is not holding all of the stacks")
 		}

@@ -41,6 +41,9 @@ func OpenBackend(filename string) (*Backend, error) {
 
 func NewBackend(filename string) (*Backend, error) {
 	b, err := OpenBackend(filename)
+	if err != nil {
+		return nil, err
+	}
 	err = b.createTables()
 	if err != nil {
 		b.Conn().Close()

@@ -91,6 +91,10 @@ func (g *game) StacksInProgress() map[model.Player][]model.Stack {
 	return g.stacksInPlay
 }
 
+func (g *game) StacksFor(p model.Player) []model.Stack {
+	return g.stacksInPlay[p]
+}
+
 func (g *game) PassStack(pFrom model.Player) error {
 	//preconditions
 	if g.IsComplete() {
