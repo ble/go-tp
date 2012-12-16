@@ -1,44 +1,30 @@
-Does it really make sense to put effort into the router+locator pattern?  It
-seems unnecessary to get a first version working.
-
-
 Other things:
-  changing IDs of stacks, games, drawings, users, players so that they are (e.g.) base 64
-sha-1s and thus nicer in URLs
-  wiring up handlers for this new persistence model
+  wiring up handlers for this new persistence model / ensuring consistent
+concurrent access
   putting a prepared statement together with its defining SQL in one place to
 avoid duplication
 
+THE NEXT PROBLEM IIIISSSSS:
+Ensuring Consistent Concurrent Access
 
-Feeling more positive about the router+locator business.
-Call it Switchboard, and let its method guarantees be
+Well this one is disappointingly straightforward, at least for this
+application; some objects are still in the process of being altered and
+others are not; all objects being altered except for games and users are being
+altered in the context of a game and are independent of all objects outside of
+that game.
 
-type Switchboard interface {
-  func URLMayReferToAKnownResource(url.URL) bool
-  func URLWhichIfRequestedOfThisHandlerMayInteractWithThisObject(interface{}) url.URL, error
-  http.Handler
-}
+The trivial way to make this work is to identify whether a request to read or
+alter an object refers to an object in-progress and if it does, to issue a
+request to some struct-plus-goroutine doohickey that accepts concurrent
+requests to do thangs and serializes them in executing them. *whaps hands
+together as if cleaning flour off of them*
 
-... let's unfuck that, shall we?
+In practice, this means that my handler for drawings will need to figure out
+if the drawing is complete or not to decide whether to ask for the drawing
+through its associated game... tolerable, I guess.  We'll give it a shot and
+see how it goes.
 
-type Switchboard interface {
-  http.Handler
+In another thought... what is the concurrent-access struct-plus-goroutine
+doohickey?  Is that something that would be worth thinking of as the "room" in
+which the game unfolds?
 
-  // CanRoute returns true if the argument URL has the form of some URLs
-  // understood by the Switchboard.  CanRoute returning false guarantees that
-  // the URL does not correspond to a resource accessible through this
-  // switchboard; CanRoute returning true does not guarantee that the URL does
-  // correspond to a resource, but does mean that some portion of the URL is
-  // "understandable" to the Switchboard.
-  func CanRoute(url.URL) bool
-
-  // URLTo returns a URL at which a resource related (conflated?) with the
-  // argument object may be accessed through this Switchboard.
-  // The guarantee is that if URLTo(x) returns a non-nil URL, then there
-  // exists some HTTP request with that URL such that if it is made to this
-  // Switchboard, processing of that request will in some way access x.
-  //
-  // If the Switchboard does not allow access to the argument object, a
-  // nil *URL and a non-nil error will be returned.
-  func URLTo(interface{}) *url.URL, error 
-}
