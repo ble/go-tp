@@ -27,6 +27,10 @@ type game struct {
 	isComplete, isStarted bool
 }
 
+func (g *game) Gid() string {
+	return g.gid
+}
+
 func (g *game) Players() []model.Player {
 	return g.players
 }

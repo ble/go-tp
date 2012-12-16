@@ -24,7 +24,7 @@ func (b *Backend) Conn() *sql.DB {
 	return b.conn
 }
 
-func NewBackend(filename string) (*Backend, error) {
+func OpenBackend(filename string) (*Backend, error) {
 	conn, err := sql.Open("sqlite3", filename)
 	if err != nil {
 		return nil, err
@@ -36,6 +36,16 @@ func NewBackend(filename string) (*Backend, error) {
 	b.userBackend = &userBackend{Backend: b}
 	b.playerBackend = &playerBackend{Backend: b}
 	b.gamesBackend = &gamesBackend{Backend: b}
+	return b, nil
+}
+
+func NewBackend(filename string) (*Backend, error) {
+	b, err := OpenBackend(filename)
+	err = b.createTables()
+	if err != nil {
+		b.Conn().Close()
+		return nil, err
+	}
 	return b, nil
 }
 

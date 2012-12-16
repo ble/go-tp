@@ -10,10 +10,6 @@ func TestCreateUser(t *T) {
 	b.RegisterLogger(t)
 	t.Log(err)
 	defer os.Remove("testdb")
-	err = b.createTables()
-	if err != nil {
-		t.Fatal(err)
-	}
 	u, err := b.CreateUser("the.bomb@thebomb.com", "scatman juan", "asdfquxl")
 	if err != nil || u == nil {
 		t.Fatal("couldn't create user")

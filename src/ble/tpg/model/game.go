@@ -1,6 +1,7 @@
 package model
 
 type Game interface {
+	Gid() string
 	Players() []Player
 	NextPlayer(Player) Player
 	JoinGame(User, string) (Player, error)

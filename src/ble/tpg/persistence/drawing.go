@@ -33,6 +33,10 @@ func typeCheckDrawing() model.Drawing {
 	return &drawing{}
 }
 
+func (d *drawing) Did() string {
+	return d.did
+}
+
 func (d drawing) Stack() model.Stack {
 	return d.s
 }

@@ -24,8 +24,6 @@ func TestCreateGame(t *T) {
 		defer os.Remove("testdb")
 
 		backend.RegisterLogger(t)
-		err = backend.createTables()
-		dieOnErr(err, t)
 		t.Log("set up backend")
 	}
 
