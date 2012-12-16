@@ -8,7 +8,7 @@ import (
 	. "testing"
 )
 
-func helpErr(e error, t *T) {
+func dieOnErr(e error, t *T) {
 	if e != nil {
 		debug.PrintStack()
 		t.Fatal(e)
@@ -20,12 +20,12 @@ func TestCreateGame(t *T) {
 	var err error
 	{
 		backend, err = NewBackend("testdb")
-		helpErr(err, t)
+		dieOnErr(err, t)
 		defer os.Remove("testdb")
 
 		backend.RegisterLogger(t)
 		err = backend.createTables()
-		helpErr(err, t)
+		dieOnErr(err, t)
 		t.Log("set up backend")
 	}
 
@@ -35,22 +35,22 @@ func TestCreateGame(t *T) {
 		userAlias := "scatman juan"
 		userPw := "asdfff"
 		user1, err = backend.CreateUser(userEmail, userAlias, userPw)
-		helpErr(err, t)
+		dieOnErr(err, t)
 		user1, err = backend.LogInUser(userAlias, userPw)
-		helpErr(err, t)
+		dieOnErr(err, t)
 		if user1 == nil {
 			t.Fatal("didn't log user in")
 		} else {
 			t.Log("created user and logged in")
 		}
 		user2, err = backend.CreateUser("wade@boggs", "biff", "qrstu")
-		helpErr(err, t)
+		dieOnErr(err, t)
 
 		user3, err = backend.CreateUser("b@q", "snafflebirt", "qrstu")
-		helpErr(err, t)
+		dieOnErr(err, t)
 
 		userExtraneous, err = backend.CreateUser("oafi", "gambino", "qrtsu")
-		helpErr(err, t)
+		dieOnErr(err, t)
 
 		duplicateEmail, err := backend.CreateUser(
 			"the.bomb@thebomb.com",
@@ -76,7 +76,7 @@ func TestCreateGame(t *T) {
 		gamesService = &games{backend.gamesBackend, make(map[string]model.Game)}
 		gameName := "grapnal vs. dognel"
 		game, err = gamesService.CreateGame(gameName)
-		helpErr(err, t)
+		dieOnErr(err, t)
 		noGame, err := gamesService.CreateGame(gameName)
 		if noGame != nil || err == nil {
 			t.Fatal("allowed a game by a duplicate name")
@@ -88,11 +88,11 @@ func TestCreateGame(t *T) {
 	{
 		p1Name, p2Name, p3Name := "wizrad", "P-knee Sir Prize", "grapnal"
 		player1, err = game.JoinGame(user1, p1Name)
-		helpErr(err, t)
+		dieOnErr(err, t)
 		player2, err = game.JoinGame(user2, p2Name)
-		helpErr(err, t)
+		dieOnErr(err, t)
 		player3, err = game.JoinGame(user3, p3Name)
-		helpErr(err, t)
+		dieOnErr(err, t)
 		noPlayer, err := game.JoinGame(userExtraneous, p1Name)
 		if noPlayer != nil || err == nil {
 			t.Fatal("allowed a duplicate player name")
@@ -109,7 +109,7 @@ func TestCreateGame(t *T) {
 			t.Fatal("completed game before it started")
 		}
 		err = game.Start()
-		helpErr(err, t)
+		dieOnErr(err, t)
 		err = game.Start()
 		if err == nil {
 			t.Fatal("started game twice")
@@ -130,24 +130,40 @@ func TestCreateGame(t *T) {
 			t.Fatal("the stack does not have a single drawing")
 		}
 		theDrawing := theStack.TopDrawing()
-		helpErr(theDrawing.Add(DD.DefaultDrawPart), t)
-		helpErr(theDrawing.Add(DD.DefaultDrawPart), t)
-		helpErr(theDrawing.Complete(), t)
-		helpErr(game.PassStack(player1), t)
-		helpErr(game.PassStack(player2), t)
-		player3.Pid()
+		dieOnErr(theDrawing.Add(DD.DefaultDrawPart), t)
+		dieOnErr(theDrawing.Add(DD.DefaultDrawPart), t)
+		dieOnErr(theDrawing.Complete(), t)
+		dieOnErr(game.PassStack(player1), t)
+		_, err := theStack.AddDrawing(game.NextPlayer(player1))
+		dieOnErr(err, t)
+		errPassIncomplete := game.PassStack(player2)
+		if errPassIncomplete == nil {
+			t.Fatal("player passed stack w/ incomplete drawing")
+		}
+
+		if len(game.StacksInProgress()[player1]) != 0 {
+			t.Fatal("player 1 still holding stacks despite passing all of them")
+		}
+		t.Log("player 1 passed 1 stack")
+
+		for i := 0; i < 2; i++ {
+			stacks1 := game.StacksInProgress()[player2]
+			theStack = stacks1[0]
+			dieOnErr(theStack.TopDrawing().Complete(), t)
+			dieOnErr(game.PassStack(player2), t)
+			_, err := theStack.AddDrawing(game.NextPlayer(player2))
+			dieOnErr(err, t)
+		}
+
+		if len(game.StacksInProgress()[player2]) != 0 {
+			t.Fatal("player 2 still holding stacks despite passing all of them")
+		}
+		t.Log("player 2 passed 2 stacks")
+
+		stacks2 := game.StacksInProgress()[player3]
+		if len(stacks2) != 3 {
+			t.Fatal("player 3 is not holding all of the stacks")
+		}
+		t.Log("player 3 holding 3 stacks")
 	}
-	/*
-		_, err = theStack.AddDrawing(player2)
-		helpErr(err, t)
-		helpErr(game.PassStack(player3), t)
-	*/
-	/*
-		drawing3, err := theStack.AddDrawing(p)
-		helpErr(err, t)
-		t.Log(err)
-		t.Log(len(theStack.AllDrawings()))
-		t.Logf("%#v", drawing2)
-		t.Logf("%#v", drawing3)
-	*/
 }
