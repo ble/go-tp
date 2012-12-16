@@ -8,3 +8,37 @@ sha-1s and thus nicer in URLs
   wiring up handlers for this new persistence model
   putting a prepared statement together with its defining SQL in one place to
 avoid duplication
+
+
+Feeling more positive about the router+locator business.
+Call it Switchboard, and let its method guarantees be
+
+type Switchboard interface {
+  func URLMayReferToAKnownResource(url.URL) bool
+  func URLWhichIfRequestedOfThisHandlerMayInteractWithThisObject(interface{}) url.URL, error
+  http.Handler
+}
+
+... let's unfuck that, shall we?
+
+type Switchboard interface {
+  http.Handler
+
+  // CanRoute returns true if the argument URL has the form of some URLs
+  // understood by the Switchboard.  CanRoute returning false guarantees that
+  // the URL does not correspond to a resource accessible through this
+  // switchboard; CanRoute returning true does not guarantee that the URL does
+  // correspond to a resource, but does mean that some portion of the URL is
+  // "understandable" to the Switchboard.
+  func CanRoute(url.URL) bool
+
+  // URLTo returns a URL at which a resource related (conflated?) with the
+  // argument object may be accessed through this Switchboard.
+  // The guarantee is that if URLTo(x) returns a non-nil URL, then there
+  // exists some HTTP request with that URL such that if it is made to this
+  // Switchboard, processing of that request will in some way access x.
+  //
+  // If the Switchboard does not allow access to the argument object, a
+  // nil *URL and a non-nil error will be returned.
+  func URLTo(interface{}) *url.URL, error 
+}
