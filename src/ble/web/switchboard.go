@@ -23,6 +23,6 @@ type Switchboard interface {
 	// Switchboard, processing of that request will in some way access x.
 	//
 	// If the Switchboard does not allow access to the argument object, a
-	// nil *URL and a non-nil error will be returned.
-	URLOf(interface{}) (*url.URL, error)
+	// nil *URL will be returned.
+	URLOf(interface{}) *url.URL
 }

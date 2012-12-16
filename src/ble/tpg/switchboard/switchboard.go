@@ -2,7 +2,6 @@ package switchboard
 
 import (
 	"ble/web"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -34,17 +33,17 @@ func (s *switchboard) CanRoute(u url.URL) bool {
 	return false
 }
 
-func (s *switchboard) URLOf(i interface{}) (*url.URL, error) {
+func (s *switchboard) URLOf(i interface{}) *url.URL {
 	for _, m := range s.mappings {
 		if m.canMap(i) {
 			loc, err := url.ParseRequestURI(m.pathFor(i))
 			if err != nil {
-				return nil, err
+				return nil
 			}
-			return loc, nil
+			return loc
 		}
 	}
-	return nil, fmt.Errorf("don't know how to map %#v", i)
+	return nil
 }
 
 func NewSwitchboard() web.Switchboard {
