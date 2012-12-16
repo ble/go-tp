@@ -18,6 +18,15 @@ func dieOnErr(e error, t *testing.T) {
 func TestSwitchboardMapping(t *testing.T) {
 
 	switchboard := NewSwitchboard()
+
+	canRoundTrip := func(i interface{}) bool {
+		u := switchboard.URLOf(i)
+		if u == nil {
+			return false
+		}
+		return switchboard.CanRoute(*u)
+	}
+
 	var backend *persistence.Backend
 	var err error
 	{
@@ -53,12 +62,29 @@ func TestSwitchboardMapping(t *testing.T) {
 	err = game.Start()
 	dieOnErr(err, t)
 	t.Logf("Game URL: %s", switchboard.URLOf(game))
+	if !canRoundTrip(game) {
+		t.Fatal("can't roundtrip game")
+	}
+
 	stack1 := game.StacksFor(player1)[0]
 	stack2 := game.StacksFor(player2)[0]
 	t.Logf("Stack 1 URL: %s", switchboard.URLOf(stack1))
 	t.Logf("Stack 2 URL: %s", switchboard.URLOf(stack2))
+	if !canRoundTrip(stack1) {
+		t.Fatal("can't roundtrip stack1")
+	}
+	if !canRoundTrip(stack2) {
+		t.Fatal("can't roundtrip stack2")
+	}
 	drawing1 := stack1.TopDrawing()
 	drawing2 := stack2.TopDrawing()
 	t.Logf("Drawing 1 URL: %s", switchboard.URLOf(drawing1))
 	t.Logf("Drawing 2 URL: %s", switchboard.URLOf(drawing2))
+	if !canRoundTrip(drawing1) {
+		t.Fatal("can't roundtrip drawing1")
+	}
+	if !canRoundTrip(drawing2) {
+		t.Fatal("can't roundtrip drawing2")
+	}
+
 }
