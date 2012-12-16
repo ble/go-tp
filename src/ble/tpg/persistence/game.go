@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"ble/hash"
 	"ble/tpg/model"
 	"database/sql"
 	"errors"
@@ -8,17 +9,17 @@ import (
 
 type gameBackend struct {
 	*Backend
-	markGameStarted, makeStacks, markGameComplete, joinGame, passStack *sql.Stmt
-	getStacks                                                          *sql.Stmt
+	markGameStarted, makeStack, markGameComplete, joinGame, passStack *sql.Stmt
+	getStacks                                                         *sql.Stmt
 }
 
 type game struct {
 	*gameBackend
 	roomName     string
-	gid          int
+	gid          string
 	players      []model.Player
 	inverseOrder map[model.Player]int
-	playersById  map[int]model.Player
+	playersById  map[string]model.Player
 
 	stacks       []model.Stack
 	stacksInPlay map[model.Player][]model.Stack
@@ -46,11 +47,13 @@ func (g *game) JoinGame(u model.User, pseudonym string) (model.Player, error) {
 	if g.IsComplete() {
 		return nil, errors.New("Sorry, you can't join a completed game.")
 	}
+	playerId := hash.EasyNonce(u.Uid(), pseudonym, g.gid)
 	if err := g.prepStatement(
 		"joinGame",
 		`INSERT INTO players
-    (pseudonym, gid, uid, playOrder)
-    SELECT ? as pseudonym,
+    (pid, pseudonym, gid, uid, playOrder)
+    SELECT ? as pid,
+           ? as pseudonym,
            ? as gid,
            ? as uid,
            count(ps.pid) as playOrder
@@ -59,18 +62,15 @@ func (g *game) JoinGame(u model.User, pseudonym string) (model.Player, error) {
 		&g.joinGame); err != nil {
 		return nil, err
 	}
-	result, err := g.joinGame.Exec(pseudonym, g.gid, u.Uid(), g.gid)
+	_, err := g.joinGame.Exec(playerId, pseudonym, g.gid, u.Uid(), g.gid)
 	if err != nil {
 		return nil, err
 	}
-	playerId, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
+
 	player := &player{
 		user:      u,
 		pseudonym: pseudonym,
-		pid:       int(playerId),
+		pid:       playerId,
 		game:      g,
 	}
 	g.inverseOrder[player] = len(g.players)
@@ -103,8 +103,11 @@ func (g *game) PassStack(pFrom model.Player) error {
 		return errors.New("that player isn't holding any stacks!")
 	}
 
-	//figure out who'll be holding what after the pass...
 	passedStack := pFromStacks[0]
+	if !passedStack.TopDrawing().IsComplete() {
+		return errors.New("can't pass a stack with an incomplete drawing")
+	}
+	//figure out who'll be holding what after the pass...
 	pFromStacks = pFromStacks[1:]
 	pTo := g.NextPlayer(pFrom)
 	pToStacks := g.stacksInPlay[pTo]
@@ -192,15 +195,11 @@ func (g *game) Start() error {
 	}
 
 	if err := g.prepStatement(
-		"makeStacks",
+		"makeStack",
 		`INSERT INTO stacks
-    (gid, complete, holdingPid)
-    SELECT ? as gid,
-           0 as complete,
-           ps.pid as holdingPid
-    FROM players as ps
-    WHERE ps.gid = ?;`,
-		&g.makeStacks); err != nil {
+    (sid, gid, complete, holdingPid)
+    VALUES (?, ?, 0, ?);`,
+		&g.makeStack); err != nil {
 		return err
 	}
 
@@ -213,56 +212,75 @@ func (g *game) Start() error {
 		return err
 	}
 
+	if err := g.prepStatement(
+		"addDrawing",
+		`INSERT INTO drawings
+    (did, sid, pid, stackOrder, complete)
+    SELECT ? as did,
+           ? as sid,
+           ? as pid,
+           ? as stackOrder,
+           0 as complete
+    FROM drawings as ds
+    WHERE ds.sid = ?;`,
+		&g.addDrawing); err != nil {
+		return err
+	}
+
 	tx, err := g.Conn().Begin()
 	if err != nil {
 		return err
 	}
 
 	markGame := tx.Stmt(g.markGameStarted)
-	makeStacks := tx.Stmt(g.makeStacks)
-	getStacks := tx.Stmt(g.getStacks)
+	makeStack := tx.Stmt(g.makeStack)
+	addDrawing := tx.Stmt(g.addDrawing)
 
 	if _, err := markGame.Exec(g.gid); err != nil {
 		return err
 		tx.Rollback()
 	}
-
-	if _, err := makeStacks.Exec(g.gid, g.gid); err != nil {
-		return err
-		tx.Rollback()
+	N := len(g.players)
+	stacks := make([]model.Stack, 0, N)
+	stacksInPlay := make(map[model.Player][]model.Stack)
+	for ix, player := range g.players {
+		stackId := hash.EasyNonce(player.Pid(), ix)
+		if _, err := makeStack.Exec(stackId, g.gid, player.Pid()); err != nil {
+			tx.Rollback()
+			return err
+		}
+		drawingId := hash.EasyNonce(player.Pid(), ix, stackId)
+		if _, err := addDrawing.Exec(
+			drawingId,
+			stackId,
+			player.Pid(),
+			0,
+			stackId); err != nil {
+			tx.Rollback()
+			return err
+		}
+		stack := &stack{
+			stackBackend: g.stackBackend,
+			sid:          stackId,
+			g:            g,
+			ds:           make([]model.Drawing, 0, N),
+			completed:    false}
+		drawing := &drawing{
+			drawingBackend: g.drawingBackend,
+			did:            drawingId,
+			s:              stack,
+			p:              player,
+			content:        make([]interface{}, 0, 32),
+			completed:      false}
+		stack.ds = append(stack.ds, drawing)
+		stacks = append(stacks, stack)
+		stacksInPlay[player] = []model.Stack{stack}
 	}
-
-	rows, err := getStacks.Query(g.gid)
-	if err != nil {
-		return err
-		tx.Rollback()
-	}
-
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-
-	g.stacks = make([]model.Stack, len(g.players), len(g.players))
-
-	for i := 0; rows.Next(); i++ {
-		var sid, holdingPid int
-		err := rows.Scan(&sid, &holdingPid)
-		if err != nil {
-			return err
-		}
-		startingPlayer := g.playersById[holdingPid]
-		theStack := &stack{
-			g.stackBackend,
-			sid,
-			g,
-			make([]model.Drawing, 0, 0),
-			false}
-		g.stacks[i] = theStack
-		g.stacksInPlay[startingPlayer] = []model.Stack{theStack}
-		if _, err := theStack.AddDrawing(startingPlayer); err != nil {
-			return err
-		}
-	}
+	g.stacksInPlay = stacksInPlay
+	g.stacks = stacks
 	g.isStarted = true
 	return nil
 }

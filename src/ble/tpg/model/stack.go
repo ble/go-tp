@@ -1,9 +1,10 @@
 package model
 
 type Stack interface {
-	Sid() int
+	Sid() string
 	Game() Game
 	AllDrawings() []Drawing
+	TopDrawing() Drawing
 
 	AddDrawing(Player) (Drawing, error)
 

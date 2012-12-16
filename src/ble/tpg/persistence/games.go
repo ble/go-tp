@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"ble/hash"
 	"ble/tpg/model"
 	"database/sql"
 	"errors"
@@ -23,28 +24,25 @@ func (g *games) CreateGame(roomName string) (model.Game, error) {
 	if err := g.prepStatement(
 		"createGame",
 		`INSERT INTO games
-    (started, complete, roomName)
-    VALUES (0, 0, ?);`,
+    (gid, started, complete, roomName)
+    VALUES (?, 0, 0, ?);`,
 		&g.createGame); err != nil {
 		return nil, err
 	}
 
-	result, err := g.createGame.Exec(roomName)
+	gameId := hash.EasyNonce(roomName)
+	_, err := g.createGame.Exec(gameId, roomName)
 	if err != nil {
 		return nil, err
 	}
 
-	gid, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
 	newGame := &game{
 		g.gameBackend,
 		roomName,
-		int(gid),
+		gameId,
 		make([]model.Player, 0, 0),
 		make(map[model.Player]int),
-		make(map[int]model.Player),
+		make(map[string]model.Player),
 		make([]model.Stack, 0, 0),
 		make(map[model.Player][]model.Stack),
 		false,

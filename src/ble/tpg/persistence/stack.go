@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"ble/hash"
 	"ble/tpg/model"
 	"database/sql"
 	"errors"
@@ -17,7 +18,7 @@ func (sb *stackBackend) validateStack(s model.Stack) bool {
 
 type stack struct {
 	*stackBackend
-	sid       int
+	sid       string
 	g         model.Game
 	ds        []model.Drawing
 	completed bool
@@ -27,7 +28,7 @@ func typeCheckStack() model.Stack {
 	return &stack{}
 }
 
-func (s *stack) Sid() int {
+func (s *stack) Sid() string {
 	return s.sid
 }
 
@@ -39,31 +40,38 @@ func (s *stack) AllDrawings() []model.Drawing {
 	return s.ds
 }
 
+func (s *stack) TopDrawing() model.Drawing {
+	return s.ds[len(s.ds)-1]
+}
+
 func (s *stack) AddDrawing(p model.Player) (model.Drawing, error) {
 	if err := s.prepStatement(
 		"addDrawing",
 		`INSERT INTO drawings
-    (sid, pid, stackOrder, complete)
-    SELECT ? as sid,
+    (did, sid, pid, stackOrder, complete)
+    SELECT ? as did,
+           ? as sid,
            ? as pid,
-           count(ds.pid) as stackOrder,
+           ? as stackOrder,
            0 as complete
     FROM drawings as ds
     WHERE ds.sid = ?;`,
 		&s.addDrawing); err != nil {
 		return nil, err
 	}
-	result, err := s.addDrawing.Exec(s.sid, p.Pid(), s.sid)
-	if err != nil {
-		return nil, err
-	}
-	drawingId, err := result.LastInsertId()
+	drawingId := hash.EasyNonce(p.Pid(), s.Sid())
+	_, err := s.addDrawing.Exec(
+		drawingId,
+		s.sid,
+		p.Pid(),
+		len(s.AllDrawings()),
+		s.sid)
 	if err != nil {
 		return nil, err
 	}
 	drawing := &drawing{
 		drawingBackend: s.drawingBackend,
-		did:            int(drawingId),
+		did:            drawingId,
 		s:              s,
 		p:              p,
 		content:        make([]interface{}, 0, 32),

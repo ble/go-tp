@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"ble/hash"
 	"ble/tpg/model"
 	"database/sql"
 	"errors"
@@ -13,9 +14,8 @@ type userBackend struct {
 
 type user struct {
 	*userBackend
-	uid                  int
-	email, alias, pwHash string
-	b                    *Backend
+	uid, email, alias, pwHash string
+	b                         *Backend
 }
 
 func (u user) Alias() string {
@@ -26,7 +26,7 @@ func (u user) Email() string {
 	return u.email
 }
 
-func (u user) Uid() int {
+func (u user) Uid() string {
 	return u.uid
 }
 
@@ -38,8 +38,7 @@ func (b *Backend) LogInUser(alias, pw string) (model.User, error) {
      WHERE alias = ? AND pwHash = ?;`,
 		&b.logInUser)
 	row := b.logInUser.QueryRow(alias, pwHash)
-	var uid int
-	var email string
+	var uid, email string
 	err := row.Scan(&uid, &email)
 	if err == sql.ErrNoRows {
 		return nil, errors.New("bad alias or password")
@@ -64,40 +63,18 @@ func (b *Backend) CreateUser(email, alias, pw string) (model.User, error) {
 	}
 
 	pwHash := b.hashPw(alias, pw)
+	userId := hash.EasyNonce(alias, pwHash, email)
+
 	if err = b.prepStatement(
 		"createUser",
 		`INSERT INTO users
-         (email, alias, pwHash) VALUES (?, ?, ?)`,
+         (uid, email, alias, pwHash) VALUES (?, ?, ?, ?)`,
 		&b.createUser); err != nil {
 		return nil, err
 	}
-
-	if err = b.prepStatement(
-		"getUserByAlias",
-		`SELECT * FROM users WHERE alias == ?`,
-		&b.getUserByAlias); err != nil {
-		return nil, err
-	}
-	tx, err := b.conn.Begin()
+	_, err = b.createUser.Exec(userId, email, alias, pwHash)
 	if err != nil {
 		return nil, err
 	}
-	insert := tx.Stmt(b.createUser)
-	read := tx.Stmt(b.getUserByAlias)
-	_, err = insert.Exec(email, alias, pwHash)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	row := read.QueryRow(alias)
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
-	var uid int
-	err = row.Scan(&uid, &email, &alias, &pwHash)
-	if err != nil {
-		return nil, err
-	}
-	return user{b.userBackend, uid, email, alias, pwHash, b}, nil
+	return user{b.userBackend, userId, email, alias, pwHash, b}, nil
 }

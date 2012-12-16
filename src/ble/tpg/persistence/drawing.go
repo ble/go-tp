@@ -22,7 +22,7 @@ func (d drawingBackend) validateDrawing(model.Drawing) bool {
 
 type drawing struct {
 	*drawingBackend
-	did       int
+	did       string
 	s         model.Stack
 	p         model.Player
 	content   []interface{}
