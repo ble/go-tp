@@ -2,7 +2,9 @@ package persistence
 
 import (
 	"ble/hash"
+	"ble/tpg/model"
 	"database/sql"
+	"sync"
 	"testing"
 )
 
@@ -18,6 +20,7 @@ type Backend struct {
 	*userBackend
 	*playerBackend
 	*gamesBackend
+	*drawingsBackend
 }
 
 func (b *Backend) Conn() *sql.DB {
@@ -36,6 +39,10 @@ func OpenBackend(filename string) (*Backend, error) {
 	b.userBackend = &userBackend{Backend: b}
 	b.playerBackend = &playerBackend{Backend: b}
 	b.gamesBackend = &gamesBackend{Backend: b}
+	b.drawingsBackend = &drawingsBackend{
+		Backend:  b,
+		drawings: make(map[string]model.Drawing),
+		RWMutex:  new(sync.RWMutex)}
 	return b, nil
 }
 

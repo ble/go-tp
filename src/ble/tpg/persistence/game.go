@@ -290,6 +290,11 @@ func (g *game) Start() error {
 	g.stacksInPlay = stacksInPlay
 	g.stacks = stacks
 	g.isStarted = true
+	for _, stack := range g.stacks {
+		for _, drawing := range stack.AllDrawings() {
+			g.addDrawingToBackend(drawing)
+		}
+	}
 	return nil
 }
 func typecheckGame() model.Game {

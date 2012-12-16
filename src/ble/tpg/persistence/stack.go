@@ -77,6 +77,7 @@ func (s *stack) AddDrawing(p model.Player) (model.Drawing, error) {
 		content:        make([]interface{}, 0, 32),
 		completed:      false}
 	s.ds = append(s.ds, drawing)
+	s.addDrawingToBackend(drawing)
 	return drawing, nil
 }
 
