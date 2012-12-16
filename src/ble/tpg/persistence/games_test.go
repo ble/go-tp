@@ -71,7 +71,7 @@ func TestCreateGame(t *T) {
 	var gamesService model.Games
 	var game model.Game
 	{
-		gamesService = backend.CreateGamesService()
+		gamesService = backend
 		gameName := "grapnal vs. dognel"
 		game, err = gamesService.CreateGame(gameName)
 		dieOnErr(err, t)

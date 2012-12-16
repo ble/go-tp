@@ -5,24 +5,17 @@ import (
 	"ble/tpg/model"
 	"database/sql"
 	"errors"
+	"sync"
 )
 
 type gamesBackend struct {
 	*Backend
 	createGame *sql.Stmt
+	allGames   map[string]model.Game
+	*sync.RWMutex
 }
 
-//TODO: discourage running this twice to avoid duplication, etc :)
-func (b *Backend) CreateGamesService() model.Games {
-	return &games{b.gamesBackend, make(map[string]model.Game)}
-}
-
-type games struct {
-	*gamesBackend
-	allGames map[string]model.Game
-}
-
-func (g *games) CreateGame(roomName string) (model.Game, error) {
+func (g *gamesBackend) CreateGame(roomName string) (model.Game, error) {
 	if _, present := g.allGames[roomName]; present {
 		return nil, errors.New("game by that name already exists")
 	}
@@ -52,14 +45,16 @@ func (g *games) CreateGame(roomName string) (model.Game, error) {
 		make(map[model.Player][]model.Stack),
 		false,
 		false}
+	g.Lock()
+	g.allGames[gameId] = newGame
+	g.Unlock()
 	return newGame, nil
-	return nil, nil
 }
 
-func (g *games) AllGames() map[string]model.Game {
+func (g *gamesBackend) AllGames() map[string]model.Game {
 	return g.allGames
 }
 
 func typecheckGames() model.Games {
-	return &games{}
+	return &gamesBackend{}
 }
