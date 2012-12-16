@@ -1,37 +1,7 @@
-The unclear area that complicates writing handlers is ACCESS CONTROL, normally
-not something worth wasting time on but...
-
-the whole game is predicated on NOT KNOWING certain things that will later be
-available to you via HTTP / the client interface!
-
-so it matters plenty.
-
-REQUIREMENTS:
-  + no one is shown or sent anything that they could not see in a proper game
-  + (harder) no one can access anything that they could not see in a proper
-game
-
-the latter is a superset of the former.  I think I like implementing access
-control at the http handler level...
-
-So what's the model here?  Rather than partially obscuring the contents of
-stacks, it seems it would be best to control individual drawings...
-
-To keep shit simple, we aren't going to scope drawing URLs under the game URL;
-since the cookies for a player are applied at the /game/XXXX path, this means
-that we'll have to use _user_ cookies.
-
 An incomplete drawing can only be accessed by the user who is drawing it.
 A complete drawing in an incomplete stack can only be accessed by a user who
 drew a picture in that stack.
 A complete drawing in a complete stack can be accessed by anyone.
-
-I don't know what the right thing to do is, but taking advantage of drawings
-being in memory seems like a good idea... fugly, but a good idea.
-
-The reason it's fugly is that it requires changing things wherever drawings
-get manipulated...
-
 
 
 Other things:
@@ -39,28 +9,4 @@ Other things:
 concurrent access
   putting a prepared statement together with its defining SQL in one place to
 avoid duplication
-
-THE NEXT PROBLEM IIIISSSSS:
-Ensuring Consistent Concurrent Access
-
-Well this one is disappointingly straightforward, at least for this
-application; some objects are still in the process of being altered and
-others are not; all objects being altered except for games and users are being
-altered in the context of a game and are independent of all objects outside of
-that game.
-
-The trivial way to make this work is to identify whether a request to read or
-alter an object refers to an object in-progress and if it does, to issue a
-request to some struct-plus-goroutine doohickey that accepts concurrent
-requests to do thangs and serializes them in executing them. *whaps hands
-together as if cleaning flour off of them*
-
-In practice, this means that my handler for drawings will need to figure out
-if the drawing is complete or not to decide whether to ask for the drawing
-through its associated game... tolerable, I guess.  We'll give it a shot and
-see how it goes.
-
-In another thought... what is the concurrent-access struct-plus-goroutine
-doohickey?  Is that something that would be worth thinking of as the "room" in
-which the game unfolds?
 
