@@ -131,10 +131,11 @@ func TestCreateGame(t *T) {
 		dieOnErr(theDrawing.Add(DD.DefaultDrawPart), t)
 		dieOnErr(theDrawing.Add(DD.DefaultDrawPart), t)
 		dieOnErr(theDrawing.Complete(), t)
-		dieOnErr(game.PassStack(player1), t)
-		_, err := theStack.AddDrawing(game.NextPlayer(player1))
+		_, err := game.PassStack(player1)
 		dieOnErr(err, t)
-		errPassIncomplete := game.PassStack(player2)
+		_, err = theStack.AddDrawing(game.NextPlayer(player1))
+		dieOnErr(err, t)
+		_, errPassIncomplete := game.PassStack(player2)
 		if errPassIncomplete == nil {
 			t.Fatal("player passed stack w/ incomplete drawing")
 		}
@@ -148,8 +149,9 @@ func TestCreateGame(t *T) {
 			stacks1 := game.StacksFor(player2)
 			theStack = stacks1[0]
 			dieOnErr(theStack.TopDrawing().Complete(), t)
-			dieOnErr(game.PassStack(player2), t)
-			_, err := theStack.AddDrawing(game.NextPlayer(player2))
+			_, err := game.PassStack(player2)
+			dieOnErr(err, t)
+			_, err = theStack.AddDrawing(game.NextPlayer(player2))
 			dieOnErr(err, t)
 		}
 

@@ -83,6 +83,10 @@ func (g *game) JoinGame(u model.User, pseudonym string) (model.Player, error) {
 	return player, nil
 }
 
+func (g *game) PlayerForId(pid string) model.Player {
+	return g.playersById[pid]
+}
+
 func (g *game) Stacks() []model.Stack {
 	return g.stacks
 }
@@ -95,25 +99,25 @@ func (g *game) StacksFor(p model.Player) []model.Stack {
 	return g.stacksInPlay[p]
 }
 
-func (g *game) PassStack(pFrom model.Player) error {
+func (g *game) PassStack(pFrom model.Player) (model.Stack, error) {
 	//preconditions
 	if g.IsComplete() {
-		return errors.New("can't pass a stack in a completed game!")
+		return nil, errors.New("can't pass a stack in a completed game!")
 	}
 	if !g.IsStarted() {
-		return errors.New("can't pass a stack in a game before it starts!")
+		return nil, errors.New("can't pass a stack in a game before it starts!")
 	}
 	if _, playerPresent := g.inverseOrder[pFrom]; !playerPresent {
-		return errors.New("that player isn't in this game!")
+		return nil, errors.New("that player isn't in this game!")
 	}
 	pFromStacks := g.stacksInPlay[pFrom]
 	if len(pFromStacks) == 0 {
-		return errors.New("that player isn't holding any stacks!")
+		return nil, errors.New("that player isn't holding any stacks!")
 	}
 
 	passedStack := pFromStacks[0]
 	if !passedStack.TopDrawing().IsComplete() {
-		return errors.New("can't pass a stack with an incomplete drawing")
+		return nil, errors.New("can't pass a stack with an incomplete drawing")
 	}
 	//figure out who'll be holding what after the pass...
 	pFromStacks = pFromStacks[1:]
@@ -128,12 +132,12 @@ func (g *game) PassStack(pFrom model.Player) error {
   SET holdingPid = ?
   WHERE sid = ?;`,
 		&g.passStack); err != nil {
-		return err
+		return nil, err
 	}
 	//execute statement
 	_, err := g.passStack.Exec(pTo.Pid(), passedStack.Sid())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	//change in-memory structure
 	g.stacksInPlay[pFrom] = pFromStacks
@@ -142,7 +146,7 @@ func (g *game) PassStack(pFrom model.Player) error {
 	if !passedStack.IsComplete() {
 		g.stacksInPlay[pTo] = pToStacks
 	}
-	return nil
+	return passedStack, nil
 }
 
 func (g *game) IsComplete() bool {

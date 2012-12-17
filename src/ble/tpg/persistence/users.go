@@ -12,6 +12,11 @@ type userBackend struct {
 	createUser, getUserByAlias, logInUser *sql.Stmt
 }
 
+type usersBackend struct {
+	*Backend
+	allUsers map[string]model.User
+}
+
 type user struct {
 	*userBackend
 	uid, email, alias, pwHash string
@@ -76,5 +81,15 @@ func (b *Backend) CreateUser(email, alias, pw string) (model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return user{b.userBackend, userId, email, alias, pwHash, b}, nil
+	newUser := user{b.userBackend, userId, email, alias, pwHash, b}
+	b.allUsers[newUser.Uid()] = newUser
+	return newUser, nil
+}
+
+func (b *Backend) GetUserById(uid string) (model.User, error) {
+	user, present := b.allUsers[uid]
+	if !present {
+		return nil, errors.New("no such user")
+	}
+	return user, nil
 }

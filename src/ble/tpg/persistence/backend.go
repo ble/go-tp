@@ -18,6 +18,7 @@ type Backend struct {
 	*stackBackend
 	*gameBackend
 	*userBackend
+	*usersBackend
 	*playerBackend
 	*gamesBackend
 	*drawingsBackend
@@ -46,6 +47,9 @@ func OpenBackend(filename string) (*Backend, error) {
 		Backend:  b,
 		drawings: make(map[string]model.Drawing),
 		RWMutex:  new(sync.RWMutex)}
+	b.usersBackend = &usersBackend{
+		Backend:  b,
+		allUsers: make(map[string]model.User)}
 	return b, nil
 }
 
