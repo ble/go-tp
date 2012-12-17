@@ -40,7 +40,7 @@ func (g *gameMapping) canMap(obj interface{}) bool {
 }
 
 func (g *gameMapping) pathFor(obj interface{}) string {
-	return g.pathPrefix() + obj.(model.Game).Gid()
+	return g.pathPrefix() + obj.(model.Game).Gid() + "/"
 }
 
 func (s *stackMapping) pathPrefix() string {
