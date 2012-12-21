@@ -10,3 +10,21 @@ concurrent access
   putting a prepared statement together with its defining SQL in one place to
 avoid duplication
 
+
+
+PROBLEM: putting logic into handlers.  Handlers should just be forwarding
+things on to the "room service" (lol)
+
+So, I guess this shit has layers like this:
+
+SWITCHBOARD:
+    url to handler / object to url mapping
+HANDLER:
+    calls to room,
+    takes care of http-specific logic
+ROOM:
+    synchronizes access to model objects,
+    enforces/applies game logic,
+    produces game events
+PERSISTENCE:
+    provides access to model objects

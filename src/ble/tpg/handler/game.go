@@ -1,22 +1,23 @@
 package handler
 
 import (
-	. "ble/tpg/model"
-	"ble/tpg/persistence"
-	"ble/web"
-	"encoding/json"
+	"ble/tpg/room"
+	"io"
+	"io/ioutil"
 	. "net/http"
+	"strconv"
+	"time"
 )
 
 type gameHandler struct {
-	*persistence.Backend
-	switchboard web.Switchboard
+	room.RoomService
 }
 
 //we serve the following:
 //GET <game-id>
 //GET <game-id>/client
 //GET <game-id>/join-client
+//GET <game-id>/events
 //POST <game-id>/chat
 //POST <game-id>/join
 //POST <game-id>/pass 
@@ -26,163 +27,103 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		NotFound(w, r)
 		return
 	}
-	gameId := parts[0]
-	game, present := g.AllGames()[gameId]
-	if !present {
-		NotFound(w, r)
-	}
 
-	//technically this is kinda backwards...
-	//should determine whether something exists from the path alone,
-	//then look at the method to decide if it is allowed...
-	if isPost(r) {
-		if len(parts) != 2 {
-			NotFound(w, r)
+	gameId := parts[0]
+	room, err := g.RoomService.GetRoom(gameId)
+	if err != nil {
+		NotFound(w, r)
+		return
+	}
+	userId, _ := getUserId(r)
+	playerId, _ := getPlayerId(r)
+	bodyBytes, _ := ioutil.ReadAll(&io.LimitedReader{r.Body, 1024})
+	gamePath, _ := g.RoomService.PathTo(room.GetGame())
+	//split by paths:
+	if len(parts) == 1 {
+		if !isGet(r) {
+			Error(w, "", StatusMethodNotAllowed)
 			return
 		}
+	} else if len(parts) == 2 {
+
+		//check the method
 		switch parts[1] {
 		case "join":
-			g.hJoin(game, w, r)
 		case "chat":
-			g.hChat(game, w, r)
 		case "pass":
-			g.hPass(game, w, r)
+			if !isPost(r) {
+				Error(w, "", StatusMethodNotAllowed)
+				return
+			}
+		case "client":
+		case "join-client":
+		case "events":
+			if !isGet(r) {
+				Error(w, "", StatusMethodNotAllowed)
+				return
+			}
+		}
+
+		//actually process requests
+		switch parts[1] {
+		case "join":
+			if pidNew, err := room.Join(userId, playerId, bodyBytes); err == nil {
+				cookie := &Cookie{
+					Name:     "playerId",
+					Value:    pidNew,
+					Path:     gamePath.String(),
+					HttpOnly: true}
+				w.Header().Add("Location", gamePath.String()+"/client")
+				SetCookie(w, cookie)
+				w.WriteHeader(StatusSeeOther)
+			} else {
+				Error(w, err.Error(), StatusBadRequest)
+			}
+		case "chat":
+			if err = room.Chat(userId, playerId, bodyBytes); err == nil {
+				w.WriteHeader(StatusOK)
+			} else {
+				Error(w, err.Error(), StatusBadRequest)
+			}
+		case "pass":
+			if err = room.Pass(userId, playerId, bodyBytes); err == nil {
+				w.WriteHeader(StatusOK)
+			} else {
+				Error(w, err.Error(), StatusBadRequest)
+			}
+		case "client":
+			if err = room.AccessClient(userId, playerId); err == nil {
+				ServeFile(w, r, "./static/html/game-client.html")
+			} else {
+				Error(w, err.Error(), StatusBadRequest)
+			}
+		case "join-client":
+			if status, err := room.AccessJoinClient(userId, playerId); err == nil {
+				ServeFile(w, r, "./static/html/join-client.html")
+			} else if status == "already-allowed" {
+				w.Header().Add("Location", gamePath.String()+"/client")
+				w.WriteHeader(StatusSeeOther)
+			} else {
+				Error(w, err.Error(), StatusBadRequest)
+			}
+		case "events":
+			strLastQuery := r.URL.Query().Get("lastQuery")
+			var lastQuery time.Time
+			if lastQueryNanos, err := strconv.ParseInt(strLastQuery, 10, 64); err == nil {
+				lastQuery = time.Unix(0, lastQueryNanos)
+			} else {
+				lastQuery = time.Unix(0, 0)
+			}
+			if data, err := room.GetEvents(userId, playerId, lastQuery); err == nil {
+				w.WriteHeader(StatusOK)
+				w.Write(data)
+			} else {
+				Error(w, err.Error(), StatusBadRequest)
+			}
 		default:
 			NotFound(w, r)
 		}
-	} else if isGet(r) {
-		if len(parts) == 1 {
-			g.hGetState(game, w, r)
-		} else {
-			switch parts[1] {
-			case "client":
-				g.hClient(game, w, r)
-			case "join-client":
-				g.hJoinClient(game, w, r)
-			}
-		}
 	} else {
-		Error(w, "unknown method", StatusMethodNotAllowed)
+		NotFound(w, r)
 	}
-}
-
-func (g *gameHandler) hClient(game Game, w ResponseWriter, r *Request) {
-}
-func (g *gameHandler) hGetState(game Game, w ResponseWriter, r *Request) {
-}
-func (g *gameHandler) hJoinClient(game Game, w ResponseWriter, r *Request) {
-}
-func (g *gameHandler) hPass(game Game, w ResponseWriter, r *Request) {
-	playerId, err := getPlayerId(r)
-	player := game.PlayerForId(playerId)
-	if err != nil || player == nil {
-		Error(w, "You have not joined this game", StatusBadRequest)
-		return
-	}
-
-	if r.ContentLength >= 1024 {
-		Error(w, "", StatusRequestEntityTooLarge)
-		return
-	}
-
-	if r.Header.Get("Content-Type") != "application/json" {
-		Error(w, "", StatusUnsupportedMediaType)
-		return
-	}
-
-	var action Action
-	err = json.NewDecoder(r.Body).Decode(&action)
-	if err != nil || action.ActionType != "passStack" {
-		Error(w, "Bad action", StatusBadRequest)
-		return
-	}
-
-	stack, err = game.PassStack(player)
-
-}
-func (g *gameHandler) hChat(game Game, w ResponseWriter, r *Request) {
-	playerId, err := getPlayerId(r)
-	player := game.PlayerForId(playerId)
-	if err != nil || player == nil {
-		Error(w, "You have not joined this game", StatusBadRequest)
-		return
-	}
-
-	if r.ContentLength >= 1024 {
-		Error(w, "", StatusRequestEntityTooLarge)
-		return
-	}
-
-	if r.Header.Get("Content-Type") != "application/json" {
-		Error(w, "", StatusUnsupportedMediaType)
-		return
-	}
-
-	var action Action
-	err = json.NewDecoder(r.Body).Decode(&action)
-	if err != nil || action.ActionType != "chat" {
-		Error(w, "Bad action", StatusBadRequest)
-		return
-	}
-
-	panic("chat not implemented")
-
-}
-func (g *gameHandler) hJoin(game Game, w ResponseWriter, r *Request) {
-	var err error
-	if _, err := getPlayerId(r); err == nil {
-		Error(w, "You've already joined this game", StatusBadRequest)
-		return
-	}
-
-	userId, err := getUserId(r)
-	if err != nil {
-		Error(w, "You are not logged in", StatusBadRequest)
-	}
-
-	if r.ContentLength >= 1024 {
-		Error(w, "", StatusRequestEntityTooLarge)
-		return
-	}
-
-	if r.Header.Get("Content-Type") != "application/json" {
-		Error(w, "", StatusUnsupportedMediaType)
-		return
-	}
-
-	var action Action
-	err = json.NewDecoder(r.Body).Decode(&action)
-	if err != nil || action.ActionType != "join" {
-		Error(w, "Bad action", StatusBadRequest)
-		return
-	}
-
-	user, err := g.GetUserById(userId)
-	if err != nil {
-		//since we got a bad userId from a cookie, we'll erase that cookie
-		eraseCookie := &Cookie{
-			Name:     "userId",
-			Value:    "",
-			Path:     "/",
-			HttpOnly: true,
-			MaxAge:   -1} //negative maximum age in seconds indicates "delete now"
-		SetCookie(w, eraseCookie)
-		Error(w, "No such user", StatusBadRequest)
-		return
-	}
-
-	player, err := game.JoinGame(user, action.Name)
-	if err != nil {
-		Error(w, err.Error(), StatusBadRequest)
-		return
-	}
-
-	playerCookie := &Cookie{
-		Name:     "playerId",
-		Value:    player.Pid(),
-		Path:     g.switchboard.URLOf(game).Path,
-		HttpOnly: true}
-	SetCookie(w, playerCookie)
-	w.WriteHeader(StatusOK)
-	return
 }
