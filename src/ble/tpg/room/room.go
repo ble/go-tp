@@ -35,3 +35,7 @@ type aRoom struct {
 	Events chan<- interface{}
 	game   model.Game
 }
+
+func typecheckRoom() Room {
+	return &aRoom{}
+}
