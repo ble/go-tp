@@ -39,3 +39,7 @@ type aRoom struct {
 func typecheckRoom() Room {
 	return &aRoom{}
 }
+
+func typecheckRoomService() RoomService {
+	return &roomService{}
+}
