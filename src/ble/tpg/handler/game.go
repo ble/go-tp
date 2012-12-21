@@ -2,6 +2,7 @@ package handler
 
 import (
 	"ble/tpg/room"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	. "net/http"
@@ -114,9 +115,14 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			} else {
 				lastQuery = time.Unix(0, 0)
 			}
-			if data, err := room.GetEvents(userId, playerId, lastQuery); err == nil {
-				w.WriteHeader(StatusOK)
-				w.Write(data)
+			if events, err := room.GetEvents(userId, playerId, lastQuery); err == nil {
+				respBody, err := json.Marshal(events)
+				if err != nil {
+					Error(w, err.Error(), StatusInternalServerError)
+				} else {
+					w.WriteHeader(StatusOK)
+					w.Write(respBody)
+				}
 			} else {
 				Error(w, err.Error(), StatusBadRequest)
 			}
