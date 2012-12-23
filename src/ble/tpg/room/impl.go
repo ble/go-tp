@@ -42,10 +42,6 @@ type aRoom struct {
 	game          model.Game
 }
 
-func (a *aRoom) processEvents() {
-	panic("not implemented")
-}
-
 func (a *aRoom) GetGame() model.Game {
 	return a.game
 }
