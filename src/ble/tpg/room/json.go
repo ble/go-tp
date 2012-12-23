@@ -14,7 +14,7 @@ type action struct {
 	Name       string `json:"name,omitempty"`
 }
 
-func asJoinGame(data []byte) (*action, error) {
+func asjoingame(data []byte) (*action, error) {
 	result := &action{}
 	err := json.Unmarshal(data, result)
 	if err != nil {
@@ -28,24 +28,48 @@ func asJoinGame(data []byte) (*action, error) {
 	return nil, errors.New("bad input json")
 }
 
-func JoinGame(playerId, name string) action {
+func joingame(playerid, name string) action {
 	return action{
 		ActionType: "joinGame",
-		Who:        playerId,
+		Who:        playerid,
 		Name:       name}
 }
 
-func Chat(playerId, content string) action {
+func aschat(data []byte) (*action, error) {
+	result := &action{}
+	err := json.Unmarshal(data, result)
+	if err != nil {
+		return nil, err
+	}
+	if result.ActionType == "chat" &&
+		result.Content != "" {
+		return result, nil
+	}
+	return nil, errors.New("bad input json")
+}
+func chat(playerid, content string) action {
 	return action{
 		ActionType: "chat",
-		Who:        playerId,
+		Who:        playerid,
 		Content:    content}
 }
 
-func PassStack(playerId, recipientId, stackId string) action {
+func aspassstack(data []byte) (*action, error) {
+	result := &action{}
+	err := json.Unmarshal(data, result)
+	if err != nil {
+		return nil, err
+	}
+	if result.ActionType == "passStack" {
+		return result, nil
+	}
+	return nil, errors.New("bad input json")
+}
+
+func passstack(playerid, recipientid, stackid string) action {
 	return action{
 		ActionType: "passStack",
-		Who:        playerId,
-		ToWhom:     recipientId,
-		StackId:    stackId}
+		Who:        playerid,
+		ToWhom:     recipientid,
+		StackId:    stackid}
 }

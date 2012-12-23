@@ -28,3 +28,24 @@ ROOM:
     produces game events
 PERSISTENCE:
     provides access to model objects
+
+
+So how and where are we going to generate the JSON used for describing events
+and game objects?
+
+
+EVENTS:
+join game
+pass stack
+chat
+start game
+complete game
+  --all these guys are going to be POSTed in as JSON
+  --the JSON will be unmarshalled and processed as action{} objects
+  --any additional fields will get filled in by processing of the room
+  --and that will get passed out through the events
+
+OBJECTS:
+game state
+stack
+drawing

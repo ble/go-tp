@@ -51,28 +51,75 @@ func (a *aRoom) GetGame() model.Game {
 }
 
 func (a *aRoom) GetState() interface{} {
-	return []interface{}{}
+	return gameJson{a.game, a.roomService.switchboard}
 }
 
 func (a *aRoom) Chat(uid, pid string, body []byte) error {
-	return errors.New("unimplemented")
+	action, errC := aschat(body)
+	if a.game.PlayerForId(pid) != nil &&
+		errC == nil {
+		a.events <- chat(pid, action.Content)
+		return nil
+	}
+	return errors.New("")
+
 }
 
 func (a *aRoom) Join(uid, pid string, body []byte) (string, error) {
-	return "", errors.New("unimplemented")
+	user, err := a.roomService.backend.GetUserById(uid)
+	if err != nil {
+		return "", errors.New("not logged in")
+	}
+	action, err := asjoingame(body)
+	if err != nil {
+		return "", errors.New("bad request")
+	}
+	player, err := a.game.JoinGame(user, action.Name)
+	if err != nil {
+		return "", err
+	}
+	a.events <- joingame(player.Pid(), action.Name)
+	return player.Pid(), nil
 }
 
 func (a *aRoom) Pass(uid, pid string, body []byte) error {
-	return errors.New("unimplemented")
+	player := a.game.PlayerForId(pid)
+	if player == nil {
+		return errors.New("no such player")
+	}
+	_, err := aspassstack(body)
+	if err != nil {
+		return err
+	}
+	stack, err := a.game.PassStack(player)
+	if err != nil {
+		return err
+	}
+
+	if stack.TopDrawing().Player() != player {
+		nextPlayer := a.game.NextPlayer(player)
+		a.events <- passstack(player.Pid(), nextPlayer.Pid(), stack.Sid())
+	} else {
+		a.events <- passstack(player.Pid(), "", stack.Sid())
+	}
+	return nil
 }
 
 func (a *aRoom) AccessClient(uid, pid string) error {
-	return errors.New("unimplemented")
+	if a.game.PlayerForId(pid) != nil {
+		return nil
+	}
+	return errors.New("no such player")
 }
 
 func (a *aRoom) AccessJoinClient(uid, pid string) (string, error) {
-	return "", errors.New("unimplemented")
-	//return "already-allowed", errors.New("can't join again")
+	if a.game.PlayerForId(pid) != nil {
+		return "already-allowed", errors.New("can't join again")
+	}
+	if !a.game.IsStarted() {
+		return "", nil
+	}
+	return "", errors.New("game already started")
 }
 
 func (a *aRoom) GetEvents(uid, pid string, lastQuery Time) (interface{}, error) {
