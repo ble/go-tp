@@ -118,10 +118,6 @@ func (a *aRoom) AccessJoinClient(uid, pid string) (string, error) {
 	return "", errors.New("game already started")
 }
 
-func (a *aRoom) GetEvents(uid, pid string, lastQuery Time) (interface{}, error) {
-	return nil, errors.New("unimplemented")
-}
-
 func typecheckRoom() Room {
 	return &aRoom{}
 }

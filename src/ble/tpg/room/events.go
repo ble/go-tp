@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+func (a *aRoom) GetEvents(uid, pid string, lastQuery Time) (interface{}, error) {
+	return nil, errors.New("unimplemented")
+}
+
 type event struct {
 	time.Time
 	payload interface{}
@@ -22,6 +26,7 @@ func (e event) MarshalJSON() ([]byte, error) {
 }
 
 const loopTime = 5 * time.Second
+const filterAge = 120 * time.Second
 
 func (a *aRoom) processEvents() {
 	ticks := time.NewTicker(loopTime)
@@ -37,10 +42,35 @@ func (a *aRoom) processEvents() {
 			a.sendBackEvents(eReq, eventQueue)
 		}
 	case _ = <-ticks.C:
+		tNow := time.Now()
+		var ix int
+		var ev event
+		for ix, ev = range eventQueue {
+			if tNow.Sub(ev.Time) < filterAge ||
+				ix == len(eventQueue)-1 {
+				break
+			}
+		}
+		eventQueue = eventQueue[ix:]
 	}
 	ticks.Stop()
 }
 
 func (a *aRoom) sendBackEvents(e eventReq, allEvents []event) {
-
+	cutoff := e.lastTime
+	count := 0
+	for _, ev := range allEvents {
+		if ev.Time.After(cutoff) {
+			count++
+		}
+	}
+	toSendBack := make([]event, count, count)
+	count = 0
+	for _, ev := range allEvents {
+		if ev.Time.After(cutoff) {
+			toSendBack[count] = ev
+			count++
+		}
+	}
+	e.events <- toSendBack
 }
