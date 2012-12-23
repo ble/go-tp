@@ -2,11 +2,19 @@ package room
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 )
 
-func (a *aRoom) GetEvents(uid, pid string, lastQuery Time) (interface{}, error) {
-	return nil, errors.New("unimplemented")
+func (a *aRoom) GetEvents(uid, pid string, lastQuery time.Time) (interface{}, error) {
+	if a.game.PlayerForId(pid) == nil {
+		return nil, errors.New("no such player")
+	}
+	reqChan := make(chan eventResponse)
+	req := eventReq{reqChan, lastQuery}
+	a.eventRequests <- req
+	resp <- req.response
+	return resp, nil
 }
 
 type event struct {
@@ -14,15 +22,27 @@ type event struct {
 	payload interface{}
 }
 
+func (e event) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.payload)
+}
+
 type timeReq chan<- time.Time
 
 type eventReq struct {
-	events   chan<- []event
+	response chan<- eventResponse
 	lastTime time.Time
 }
 
-func (e event) MarshalJSON() ([]byte, error) {
-	return json.Marshal(e.payload)
+type eventResponse struct {
+	LastTime time.Time
+	Events   []event
+}
+
+func (eR eventResponse) MarshalJSON() ([]byte, error) {
+	result := make(map[string]interface{})
+	result["events"] = eR.Events
+	result["lastTime"] = eR.LastTime.UnixNano() / 1000
+	return json.Marshal(result)
 }
 
 const loopTime = 5 * time.Second
@@ -58,6 +78,7 @@ func (a *aRoom) processEvents() {
 
 func (a *aRoom) sendBackEvents(e eventReq, allEvents []event) {
 	cutoff := e.lastTime
+	now := time.Now()
 	count := 0
 	for _, ev := range allEvents {
 		if ev.Time.After(cutoff) {
@@ -72,5 +93,5 @@ func (a *aRoom) sendBackEvents(e eventReq, allEvents []event) {
 			count++
 		}
 	}
-	e.events <- toSendBack
+	e.response <- eventResponse{now, toSendBack}
 }

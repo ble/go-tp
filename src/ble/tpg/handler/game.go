@@ -110,8 +110,8 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		case "events":
 			strLastQuery := r.URL.Query().Get("lastQuery")
 			var lastQuery time.Time
-			if lastQueryNanos, err := strconv.ParseInt(strLastQuery, 10, 64); err == nil {
-				lastQuery = time.Unix(0, lastQueryNanos)
+			if lastQueryMillis, err := strconv.ParseInt(strLastQuery, 10, 64); err == nil {
+				lastQuery = time.Unix(0, lastQueryMillis*1000)
 			} else {
 				lastQuery = time.Unix(0, 0)
 			}
