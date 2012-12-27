@@ -14,7 +14,14 @@ func isGet(r *Request) bool {
 }
 
 func pathParts(r *Request) []string {
-	return strings.Split(r.URL.Path, "/")
+	p := r.URL.Path
+	if p[0] == '/' {
+		p = p[1:]
+	}
+	if p[len(p)-1] == '/' {
+		p = p[0 : len(p)-1]
+	}
+	return strings.Split(p, "/")
 }
 
 func getUserId(r *Request) (string, error) {

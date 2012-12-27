@@ -3,6 +3,7 @@ package handler
 import (
 	"ble/tpg/room"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	. "net/http"
@@ -23,18 +24,23 @@ type gameHandler struct {
 //POST <game-id>/join
 //POST <game-id>/pass 
 func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
+	fmt.Println(r.URL.String())
+	fmt.Println("spot0")
 	parts := pathParts(r)
 	if len(parts) < 1 || len(parts) > 2 {
 		NotFound(w, r)
 		return
 	}
 
+	fmt.Println("spot1")
 	gameId := parts[0]
 	room, err := g.RoomService.GetRoom(gameId)
 	if err != nil {
 		NotFound(w, r)
 		return
 	}
+
+	fmt.Println("spot2")
 	userId, _ := getUserId(r)
 	playerId, _ := getPlayerId(r)
 	bodyBytes, _ := ioutil.ReadAll(&io.LimitedReader{r.Body, 1024})
@@ -52,6 +58,7 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		case "join":
 		case "chat":
 		case "pass":
+		case "start":
 			if !isPost(r) {
 				Error(w, "", StatusMethodNotAllowed)
 				return
@@ -66,6 +73,7 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		}
 
 		//actually process requests
+		fmt.Println(parts[1])
 		switch parts[1] {
 		case "join":
 			if pidNew, err := room.Join(userId, playerId, bodyBytes); err == nil {
@@ -74,7 +82,7 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 					Value:    pidNew,
 					Path:     gamePath.String(),
 					HttpOnly: true}
-				w.Header().Add("Location", gamePath.String()+"/client")
+				w.Header().Add("Location", gamePath.String()+"client")
 				SetCookie(w, cookie)
 				w.WriteHeader(StatusSeeOther)
 			} else {
@@ -89,6 +97,12 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		case "pass":
 			if err = room.Pass(userId, playerId, bodyBytes); err == nil {
 				w.WriteHeader(StatusOK)
+			} else {
+				Error(w, err.Error(), StatusBadRequest)
+			}
+		case "start":
+			if err = room.Start(userId, playerId, bodyBytes); err == nil {
+
 			} else {
 				Error(w, err.Error(), StatusBadRequest)
 			}

@@ -1,8 +1,8 @@
 package http
 
 import (
+	"github.com/ble/cookiejar"
 	. "net/http"
-	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	. "testing"
@@ -83,7 +83,7 @@ var StatusShouldNotBe = func(statusCode int) ResponsePredicate {
 
 var CookieClient ClientFactory = func() *Client {
 	client := new(Client)
-	client.Jar = cookiejar.NewDefaultJar()
+	client.Jar = cookiejar.NewJar(true)
 	return client
 }
 

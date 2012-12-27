@@ -13,7 +13,7 @@ func (a *aRoom) GetEvents(uid, pid string, lastQuery time.Time) (interface{}, er
 	reqChan := make(chan eventResponse)
 	req := eventReq{reqChan, lastQuery}
 	a.eventRequests <- req
-	resp <- req.response
+	resp := <-reqChan
 	return resp, nil
 }
 

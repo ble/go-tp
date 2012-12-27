@@ -15,6 +15,13 @@ type roomService struct {
 	rooms       map[string]Room
 }
 
+func NewRoomService(s web.Switchboard, b *persistence.Backend) RoomService {
+	return &roomService{
+		switchboard: s,
+		backend:     b,
+		rooms:       make(map[string]Room)}
+}
+
 func (r *roomService) GetRoom(gameId string) (Room, error) {
 	game, present := r.backend.AllGames()[gameId]
 	if !present {
@@ -97,6 +104,23 @@ func (a *aRoom) Pass(uid, pid string, body []byte) error {
 	} else {
 		a.events <- passstack(player.Pid(), "", stack.Sid())
 	}
+	return nil
+}
+
+func (a *aRoom) Start(uid, pid string, body []byte) error {
+	player := a.game.PlayerForId(pid)
+	if player == nil {
+		return errors.New("no such player")
+	}
+	_, err := asstartgame(body)
+	if err != nil {
+		return err
+	}
+	err = a.game.Start()
+	if err != nil {
+		return err
+	}
+	a.events <- startgame(pid)
 	return nil
 }
 
