@@ -37,6 +37,9 @@ func TestGameHandler(t *T) {
 
 	//create handler-related stuff
 	rooms := room.NewRoomService(switchboard.NewSwitchboard(), backend)
+
+	//The game handler is written assuming that any prefix ahead of the game id
+	//gets stripped.
 	gh := StripPrefix("/game/", &gameHandler{rooms})
 
 	//create domain objects
@@ -51,6 +54,8 @@ func TestGameHandler(t *T) {
 	harness := http.NewHarness(t, http.FromHandler(gh))
 	defer harness.Stop()
 
+	//TODO: get join client before user is fake logged-in
+
 	//fake logging in users on their respective clients
 	client0 := http.CookieClient()
 	client0Cookie := &Cookie{
@@ -59,6 +64,8 @@ func TestGameHandler(t *T) {
 		Path:     "/",
 		HttpOnly: true}
 	client0.Jar.SetCookies(harness.URL, []*Cookie{client0Cookie})
+
+	//TODO: get join client after user is fake logged-in
 
 	client1 := http.CookieClient()
 	client1Cookie := &Cookie{
@@ -110,4 +117,18 @@ func TestGameHandler(t *T) {
 	respGetClient, err := client1.Get(clientUrl.String())
 	j2, _ := json.Marshal(respGetClient)
 	t.Log("Second player gets game client", string(j2))
+
+	//TODO: get game state before starting
+
+	//TODO: have players chat
+
+	//TODO: get game events
+
+	//TODO: start game
+
+	//TODO: get game state after starting
+
+	//TODO: have players pass stacks until game is over
+
+	//TODO: get game events after starting
 }
