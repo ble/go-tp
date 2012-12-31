@@ -3,7 +3,6 @@ package handler
 import (
 	"ble/tpg/room"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	. "net/http"
@@ -24,15 +23,12 @@ type gameHandler struct {
 //POST <game-id>/join
 //POST <game-id>/pass 
 func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
-	fmt.Println(r.URL.String())
-	fmt.Println("spot0")
 	parts := pathParts(r)
 	if len(parts) < 1 || len(parts) > 2 {
 		NotFound(w, r)
 		return
 	}
 
-	fmt.Println("spot1")
 	gameId := parts[0]
 	room, err := g.RoomService.GetRoom(gameId)
 	if err != nil {
@@ -40,7 +36,6 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		return
 	}
 
-	fmt.Println("spot2")
 	userId, _ := getUserId(r)
 	playerId, _ := getPlayerId(r)
 	bodyBytes, _ := ioutil.ReadAll(&io.LimitedReader{r.Body, 1024})
@@ -50,6 +45,9 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		if !isGet(r) {
 			Error(w, "", StatusMethodNotAllowed)
 			return
+		} else {
+			stateJson, _ := json.Marshal(room.GetState())
+			w.Write(stateJson)
 		}
 	} else if len(parts) == 2 {
 
@@ -73,7 +71,6 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		}
 
 		//actually process requests
-		fmt.Println(parts[1])
 		switch parts[1] {
 		case "join":
 			if pidNew, err := room.Join(userId, playerId, bodyBytes); err == nil {

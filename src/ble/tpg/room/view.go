@@ -109,5 +109,6 @@ func (g gameJson) MarshalJSON() ([]byte, error) {
 	for i, player := range players {
 		cPlayers[i] = playerJson{player}
 	}
+	result["players"] = cPlayers
 	return json.Marshal(result)
 }

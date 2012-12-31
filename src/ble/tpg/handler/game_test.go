@@ -7,10 +7,12 @@ import (
 	"ble/tpg/switchboard"
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	. "net/http"
 	"os"
 	"runtime/debug"
 	. "testing"
+	"time"
 )
 
 func dieOnErr(e error, t *T) {
@@ -54,10 +56,19 @@ func TestGameHandler(t *T) {
 	harness := http.NewHarness(t, http.FromHandler(gh))
 	defer harness.Stop()
 
-	//TODO: get join client before user is fake logged-in
+	client0 := http.CookieClient()
+	//TODO: sadpath: get join client before user is fake logged-in
+	joinClientUrl := harness.URL.String() +
+		"/game/" +
+		game.Gid() +
+		"/join-client"
+	{
+		resp, _ := client0.Get(joinClientUrl)
+		r0, _ := json.Marshal(resp)
+		t.Log("Sadpath: get client for joining game before user logs on", string(r0))
+	}
 
 	//fake logging in users on their respective clients
-	client0 := http.CookieClient()
 	client0Cookie := &Cookie{
 		Name:     "userId",
 		Value:    user0.Uid(),
@@ -66,6 +77,11 @@ func TestGameHandler(t *T) {
 	client0.Jar.SetCookies(harness.URL, []*Cookie{client0Cookie})
 
 	//TODO: get join client after user is fake logged-in
+	{
+		resp, _ := client0.Get(joinClientUrl)
+		r0, _ := json.Marshal(resp)
+		t.Log("Happypath: get client for joining game after logon", string(r0))
+	}
 
 	client1 := http.CookieClient()
 	client1Cookie := &Cookie{
@@ -76,24 +92,15 @@ func TestGameHandler(t *T) {
 	client1.Jar.SetCookies(harness.URL, []*Cookie{client1Cookie})
 
 	join0Json := `{"actionType":"joinGame","name":"dazzler"}`
-	join0, err := NewRequest(
-		"POST",
+	respJoin0, err := client0.Post(
 		harness.URL.String()+"/game/"+game.Gid()+"/join",
+		"application/json",
 		bytes.NewReader([]byte(join0Json)))
-	for _, cookie := range client0.Jar.Cookies(join0.URL) {
-		join0.AddCookie(cookie)
-	}
-	respJoin0, err := client0.Do(join0)
+
 	dieOnErr(err, t)
 	j0, _ := json.Marshal(respJoin0)
 	t.Log("Joining game", string(j0))
-	/*
-	  //This way and the above work; client.Do() does not automatically add cookies
-	  respJoin0, err := client0.Post(
-	    harness.URL.String()+"/"+game.Gid()+"/join",
-	    "application/json",
-	    bytes.NewReader([]byte(join0Json)))
-	*/
+
 	redirectHeaderValues := respJoin0.Header["Location"]
 	if redirectHeaderValues == nil || len(redirectHeaderValues) != 1 {
 		t.Fatal("bad Location header", redirectHeaderValues)
@@ -119,10 +126,30 @@ func TestGameHandler(t *T) {
 	t.Log("Second player gets game client", string(j2))
 
 	//TODO: get game state before starting
+	respGetState, err := client0.Get(harness.URL.String() + "/game/" + game.Gid())
+	j2, _ = json.Marshal(respGetState)
+	t.Log("First player gets game state", string(j2))
+	stateBody, _ := ioutil.ReadAll(respGetState.Body)
+	t.Log("Game state from response:", string(stateBody))
 
 	//TODO: have players chat
+	chatJson := `{"actionType":"chat","content":"foobaf"}`
+	respChat, err := client0.Post(
+		harness.URL.String()+"/game/"+game.Gid()+"/chat",
+		"application/json",
+		bytes.NewReader([]byte(chatJson)))
+	j2, _ = json.Marshal(respChat)
+	t.Log("First player chats", string(j2))
+
+	<-time.After(100 * time.Millisecond)
 
 	//TODO: get game events
+	respEvents, err := client0.Get(
+		harness.URL.String() + "/game/" + game.Gid() + "/events")
+	j2, _ = json.Marshal(respEvents)
+	t.Log("First gets events", string(j2))
+	eventBody, _ := ioutil.ReadAll(respEvents.Body)
+	t.Log("Events body", string(eventBody))
 
 	//TODO: start game
 

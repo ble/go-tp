@@ -132,6 +132,9 @@ func (a *aRoom) AccessClient(uid, pid string) error {
 }
 
 func (a *aRoom) AccessJoinClient(uid, pid string) (string, error) {
+	if _, err := a.backend.GetUserById(uid); err != nil {
+		return "", errors.New("not logged in")
+	}
 	if a.game.PlayerForId(pid) != nil {
 		return "already-allowed", errors.New("can't join again")
 	}
