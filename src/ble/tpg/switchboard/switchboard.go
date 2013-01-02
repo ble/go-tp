@@ -57,7 +57,10 @@ func (s *Switchboard) GetEphemera() ephemeral.UserEphemera {
 func NewSwitchboard(b *persistence.Backend) *Switchboard {
 	mappings := []mapping{nil, nil, nil, nil}
 	eph := ephemeral.NewEphemera(b)
-	sb := &Switchboard{mappings: mappings, ephemera: eph}
+	sb := &Switchboard{
+		mappings: mappings,
+		ephemera: eph,
+		fallback: http.NotFoundHandler()}
 	gameHandler := handler.NewGameHandler(room.NewRoomService(sb, b))
 	mappings[0] = newGameMapping(gameHandler)
 	mappings[1] = newStackMapping(nil)

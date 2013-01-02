@@ -9,7 +9,7 @@ func (e *ephemeraImpl) NewCreateUser(
 	alias,
 	email,
 	pw string,
-	destination url.URL) interface{} {
+	destination *url.URL) interface{} {
 	e.Lock()
 	defer e.Unlock()
 	id := e.NewId()
@@ -21,7 +21,7 @@ func (e *ephemeraImpl) NewCreateUser(
 
 type createUserImpl struct {
 	alias, email, pw string
-	dest             url.URL
+	dest             *url.URL
 	ephemerisBase
 }
 

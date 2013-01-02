@@ -6,8 +6,10 @@ import (
 	"ble/tpg/switchboard"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	. "net/http"
+	"net/url"
 	"os"
 	"runtime/debug"
 	. "testing"
@@ -38,23 +40,16 @@ func TestGameHandler(t *T) {
 	//create handler-related stuff
 	sb := switchboard.NewSwitchboard(backend)
 
-	//The game handler is written assuming that any prefix ahead of the game id
-	//gets stripped.
-
-	//create domain objects
-	user0, _ := backend.CreateUser("a", "sd", "f")
-	user0, _ = backend.LogInUser("sd", "f")
-	user1, _ := backend.CreateUser("f", "ds", "a")
-	user1, _ = backend.LogInUser("ds", "a")
-
-	game, _ := backend.CreateGame("fofoyang")
-
 	//create test server
 	harness := http.NewHarness(t, http.FromHandler(sb))
 	defer harness.Stop()
+	game, _ := backend.CreateGame("fofoyang")
 
 	client0 := http.CookieClient()
-	//sadpath: get join client before user is fake logged-in
+	client0.CheckRedirect = func(req *Request, via []*Request) error {
+		return errors.New("no redirects followed")
+	}
+	//sadpath: get join client before user is logged-in
 	joinClientUrl := harness.URL.String() +
 		"/game/" +
 		game.Gid() +
@@ -65,15 +60,29 @@ func TestGameHandler(t *T) {
 		t.Log("Sadpath: get client for joining game before user logs on", string(r0))
 	}
 
-	//fake logging in users on their respective clients
-	client0Cookie := &Cookie{
-		Name:     "userId",
-		Value:    user0.Uid(),
-		Path:     "/",
-		HttpOnly: true}
-	client0.Jar.SetCookies(harness.URL, []*Cookie{client0Cookie})
+	//happypath: create user and log in using ephemeral URL
+	loginDestination, _ := url.Parse("/")
+	createUser0URL := sb.URLOf(
+		sb.GetEphemera().NewCreateUser(
+			"binjermon",
+			"benjaminster@gmail.com",
+			"whackadoodle",
+			loginDestination))
+	createUser0URL = harness.URL.ResolveReference(createUser0URL)
+	respLogin, err := client0.Get(createUser0URL.String())
+	j, _ := json.Marshal(respLogin)
+	t.Log("Login response:", err, string(j))
 
-	//get join client after user is fake logged-in
+	createUser1URL := sb.URLOf(
+		sb.GetEphemera().NewCreateUser(
+			"spamban",
+			"the.bomb@thebomb.com",
+			"rah diggah",
+			loginDestination))
+	createUser1URL = harness.URL.ResolveReference(createUser1URL)
+	respLogin, err = client1.Get(createUser1URL.String())
+
+	//get join client after user is logged-in
 	{
 		resp, _ := client0.Get(joinClientUrl)
 		r0, _ := json.Marshal(resp)

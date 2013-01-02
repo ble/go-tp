@@ -35,7 +35,7 @@ func (r *roomService) GetRoom(gameId string) (Room, error) {
 	newRoom := &aRoom{r, eventsIn, eventRequestsIn, game}
 	go newRoom.processEvents()
 	r.rooms[gameId] = newRoom
-	return room, nil
+	return newRoom, nil
 }
 
 func (r *roomService) PathTo(obj interface{}) (*url.URL, error) {

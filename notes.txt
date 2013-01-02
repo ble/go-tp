@@ -1,6 +1,3 @@
-TEST CHANGE:
-  + Use one-time URLs to log-in test users.
-
 OUTSTANDING FUNCTIONALITY ISSUES:
   + Access to drawings
   + Handler for drawings

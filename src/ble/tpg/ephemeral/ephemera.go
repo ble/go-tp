@@ -12,7 +12,7 @@ type Ephemera interface {
 
 type UserEphemera interface {
 	Ephemera
-	NewCreateUser(alias, email, pw string, dest url.URL) interface{}
+	NewCreateUser(alias, email, pw string, dest *url.URL) interface{}
 }
 
 type Ephemeris interface {

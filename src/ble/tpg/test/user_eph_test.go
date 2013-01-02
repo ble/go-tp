@@ -22,7 +22,7 @@ func TestEphCreateUser(t *T) {
 			"binjermon",
 			"benjaminster@gmail.com",
 			"whackadoodle",
-			*destination))
+			destination))
 	t.Log(accessURL.String())
 	baseURL := harness.URL
 	absoluteURL := baseURL.ResolveReference(accessURL)
