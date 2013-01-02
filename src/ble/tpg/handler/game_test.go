@@ -12,7 +12,6 @@ import (
 	"os"
 	"runtime/debug"
 	. "testing"
-	"time"
 )
 
 func dieOnErr(e error, t *T) {
@@ -141,8 +140,6 @@ func TestGameHandler(t *T) {
 	j2, _ = json.Marshal(respChat)
 	t.Log("First player chats", string(j2))
 
-	<-time.After(100 * time.Millisecond)
-
 	//TODO: get game events
 	respEvents, err := client0.Get(
 		harness.URL.String() + "/game/" + game.Gid() + "/events")
@@ -152,10 +149,27 @@ func TestGameHandler(t *T) {
 	t.Log("Events body", string(eventBody))
 
 	//TODO: start game
+	respStartGame, err := client1.Post(
+		harness.URL.String()+"/game/"+game.Gid()+"/start",
+		"application/json",
+		bytes.NewReader([]byte(`{"actionType":"startGame"}`)))
+	j2, _ = json.Marshal(respStartGame)
+	t.Log("Second player starts game", string(j2))
 
 	//TODO: get game state after starting
+	respGetState, err = client0.Get(harness.URL.String() + "/game/" + game.Gid())
+	j2, _ = json.Marshal(respStartGame)
+	t.Log("First player gets game state", string(j2))
+	stateBody, _ = ioutil.ReadAll(respGetState.Body)
+	t.Log("Game state from response:", string(stateBody))
 
 	//TODO: have players pass stacks until game is over
 
 	//TODO: get game events after starting
+	respEvents, err = client0.Get(
+		harness.URL.String() + "/game/" + game.Gid() + "/events")
+	j2, _ = json.Marshal(respEvents)
+	t.Log("First gets events", string(j2))
+	eventBody, _ = ioutil.ReadAll(respEvents.Body)
+	t.Log("Events body", string(eventBody))
 }

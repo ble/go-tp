@@ -19,8 +19,9 @@ type gameHandler struct {
 //GET <game-id>/client
 //GET <game-id>/join-client
 //GET <game-id>/events
-//POST <game-id>/chat
 //POST <game-id>/join
+//POST <game-id>/chat
+//POST <game-id>/start
 //POST <game-id>/pass 
 func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 	parts := pathParts(r)
@@ -99,7 +100,7 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			}
 		case "start":
 			if err = room.Start(userId, playerId, bodyBytes); err == nil {
-
+				w.WriteHeader(StatusOK)
 			} else {
 				Error(w, err.Error(), StatusBadRequest)
 			}

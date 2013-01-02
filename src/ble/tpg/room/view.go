@@ -68,7 +68,7 @@ func (s stackJson) MarshalJSON() ([]byte, error) {
 	for i := range drawings {
 		cDrawings[i] = drawingJsonSimple{drawings[i], s.Switchboard}
 	}
-	result["drawings"] = drawings
+	result["drawings"] = cDrawings
 	return json.Marshal(result)
 }
 
