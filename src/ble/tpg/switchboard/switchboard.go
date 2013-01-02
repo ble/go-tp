@@ -1,18 +1,22 @@
 package switchboard
 
 import (
-	"ble/web"
+	"ble/tpg/ephemeral"
+	"ble/tpg/handler"
+	"ble/tpg/persistence"
+	"ble/tpg/room"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-type switchboard struct {
+type Switchboard struct {
 	mappings []mapping
 	fallback http.Handler
+	ephemera ephemeral.UserEphemera
 }
 
-func (s *switchboard) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s *Switchboard) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	for _, m := range s.mappings {
 		if strings.HasPrefix(path, m.pathPrefix()) {
@@ -23,7 +27,7 @@ func (s *switchboard) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.fallback.ServeHTTP(w, r)
 }
 
-func (s *switchboard) CanRoute(u url.URL) bool {
+func (s *Switchboard) CanRoute(u url.URL) bool {
 	path := u.Path
 	for _, m := range s.mappings {
 		if strings.HasPrefix(path, m.pathPrefix()) {
@@ -33,7 +37,7 @@ func (s *switchboard) CanRoute(u url.URL) bool {
 	return false
 }
 
-func (s *switchboard) URLOf(i interface{}) *url.URL {
+func (s *Switchboard) URLOf(i interface{}) *url.URL {
 	for _, m := range s.mappings {
 		if m.canMap(i) {
 			loc, err := url.ParseRequestURI(m.pathFor(i))
@@ -46,10 +50,18 @@ func (s *switchboard) URLOf(i interface{}) *url.URL {
 	return nil
 }
 
-func NewSwitchboard() web.Switchboard {
-	return &switchboard{
-		mappings: []mapping{
-			newGameMapping(nil),
-			newStackMapping(nil),
-			newDrawingMapping(nil)}}
+func (s *Switchboard) GetEphemera() ephemeral.UserEphemera {
+	return s.ephemera
+}
+
+func NewSwitchboard(b *persistence.Backend) *Switchboard {
+	mappings := []mapping{nil, nil, nil, nil}
+	eph := ephemeral.NewEphemera(b)
+	sb := &Switchboard{mappings: mappings, ephemera: eph}
+	gameHandler := handler.NewGameHandler(room.NewRoomService(sb, b))
+	mappings[0] = newGameMapping(gameHandler)
+	mappings[1] = newStackMapping(nil)
+	mappings[2] = newDrawingMapping(nil)
+	mappings[3] = newEphMapping(eph)
+	return sb
 }

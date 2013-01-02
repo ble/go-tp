@@ -14,6 +14,10 @@ type gameHandler struct {
 	room.RoomService
 }
 
+func NewGameHandler(rs room.RoomService) Handler {
+	return &gameHandler{rs}
+}
+
 //we serve the following:
 //GET <game-id>
 //GET <game-id>/client

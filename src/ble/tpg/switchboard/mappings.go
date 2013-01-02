@@ -1,6 +1,7 @@
 package switchboard
 
 import (
+	"ble/tpg/ephemeral"
 	"ble/tpg/model"
 	"net/http"
 )
@@ -8,6 +9,7 @@ import (
 type gameMapping struct{ http.Handler }
 type stackMapping struct{ http.Handler }
 type drawingMapping struct{ http.Handler }
+type ephMapping struct{ http.Handler }
 
 func newGameMapping(h http.Handler) mapping {
 	g := &gameMapping{}
@@ -25,6 +27,12 @@ func newDrawingMapping(h http.Handler) mapping {
 	d := &drawingMapping{}
 	d.Handler = http.StripPrefix(d.pathPrefix(), h)
 	return d
+}
+
+func newEphMapping(h http.Handler) mapping {
+	e := &ephMapping{}
+	e.Handler = http.StripPrefix(e.pathPrefix(), h)
+	return e
 }
 
 func (g *gameMapping) pathPrefix() string {
@@ -73,4 +81,20 @@ func (d *drawingMapping) canMap(obj interface{}) bool {
 
 func (d *drawingMapping) pathFor(obj interface{}) string {
 	return d.pathPrefix() + obj.(model.Drawing).Did()
+}
+
+func (e *ephMapping) pathPrefix() string {
+	return "/ephemeral/"
+}
+
+func (e *ephMapping) canMap(obj interface{}) bool {
+	switch obj.(type) {
+	case ephemeral.Ephemeris:
+		return true
+	}
+	return false
+}
+
+func (e *ephMapping) pathFor(obj interface{}) string {
+	return e.pathPrefix() + obj.(ephemeral.Ephemeris).Id()
 }

@@ -3,7 +3,6 @@ package handler
 import (
 	"ble/testing/http"
 	"ble/tpg/persistence"
-	"ble/tpg/room"
 	"ble/tpg/switchboard"
 	"bytes"
 	"encoding/json"
@@ -37,11 +36,12 @@ func TestGameHandler(t *T) {
 	defer os.Remove(testDbFileName)
 
 	//create handler-related stuff
-	rooms := room.NewRoomService(switchboard.NewSwitchboard(), backend)
+	sb := switchboard.NewSwitchboard(backend)
+	//rooms := room.NewRoomService(switchboard.NewSwitchboard(), backend)
 
 	//The game handler is written assuming that any prefix ahead of the game id
 	//gets stripped.
-	gh := StripPrefix("/game/", &gameHandler{rooms})
+	//gh := StripPrefix("/game/", &gameHandler{rooms})
 
 	//create domain objects
 	user0, _ := backend.CreateUser("a", "sd", "f")
@@ -52,7 +52,7 @@ func TestGameHandler(t *T) {
 	game, _ := backend.CreateGame("fofoyang")
 
 	//create test server
-	harness := http.NewHarness(t, http.FromHandler(gh))
+	harness := http.NewHarness(t, http.FromHandler(sb))
 	defer harness.Stop()
 
 	client0 := http.CookieClient()
