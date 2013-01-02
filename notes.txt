@@ -1,51 +1,30 @@
+OUTSTANDING FUNCTIONALITY ISSUES:
+  + Access to drawings
+  + Handler for drawings
+  + Handlers for creating users and logging them in
+  + Grand JSON event stream
+
++ ACCESS TO DRAWINGS
 An incomplete drawing can only be accessed by the user who is drawing it.
 A complete drawing in an incomplete stack can only be accessed by a user who
 drew a picture in that stack.
 A complete drawing in a complete stack can be accessed by anyone.
-
-
-Other things:
-  wiring up handlers for this new persistence model / ensuring consistent
-concurrent access
-  putting a prepared statement together with its defining SQL in one place to
-avoid duplication
-
-
-
-PROBLEM: putting logic into handlers.  Handlers should just be forwarding
-things on to the "room service" (lol)
-
-So, I guess this shit has layers like this:
-
-SWITCHBOARD:
-    url to handler / object to url mapping
-HANDLER:
-    calls to room,
-    takes care of http-specific logic
-ROOM:
-    synchronizes access to model objects,
-    enforces/applies game logic,
-    produces game events
-PERSISTENCE:
-    provides access to model objects
-
-
-So how and where are we going to generate the JSON used for describing events
-and game objects?
-
-
-EVENTS:
-join game
-pass stack
-chat
-start game
-complete game
-  --all these guys are going to be POSTed in as JSON
-  --the JSON will be unmarshalled and processed as action{} objects
-  --any additional fields will get filled in by processing of the room
-  --and that will get passed out through the events
-
-OBJECTS:
-game state
-stack
++ HANDLER FOR DRAWINGS
+Need to grab either the in-memory or persistent drawing, yuck.
+Need to ensure consistent access when adding parts to drawing, completing
 drawing
+
++ HANDLERS FOR CREATING USERS AND LOGGING THEM IN
+Can we sidestep this by making it possible to issue one-time use URLs that
+create a user, set the user ID cookie, and redirect somewhere else?
+
++ GRAND JSON EVENT STREAM
+Yes, please.
+
+
+OUTSTANDING IMPLEMENTATION/CONVENIENCE ISSUES:
+  + Putting a prepared statement together with its defining SQL to avoid code
+    duplication.
+  + Better testing functionality for constructing HTTP requests and verifying
+    HTTP responses
+
