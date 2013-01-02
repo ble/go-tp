@@ -1,3 +1,12 @@
+SIDESTEPPING: one-time URLs
+strictly an in-memory phenomenon
+user hits up /onetime/<ACTION-ID-HERE>
+safe concurrent access to an action stored in a map under the action id
+one of these actions plays like this:
+  create user w/ alias, pw, email
+  redirect user to /game/<GAME-ID-HERE>/join-client
+
+
 OUTSTANDING FUNCTIONALITY ISSUES:
   + Access to drawings
   + Handler for drawings
