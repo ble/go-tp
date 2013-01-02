@@ -37,11 +37,9 @@ func TestGameHandler(t *T) {
 
 	//create handler-related stuff
 	sb := switchboard.NewSwitchboard(backend)
-	//rooms := room.NewRoomService(switchboard.NewSwitchboard(), backend)
 
 	//The game handler is written assuming that any prefix ahead of the game id
 	//gets stripped.
-	//gh := StripPrefix("/game/", &gameHandler{rooms})
 
 	//create domain objects
 	user0, _ := backend.CreateUser("a", "sd", "f")
@@ -56,7 +54,7 @@ func TestGameHandler(t *T) {
 	defer harness.Stop()
 
 	client0 := http.CookieClient()
-	//TODO: sadpath: get join client before user is fake logged-in
+	//sadpath: get join client before user is fake logged-in
 	joinClientUrl := harness.URL.String() +
 		"/game/" +
 		game.Gid() +
@@ -75,7 +73,7 @@ func TestGameHandler(t *T) {
 		HttpOnly: true}
 	client0.Jar.SetCookies(harness.URL, []*Cookie{client0Cookie})
 
-	//TODO: get join client after user is fake logged-in
+	//get join client after user is fake logged-in
 	{
 		resp, _ := client0.Get(joinClientUrl)
 		r0, _ := json.Marshal(resp)
@@ -124,14 +122,14 @@ func TestGameHandler(t *T) {
 	j2, _ := json.Marshal(respGetClient)
 	t.Log("Second player gets game client", string(j2))
 
-	//TODO: get game state before starting
+	//get game state before starting
 	respGetState, err := client0.Get(harness.URL.String() + "/game/" + game.Gid())
 	j2, _ = json.Marshal(respGetState)
 	t.Log("First player gets game state", string(j2))
 	stateBody, _ := ioutil.ReadAll(respGetState.Body)
 	t.Log("Game state from response:", string(stateBody))
 
-	//TODO: have players chat
+	//have players chat
 	chatJson := `{"actionType":"chat","content":"foobaf"}`
 	respChat, err := client0.Post(
 		harness.URL.String()+"/game/"+game.Gid()+"/chat",
@@ -140,7 +138,7 @@ func TestGameHandler(t *T) {
 	j2, _ = json.Marshal(respChat)
 	t.Log("First player chats", string(j2))
 
-	//TODO: get game events
+	//get game events
 	respEvents, err := client0.Get(
 		harness.URL.String() + "/game/" + game.Gid() + "/events")
 	j2, _ = json.Marshal(respEvents)
@@ -148,7 +146,7 @@ func TestGameHandler(t *T) {
 	eventBody, _ := ioutil.ReadAll(respEvents.Body)
 	t.Log("Events body", string(eventBody))
 
-	//TODO: start game
+	//start game
 	respStartGame, err := client1.Post(
 		harness.URL.String()+"/game/"+game.Gid()+"/start",
 		"application/json",
@@ -156,7 +154,7 @@ func TestGameHandler(t *T) {
 	j2, _ = json.Marshal(respStartGame)
 	t.Log("Second player starts game", string(j2))
 
-	//TODO: get game state after starting
+	//get game state after starting
 	respGetState, err = client0.Get(harness.URL.String() + "/game/" + game.Gid())
 	j2, _ = json.Marshal(respStartGame)
 	t.Log("First player gets game state", string(j2))
@@ -165,7 +163,7 @@ func TestGameHandler(t *T) {
 
 	//TODO: have players pass stacks until game is over
 
-	//TODO: get game events after starting
+	//get game events after starting
 	respEvents, err = client0.Get(
 		harness.URL.String() + "/game/" + game.Gid() + "/events")
 	j2, _ = json.Marshal(respEvents)
