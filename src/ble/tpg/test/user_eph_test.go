@@ -4,6 +4,7 @@ import (
 	"ble/testing/http"
 	"ble/tpg/persistence"
 	"ble/tpg/switchboard"
+	"net/url"
 	"os"
 	. "testing"
 )
@@ -15,11 +16,13 @@ func TestEphCreateUser(t *T) {
 	harness := http.NewHarness(t, http.FromHandler(sb))
 	client0 := http.CookieClient()
 
+	destination, _ := url.Parse("/the-party")
 	accessURL := sb.URLOf(
 		sb.GetEphemera().NewCreateUser(
 			"binjermon",
 			"benjaminster@gmail.com",
-			"whackadoodle"))
+			"whackadoodle",
+			*destination))
 	t.Log(accessURL.String())
 	baseURL := harness.URL
 	absoluteURL := baseURL.ResolveReference(accessURL)

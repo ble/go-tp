@@ -2,6 +2,7 @@ package ephemeral
 
 import (
 	. "net/http"
+	"net/url"
 )
 
 type Ephemera interface {
@@ -11,7 +12,7 @@ type Ephemera interface {
 
 type UserEphemera interface {
 	Ephemera
-	NewCreateUser(alias, email, pw string) interface{}
+	NewCreateUser(alias, email, pw string, dest url.URL) interface{}
 }
 
 type Ephemeris interface {

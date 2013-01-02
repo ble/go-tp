@@ -45,16 +45,6 @@ func (e *ephemeraImpl) removeEphemeralHandler(id string) {
 	delete(e.ephemera, id)
 }
 
-func (e *ephemeraImpl) NewCreateUser(alias, email, pw string) interface{} {
-	e.Lock()
-	defer e.Unlock()
-	id := e.NewId()
-	base := ephemerisBase{id, e}
-	eph := createUserImpl{alias, email, pw, base}
-	e.ephemera[id] = eph
-	return eph
-}
-
 type ephemerisBase struct {
 	ephId string
 	*ephemeraImpl
@@ -62,26 +52,4 @@ type ephemerisBase struct {
 
 func (e ephemerisBase) Id() string {
 	return e.ephId
-}
-
-type createUserImpl struct {
-	alias, email, pw string
-	ephemerisBase
-}
-
-func (n createUserImpl) ServeHTTP(w ResponseWriter, r *Request) {
-	b := n.Backend
-	newUser, err := b.CreateUser(n.email, n.alias, n.pw)
-	if err == nil {
-		n.removeEphemeralHandler(n.ephId)
-		cookie := &Cookie{
-			Name:     "userId",
-			Value:    newUser.Uid(),
-			Path:     "/",
-			HttpOnly: true}
-		SetCookie(w, cookie)
-		w.WriteHeader(StatusOK)
-	} else {
-		Error(w, "", StatusInternalServerError)
-	}
 }
