@@ -27,9 +27,14 @@ func (r *roomService) GetRoom(gameId string) (Room, error) {
 	if !present {
 		return nil, errors.New("no such game")
 	}
+	room, present := r.rooms[gameId]
+	if present {
+		return room, nil
+	}
 	eventsIn, eventRequestsIn := make(chan interface{}), make(chan interface{})
-	room := &aRoom{r, eventsIn, eventRequestsIn, game}
-	go room.processEvents()
+	newRoom := &aRoom{r, eventsIn, eventRequestsIn, game}
+	go newRoom.processEvents()
+	r.rooms[gameId] = newRoom
 	return room, nil
 }
 

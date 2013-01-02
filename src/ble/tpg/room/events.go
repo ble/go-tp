@@ -51,27 +51,29 @@ const filterAge = 120 * time.Second
 func (a *aRoom) processEvents() {
 	ticks := time.NewTicker(loopTime)
 	eventQueue := make([]event, 0, 100)
-	select {
-	case e := <-a.events:
-		eventQueue = append(eventQueue, event{time.Now(), e})
-	case r := <-a.eventRequests:
-		if tReq, ok := r.(timeReq); ok {
-			tReq <- time.Now()
-		}
-		if eReq, ok := r.(eventReq); ok {
-			a.sendBackEvents(eReq, eventQueue)
-		}
-	case _ = <-ticks.C:
-		tNow := time.Now()
-		var ix int
-		var ev event
-		for ix, ev = range eventQueue {
-			if tNow.Sub(ev.Time) < filterAge ||
-				ix == len(eventQueue)-1 {
-				break
+	for {
+		select {
+		case e := <-a.events:
+			eventQueue = append(eventQueue, event{time.Now(), e})
+		case r := <-a.eventRequests:
+			if tReq, ok := r.(timeReq); ok {
+				tReq <- time.Now()
 			}
+			if eReq, ok := r.(eventReq); ok {
+				a.sendBackEvents(eReq, eventQueue)
+			}
+		case _ = <-ticks.C:
+			tNow := time.Now()
+			var ix int
+			var ev event
+			for ix, ev = range eventQueue {
+				if tNow.Sub(ev.Time) < filterAge ||
+					ix == len(eventQueue)-1 {
+					break
+				}
+			}
+			eventQueue = eventQueue[ix:]
 		}
-		eventQueue = eventQueue[ix:]
 	}
 	ticks.Stop()
 }
