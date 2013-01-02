@@ -1,18 +1,9 @@
-SIDESTEPPING: one-time URLs
-strictly an in-memory phenomenon
-user hits up /onetime/<ACTION-ID-HERE>
-safe concurrent access to an action stored in a map under the action id
-one of these actions plays like this:
-  create user w/ alias, pw, email
-  redirect user to /game/<GAME-ID-HERE>/join-client
-===============>TO MAKE THAT WORK<=============== 
-we need to skip ahead and implement the handler that is the union of several
-handlers.
+TEST CHANGE:
+  + Use one-time URLs to log-in test users.
 
 OUTSTANDING FUNCTIONALITY ISSUES:
   + Access to drawings
   + Handler for drawings
-  + Handlers for creating users and logging them in
   + Grand JSON event stream
 
 + ACCESS TO DRAWINGS
@@ -24,10 +15,6 @@ A complete drawing in a complete stack can be accessed by anyone.
 Need to grab either the in-memory or persistent drawing, yuck.
 Need to ensure consistent access when adding parts to drawing, completing
 drawing
-
-+ HANDLERS FOR CREATING USERS AND LOGGING THEM IN
-Can we sidestep this by making it possible to issue one-time use URLs that
-create a user, set the user ID cookie, and redirect somewhere else?
 
 + GRAND JSON EVENT STREAM
 Yes, please.
