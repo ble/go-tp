@@ -19,7 +19,7 @@ func main() {
 	base := "http://" + hostname + port
 
 	fileAfter := fmt.Sprintf("%s-%s", tmpDbFile, time.Now())
-	backend, err := persistence.NewBackend(tmpDbFile)
+	backend, _ := persistence.NewBackend(tmpDbFile)
 	defer os.Rename(tmpDbFile, fileAfter)
 	sb := switchboard.NewSwitchboard(backend)
 
@@ -30,6 +30,7 @@ func main() {
 	ephemera := sb.GetEphemera()
 	ephemeralJoin := ephemera.NewCreateUser("benjaminstarrr", "the.bomb@thebomb.com", "asdfqweruxl", gameJoinUrl)
 	ephUrl, _ := url.Parse(base + sb.URLOf(ephemeralJoin).Path)
+	fmt.Println(ephUrl.String())
 
 	server := Server{
 		Addr:         port,
