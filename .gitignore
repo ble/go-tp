@@ -1,4 +1,5 @@
 .*.swp
 *.swp
 pkg
-./main
+db
+db-*
