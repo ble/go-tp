@@ -1,12 +1,10 @@
 OUTSTANDING FUNCTIONALITY ISSUES:
-  + functional client for joining game
+  + Chatting
+  + Starting games
   + Access to drawings
   + Handler for drawings
   + Grand JSON event stream
 
-+ FUNCTIONAL CLIENT FOR JOINING GAME
-needs writing.  piggyback off of single-use URL to get user creation,
-game creation; browser test this sucker to make sure it works.
 
 + ACCESS TO DRAWINGS
 An incomplete drawing can only be accessed by the user who is drawing it.
@@ -27,4 +25,6 @@ OUTSTANDING IMPLEMENTATION/CONVENIENCE ISSUES:
     duplication.
   + Better testing functionality for constructing HTTP requests and verifying
     HTTP responses
+
+
 
