@@ -17,6 +17,14 @@ func (a *aRoom) GetEvents(uid, pid string, lastQuery time.Time) (interface{}, er
 	return resp, nil
 }
 
+func (a *aRoom) GetLastEventTime() time.Time {
+	reqChan := make(chan eventResponse)
+	req := eventReq{reqChan, time.Now()}
+	a.timeReqs <- req
+	resp := <-reqChan
+	return resp.LastTime
+}
+
 type event struct {
 	time.Time
 	payload interface{}
@@ -62,6 +70,8 @@ func (a *aRoom) processEvents() {
 			if eReq, ok := r.(eventReq); ok {
 				a.sendBackEvents(eReq, eventQueue)
 			}
+		case t := <-a.timeReqs:
+			t.response <- eventResponse{time.Now(), make([]event, 0, 0)}
 		case _ = <-ticks.C:
 			tNow := time.Now()
 			var ix int

@@ -86,7 +86,7 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 					HttpOnly: true}
 				w.Header().Add("Location", gamePath.String()+"client")
 				SetCookie(w, cookie)
-				w.WriteHeader(StatusSeeOther)
+				w.WriteHeader(StatusOK)
 			} else {
 				Error(w, err.Error(), StatusBadRequest)
 			}
@@ -118,13 +118,13 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			if status, err := room.AccessJoinClient(userId, playerId); err == nil {
 				ServeFile(w, r, "./static/html/join-client.html")
 			} else if status == "already-allowed" {
-				w.Header().Add("Location", gamePath.String()+"/client")
+				w.Header().Add("Location", gamePath.String()+"client")
 				w.WriteHeader(StatusSeeOther)
 			} else {
 				Error(w, err.Error(), StatusBadRequest)
 			}
 		case "events":
-			strLastQuery := r.URL.Query().Get("lastQuery")
+			strLastQuery := r.URL.Query().Get("lastTime")
 			var lastQuery time.Time
 			if lastQueryMillis, err := strconv.ParseInt(strLastQuery, 10, 64); err == nil {
 				lastQuery = time.Unix(0, lastQueryMillis*1000)

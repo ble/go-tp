@@ -27,15 +27,11 @@
       });
 
   var onXhrLoad = function(event) {
-    console.log(event);
-    console.log(this);
-    console.log(this.responseText);
-    var o = JSON.parse(this.responseText);
-    if(o.EventType == "JoinGame" || o.Error == "you've already joined this game")
-      window.location = "./client"
-
-    if(o.EventType == "Error")
+    if(this.status == 200) {
+      window.location.pathname = this.getResponseHeader("Location");
+    } else { 
       enableForm(f);
+    }
   };
       
   var formToObject = function(form) {

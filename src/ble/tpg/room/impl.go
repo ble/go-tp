@@ -32,7 +32,8 @@ func (r *roomService) GetRoom(gameId string) (Room, error) {
 		return room, nil
 	}
 	eventsIn, eventRequestsIn := make(chan interface{}), make(chan interface{})
-	newRoom := &aRoom{r, eventsIn, eventRequestsIn, game}
+	timeReqsIn := make(chan eventReq)
+	newRoom := &aRoom{r, eventsIn, eventRequestsIn, timeReqsIn, game}
 	go newRoom.processEvents()
 	r.rooms[gameId] = newRoom
 	return newRoom, nil
@@ -50,6 +51,7 @@ type aRoom struct {
 	*roomService
 	events        chan interface{}
 	eventRequests chan interface{}
+	timeReqs      chan eventReq
 	game          model.Game
 }
 
@@ -58,7 +60,7 @@ func (a *aRoom) GetGame() model.Game {
 }
 
 func (a *aRoom) GetState() interface{} {
-	return gameJson{a.game, a.roomService.switchboard}
+	return gameJson{a.game, a.GetLastEventTime(), a.roomService.switchboard}
 }
 
 func (a *aRoom) Chat(uid, pid string, body []byte) error {

@@ -4,6 +4,7 @@ import (
 	"ble/tpg/model"
 	"ble/web"
 	"encoding/json"
+	"time"
 )
 
 type playerJson struct{ model.Player }
@@ -74,6 +75,7 @@ func (s stackJson) MarshalJSON() ([]byte, error) {
 
 type gameJson struct {
 	model.Game
+	lastTime time.Time
 	web.Switchboard
 }
 
@@ -110,5 +112,6 @@ func (g gameJson) MarshalJSON() ([]byte, error) {
 		cPlayers[i] = playerJson{player}
 	}
 	result["players"] = cPlayers
+	result["lastTime"] = g.lastTime.UnixNano() / 1000
 	return json.Marshal(result)
 }

@@ -32,6 +32,10 @@ func main() {
 	ephUrl, _ := url.Parse(base + sb.URLOf(ephemeralJoin).Path)
 	fmt.Println(ephUrl.String())
 
+	ephemeralJoin = ephemera.NewCreateUser("in-couch", "asdf@thebomb.com", "asdfqweruxl", gameJoinUrl)
+	ephUrl, _ = url.Parse(base + sb.URLOf(ephemeralJoin).Path)
+	fmt.Println(ephUrl.String())
+
 	server := Server{
 		Addr:         port,
 		Handler:      sb,

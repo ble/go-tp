@@ -15,6 +15,9 @@ func isGet(r *Request) bool {
 
 func pathParts(r *Request) []string {
 	p := r.URL.Path
+	if len(p) == 0 {
+		return make([]string, 0, 0)
+	}
 	if p[0] == '/' {
 		p = p[1:]
 	}
