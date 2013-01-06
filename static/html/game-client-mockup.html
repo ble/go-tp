@@ -50,8 +50,19 @@
 
   -moz-order: 2;
   -moz-flex-grow: 1;
-  min-width: 520px;
 }
+
+.status-roster::before {
+  content: "who's who"
+}
+
+.chat-container {
+  -webkit-order: 3;
+  -webkit-flex-grow: 1;
+  -moz-order: 2;
+  -moz-flex-grow: 1;
+}
+
 
 .chatter-name {
   font-style: italic;
@@ -81,20 +92,17 @@
 }
 
 .chat-text {
-  width: 75%;
+  width: 80%;
 }
 
 .chat-button {
   width: 15%;
 }
 
-.status-roster::before {
-  content: "who's who"
-}
 
 .status-roster {
   display: -webkit-flex;
-  -webkit-flex-direction: row;
+  -webkit-flex-direction: column;
   -webkit-flex-wrap: wrap;
   -webkit-justify-content: space-between;
 
@@ -130,43 +138,39 @@
       </div>
 
       <div class="game-body">
-        <div class="status-container">
+        <div class="status-container"> 
+          <div class="status-headline">
+            Not yet started...
+          </div>
+          <div class="status-roster">
+            <div class="player-name player-0">farglebar</div>
+            <div class="player-name player-1 you">qux</div>
+          </div>
+        </div>
 
-          <div class="status-container">
-            <div class="status-headline">
-              Not yet started...
-            </div>
-            <div class="status-roster">
-              <span class="player-name player-0">farglebar</span>
-              <span class="player-name player-1 you">qux</span>
-            </div>
+        <div class="chat-container">
+
+          <div class="chat-line player-0">
+            <span class="chatter-name">farglebar:</span>
+            oh I'm sorry, did I break your concentration?  
           </div>
 
-          <div class="chat-container">
-
-            <div class="chat-line player-0">
-              <span class="chatter-name">farglebar:</span>
-              oh I'm sorry, did I break your concentration?  
-            </div>
-
-            <div class="chat-line player-1">
-              <span class="chatter-name">qux:</span>
-              stop quoting pulp fiction and play.
-            </div>
-
+          <div class="chat-line player-1">
+            <span class="chatter-name">qux:</span>
+            stop quoting pulp fiction and play.
           </div>
+
 
           <div class="chat-input"><form>
               <input type="text" name="chat-text" class="chat-text">
               <input type="button" value="chat!" class="chat-button">
           </form></div>
-
         </div>
         <div class="drawing-container">
           <canvas class="drawing-large" width="480" height="360"></canvas>
         </div>
-      </div>
 
+      </div>
     </div>
   </body>
 </html>
