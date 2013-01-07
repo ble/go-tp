@@ -1,0 +1,243 @@
+<html>
+  <head>
+    <style>
+/** begin the pain **/
+.game-container {
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+
+  display: -moz-flex;
+  -moz-flex-direction: column;
+  width: 100%;
+}
+
+.game-body {
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-flex-wrap: wrap;
+  -webkit-justify-content: center;
+
+  display: -moz-flex;
+  -moz-flex-direction: row;
+  -moz-flex-wrap: wrap;
+  -moz-justify-content: center;
+
+
+}
+.game-title {
+  text-align: center;
+  font-size: 2.25em;
+  font-variant: small-caps;
+}
+.drawing-large {
+  border-style: solid;
+  border-color: black;
+  border-width: 1px;
+}
+
+.drawing-container {
+  -webkit-order: 1;
+  -webkit-flex-grow: 0;
+
+  -moz-order: 1;
+  -moz-flex-grow: 0;
+  min-width: 520px;
+}
+
+.drawing-container.inactive * {
+  opacity: 0.5;
+  background-color: gray;
+}
+
+.status-container {
+  -webkit-order: 2;
+  -webkit-flex-grow: 1;
+
+  -moz-order: 2;
+  -moz-flex-grow: 1;
+}
+
+.status-roster::before {
+  content: "who's who"
+}
+
+.chat-container {
+  -webkit-order: 3;
+  -webkit-flex-grow: 1;
+  -moz-order: 2;
+  -moz-flex-grow: 1;
+}
+
+
+.chatter-name {
+  font-style: italic;
+  font-weight: bold;
+  float: left;
+}
+
+.player-name {
+  font-weight: bold
+}
+
+.player-0 {
+  color: rgb(128, 64, 0);
+}
+
+.player-1 { 
+  color: rgb(0, 128, 64);
+}
+
+.player-2 { 
+  color: rgb(64, 0, 128);
+}
+
+.game-event {
+  text-align: center;
+  font-size: 0.8em;
+}
+
+.chat-line {
+  text-align: right;
+}
+
+.chat-input {
+  width: 100%;
+  text-align: center;
+}
+
+.chat-text {
+  width: 80%;
+}
+
+.chat-button {
+  width: 15%;
+}
+
+
+.status-roster {
+  max-width: 225px;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+  -webkit-flex-wrap: wrap;
+  -webkit-justify-content: space-between;
+
+  display: -moz-flex;
+  -moz-flex-direction: row;
+  -moz-flex-wrap: wrap;
+  -moz-justify-content: space-between;
+
+
+}
+
+
+
+.you {
+  text-decoration: underline;
+  background: rgb(239, 239, 192);
+}
+
+.you::after {
+  font-weight: bold;
+  font-size: 0.75em;
+  content: "<-- you!"
+}
+
+/** end the pain **/
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+
+      <div class="game-head">
+        <div class="game-title">
+          That's The Name Of The Game
+        </div>
+
+      </div>
+
+      <div class="game-body">
+        <div class="status-container"> 
+          <div class="status-headline">
+            3 out of 9 drawings done!
+          </div>
+          <div class="status-roster">
+            <div>
+              <span class="player-name player-0">farglebar</span>
+              is
+              <span class="status-emph">holding 2 stacks.</span>
+            </div>
+            <div class="you">
+              <span class="player-name player-1">qux</span>
+              is
+              <span class="status-emph">waiting for
+                <span class="drawing-type words">words</span>
+              </span>
+            </div>
+            <div>
+              <span class="player-name player-2">somedude</span>
+              is
+              <span class="status-emph">waiting for
+                <span class="drawing-type picture"> a picture</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-container">
+
+          <div class="chat-line player-0">
+            <span class="chatter-name">farglebar:</span>
+            oh I'm sorry, did I break your concentration?  
+          </div>
+
+          <div class="chat-line player-1">
+            <span class="chatter-name">qux:</span>
+            stop quoting pulp fiction and play.
+          </div>
+
+          <div class="chat-line player-2">
+            <span class="chatter-name">somedude:</span>
+            this thing, let's do it.
+          </div>
+          <div class="game-event">
+            the game has started!
+          </div>
+          <div class="game-event">
+            <span class="player-name player-1 you">qux</span>
+            passed
+            <span class="drawing-type words">words</span>
+            to 
+            <span class="player-name player-2">somedude</span>
+          </div>
+          <div class="game-event">
+            <span class="player-name player-2">somedude</span>
+            passed
+            <span class="drawing-type words">words</span>
+            to 
+            <span class="player-name player-0">farglebar</span>
+          </div>
+          <div class="game-event">
+            <span class="player-name player-2">somedude</span>
+            passed
+            <span class="drawing-type picture">picture</span>
+            to 
+            <span class="player-name player-0">farglebar</span>
+          </div>
+
+
+
+
+
+          <div class="chat-input"><form>
+              <input type="text" name="chat-text" class="chat-text">
+              <input type="button" value="chat!" class="chat-button">
+          </form></div>
+        </div>
+        <div class="drawing-container inactive">
+          <canvas class="drawing-large" width="480" height="360"></canvas>
+        </div>
+
+      </div>
+    </div>
+  </body>
+</html>
