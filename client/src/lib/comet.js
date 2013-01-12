@@ -39,6 +39,7 @@ ble.net.CometLoop =
   this.uri = uri
   this.timeout = timeout;
   this.successWait = successWait;
+  /** @type {function(number):number}*/
   this.retryWait = goog.functions.constant(retryWait);
 
   this.previousFailures = 0;
@@ -74,7 +75,6 @@ bnCL.stop = function() {
   this.pendingSend = null;
   this.previousFailures = 0;
   this.dispatchEvent(new Event(cType.COMET_STOP));
-
 };
 /**
  * @protected

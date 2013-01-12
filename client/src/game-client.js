@@ -10,8 +10,11 @@ goog.provide('ble.tpg.game.setupClient');
 goog.scope(function() {
 var netType = goog.net.EventType;
 var scope = ble.tpg.game;
+var console = window.console;
+var JSON = window.JSON;
+
 scope.onResponse = function(event) {
-  window.console.log(event);
+  console.log(event);
 };
 
 scope.setupClient = function() {
@@ -27,7 +30,7 @@ scope.setupClient = function() {
         try {
           var jsonObj = JSON.parse(this.getResponse());
           var lastTime = jsonObj['lastTime'] || 0;
-          cometLoop.run(lastTime);
+          cometLoop.runAt(lastTime);
         } catch(e) {
           console.log(e);
           console.log(event);
@@ -48,6 +51,11 @@ scope.setupClient = function() {
   //cometLoop.run();
 };
 
+/**
+ * @constructor
+ * @param{string} uri
+ * @extends{ble.net.CometLoop}
+ */
 ble.tpg.game.QueryTimeComet = function(uri) {
   ble.net.CometLoop.call(this, uri, 10000, 2500, 2500);
   this.lastQuery = null;
@@ -59,9 +67,9 @@ var QTCp = ble.tpg.game.QueryTimeComet.prototype;
 /**
  * @param{number} lastTime
  */
-QTCp.run = function(lastTime) {
+QTCp.runAt = function(lastTime) {
   this.lastQuery = lastTime;
-  goog.base(this, 'run');
+  this.run();
 }
 
 QTCp.getUri = function() {

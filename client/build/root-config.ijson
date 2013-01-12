@@ -1,6 +1,9 @@
 {
   "closure-library": "../deps/google-closure-library/closure/goog",
-  "paths": ["../deps/subcanvas/src/lib", "../src/lib"],
+  "paths": [
+    "../deps/subcanvas/src/lib",
+    "../deps/google-closure-templates/javascript",
+    "../src/lib"],
   "mode": "SIMPLE",
   "level": "VERBOSE"
 }

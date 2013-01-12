@@ -1,3 +1,12 @@
+GAME CLIENT:
+  How should we set up our fancy-dancy game client UI?
+  Decorate... stuff...
+    .game-title <-- name of game
+    .status-container <-- status
+    .chat-container <-- chat lines
+    .drawing-container <-- canvas, etc.
+
+
 OUTSTANDING FUNCTIONALITY ISSUES:
   + Chatting
   + Starting games

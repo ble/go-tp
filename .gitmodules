@@ -4,3 +4,6 @@
 [submodule "client/deps/google-closure-library"]
 	path = client/deps/google-closure-library
 	url = git@github.com:ble/google-closure-library.git
+[submodule "client/deps/google-closure-templates"]
+	path = client/deps/google-closure-templates
+	url = git@github.com:ble/google-closure-templates.git

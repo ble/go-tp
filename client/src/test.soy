@@ -1,0 +1,71 @@
+goog.require('soy'); 
+{namespace ble.tpg.templates}
+
+/**
+ * @param name
+ * @param styleName
+ */
+{template .joinLine}
+<div class="game-event">
+  <span class="player-name {$styleName}">
+    {$name}
+  </span>
+  joined the game.
+</div>
+{/template}
+
+/**
+ * @param name
+ * @param styleName
+ * @param content
+ */
+{template .chatLine}
+<div class="chat-line {$styleName}">
+  <span class="chatter-name">
+    {$name}
+  </span>: {$content}
+</div>
+{/template}
+
+/**
+ * @param name
+ * @param styleName
+ * @param nameRecipient
+ * @param styleRecipient
+ */
+{template .passLine}
+<div class="game-event">
+  <span class="player-name {$styleName}">
+    {$name}
+  </span>
+  {if $nameRecipient}
+    passed to
+    <span class="player-name {$styleRecipient}">
+      {$nameRecipient}
+    </span>.
+  {else}
+    finished the stack!
+  {/if}
+</div>
+{/template}
+
+/**
+ * @param name
+ * @param styleName
+ */
+{template .startLine}
+<div class="game-event">
+  <span class="player-name {$styleName}">
+    {$name}
+  </span>
+  started the game.
+</div>
+{/template}
+
+/**
+ */
+{template .completeLine}
+<div class="game-event">
+  The game is done!
+</div>
+{/template}
