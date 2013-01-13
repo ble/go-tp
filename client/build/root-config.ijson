@@ -3,7 +3,9 @@
   "paths": [
     "../deps/subcanvas/src/lib",
     "../deps/google-closure-templates/javascript",
-    "../src/lib"],
+    "../src/lib",
+    "../src",
+    "../deps/subcanvas/src"],
   "mode": "SIMPLE",
   "level": "VERBOSE"
 }
