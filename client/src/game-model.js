@@ -1,6 +1,7 @@
 goog.require('goog.events.EventTarget');
 goog.require('ble.scribble.Drawing');
-
+goog.require('goog.net.EventType');
+goog.require('goog.events.Event');
 
 goog.provide('ble.tpg.model.EventType');
 goog.provide('ble.tpg.model.Player');
@@ -10,6 +11,23 @@ goog.provide('ble.tpg.model.Game');
 
 goog.scope(function() {
 //scope-start
+
+/**
+ * @enum{string}
+ */
+ble.tpg.model.EventType = ({
+  CHAT: 'tpg-chat',
+  PASS: 'tpg-pass',
+  START_GAME: 'tpg-start-game',
+  COMPLETE_GAME: 'tpg-complete-game',
+  JOIN_GAME: 'tpg-join-game'});
+var EventType = ble.tpg.model.EventType;
+EventType.ALL = [
+  EventType.CHAT,
+  EventType.PASS,
+  EventType.START_GAME,
+  EventType.COMPLETE_GAME,
+  EventType.JOIN_GAME];
 
 /**
  * @constructor
@@ -35,6 +53,12 @@ Player.arrayFromJSON = function(o) {
     result.push(player);
   }
   return result;
+};
+
+Player.newForArray = function(array, id, name) {
+  var player = new Player(id, name);
+  player.styleName = 'player-' + array.length.toString();
+  return player;
 };
 
 /**
@@ -113,8 +137,33 @@ Game.fromJSON = function(o) {
       o['url']);
 };
 
+var cometType = ble.net.EventType;
+var console = window.console;
+var JSON = window.JSON;
 Game.prototype.handleEvent = function(event) {
-
+  if(event.type == cometType.COMET_DATA) {
+    var json = JSON.parse(event.responseText);
+    var receivedEvents = json['events'];
+    if(goog.isDefAndNotNull(receivedEvents)) {
+      for(var i = 0; i < receivedEvents.length; i++) {
+        this.processJsonEvent(receivedEvents[i]);
+      }
+    }
+    console.log(json);
+  }
 };
+
+var Event = goog.events.Event;
+Game.prototype.processJsonEvent = function(o) {
+  var event;
+  switch(o['actionType']) {
+    case 'joinGame':
+      var newPlayer = Player.newForArray(this.players, o['name'], o['who']);
+      this.players.push(newPlayer);
+      event = new Event(EventType.JOIN_GAME, this);
+      event.player = newPlayer; 
+      this.dispatchEvent(event);
+  }
+}
 //scope-end
 });

@@ -37,15 +37,11 @@ QTCp.getUri = function() {
 };
 
 QTCp.handleEvent = function(event) {
-  ble.net.QueryTimeComet.superClass_.handleEvent.call(this, event);
   if(event.type == netType.SUCCESS) {
     var jsonObj = JSON.parse(this.xhr.getResponseText());
     this.lastQuery = jsonObj['lastTime'];
-    var events = jsonObj['events'] || [];
-    for(var i = 0; i < events.length; i++) {
-      console.log(events[i]);
-    }
   }
+  ble.net.QueryTimeComet.superClass_.handleEvent.call(this, event);
 };
 
 

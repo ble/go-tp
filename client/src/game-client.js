@@ -10,6 +10,9 @@ goog.provide('ble.tpg.game.setupClient');
 
 goog.scope(function() {
 var netType = goog.net.EventType;
+var cometType = ble.net.EventType;
+var modelType = ble.tpg.model.EventType;
+
 var scope = ble.tpg.game;
 var console = window.console;
 var JSON = window.JSON;
@@ -34,7 +37,8 @@ scope.setupClient = function() {
             var jsonObj = JSON.parse(this.getResponse());
             var lastTime = jsonObj['lastTime'] || 0;
             var game = model.Game.fromJSON(jsonObj);
-            goog.events.listen(cometLoop, [netType.SUCCESS], game);
+            goog.events.listen(cometLoop, cometType.COMET_DATA, game);
+            goog.events.listen(game, modelType.JOIN_GAME, function(e) { console.log("soooeee"); console.log(e)});
             cometLoop.runAt(game.lastTime);
           } catch(e) {
             console.log(e);

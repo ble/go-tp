@@ -17,7 +17,8 @@ goog.provide('ble.net.EventType');
 /**@enum{string}*/
 ble.net.EventType = ({
   COMET_START: 'COMET_START',
-  COMET_STOP: 'COMET_STOP'});
+  COMET_STOP: 'COMET_STOP',
+  COMET_DATA: 'COMET_DATA'});
 
 var Event = goog.events.Event;
 var netType = goog.net.EventType;
@@ -115,6 +116,9 @@ bnCL.handleEvent = function(event) {
     case netType.SUCCESS:
       this.processSuccess(event);
       var delay = this.successWait;
+      var dataEvent = new Event(ble.net.EventType.COMET_DATA, this);
+      dataEvent.responseText = this.xhr.getResponseText();
+      this.dispatchEvent(dataEvent);
       this.pendingSend = window.setTimeout(goog.bind(this.send_, this), delay);
       break;
     default:
