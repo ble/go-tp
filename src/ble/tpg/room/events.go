@@ -56,6 +56,27 @@ func (eR eventResponse) MarshalJSON() ([]byte, error) {
 const loopTime = 5 * time.Second
 const filterAge = 120 * time.Second
 
+/*
+TODO:
+Really want a different structure here.
+First, want to enable fast-send:
+  namely, when a comet-like listener is waiting on events
+  and an event comes in
+  you want that comet-like listener to get that fresh event
+  with no delay.
+
+This requires a loop state with something like
+  the current queue of events
+  the current set of listeners waiting for a fresh event
+
+This could also work reasonably well with websocket listeners,
+I guess
+assuming that they would remain resident in the list of listeners
+upon receiving their event(s).
+
+
+No need right now to attempt the socket.io "generalize over transport" bizness
+*/
 func (a *aRoom) processEvents() {
 	ticks := time.NewTicker(loopTime)
 	eventQueue := make([]event, 0, 100)
