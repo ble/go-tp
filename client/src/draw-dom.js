@@ -21,9 +21,9 @@ ble.tpg.ui.ChatContainer = function(game) {
   Component.call(this);
   this.game = game;
   this.chats = new ble.tpg.ui.Chats(game);
-//  this.chatInput = new ble.tpg.ui.ChatInput();
+  this.chatInput = new ble.tpg.ui.ChatInput();
   this.addChild(this.chats, true);
-//  this.addChild(chatInput);
+  this.addChild(this.chatInput, true);
 };
 goog.inherits(ble.tpg.ui.ChatContainer, Component);
 
@@ -89,6 +89,7 @@ cp.exitDocument = function() {
 cp.handleEvent = function(event) {
   switch(event.type) {
     case ModelType.CHAT:
+      this.displayChat(event.player, event.content);
       break;
     case ModelType.PASS:
       break;
@@ -115,9 +116,7 @@ cp.displayJoin = function(player) {
   this.getElement().appendChild(line);
 };
 
-cp.displayChat = function(playerId, content) {
-  var dom = this.dom_;
-  var player = this.game.players[playerId];
+cp.displayChat = function(player, content) {
   var o = ({
     'name': player.name,
     'styleName': player.styleName,
@@ -154,6 +153,39 @@ cp.displayStart = function(playerId) {
   this.getElement().appendChild(line);
 };
 
-//ble.tpg.ui.
+/**
+ * @constructor
+ * @extends{goog.ui.Component}
+ */
+ble.tpg.ui.ChatInput = function() {
+  Component.call(this);
+};
+goog.inherits(ble.tpg.ui.ChatInput, Component);
+
+var cip = ble.tpg.ui.ChatInput.prototype;
+
+cip.createDom = function() {
+  goog.base(this, 'createDom');
+  var elt = this.getElement();
+  var dom = this.getDomHelper();
+  var text = dom.createDom(
+      'input', 
+      {'type': 'text', 'name': 'chat-text', 'class': 'chat-text'});
+  var button = dom.createDom(
+      'input',
+      {'type': 'button', 'value': 'chat!', 'class': 'chat-button'});
+  var form = dom.createDom('form', null, text, button);
+  elt.appendChild(form);
+
+/*
+          <div class="chat-input"><form>
+              <input type="text" name="chat-text" class="chat-text">
+              <input type="button" value="chat!" class="chat-button">
+          </form></div>
+
+ */
+};
+
+
 //scope-end
 });
