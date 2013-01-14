@@ -5,6 +5,7 @@ goog.require('goog.net.XhrIo');
 
 goog.require('ble.net.QueryTimeComet');
 goog.require('ble.tpg.model.Game');
+goog.require('ble.tpg.ui.ChatContainer');
 goog.provide('ble.tpg.game.setupClient');
 
 
@@ -37,8 +38,14 @@ scope.setupClient = function() {
             var jsonObj = JSON.parse(this.getResponse());
             var lastTime = jsonObj['lastTime'] || 0;
             var game = model.Game.fromJSON(jsonObj);
+            scope.chatContainer = new ble.tpg.ui.ChatContainer(game);
             goog.events.listen(cometLoop, cometType.COMET_DATA, game);
             goog.events.listen(game, modelType.JOIN_GAME, function(e) { console.log("soooeee"); console.log(e)});
+            var chatContainer = document.getElementById('chat-container');
+            scope.chatContainer.render(chatContainer);
+            goog.dom.replaceNode(scope.chatContainer.getElement(), chatContainer);
+            scope.chatContainer.getElement().id = chatContainer.id;
+            scope.chatContainer.getElement().className += chatContainer.className;
             cometLoop.runAt(game.lastTime);
           } catch(e) {
             console.log(e);

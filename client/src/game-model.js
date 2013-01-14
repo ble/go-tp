@@ -158,7 +158,7 @@ Game.prototype.processJsonEvent = function(o) {
   var event;
   switch(o['actionType']) {
     case 'joinGame':
-      var newPlayer = Player.newForArray(this.players, o['name'], o['who']);
+      var newPlayer = Player.newForArray(this.players, o['who'], o['name']);
       this.players.push(newPlayer);
       event = new Event(EventType.JOIN_GAME, this);
       event.player = newPlayer; 

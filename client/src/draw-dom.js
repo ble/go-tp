@@ -20,10 +20,10 @@ var templates = ble.tpg.templates;
 ble.tpg.ui.ChatContainer = function(game) {
   Component.call(this);
   this.game = game;
-  this.chats = new ble.tpg.ui.Chats();
-  this.chatInput = new ble.tpg.ui.ChatInput();
-  this.addChild(chats);
-  this.addChild(chatInput);
+  this.chats = new ble.tpg.ui.Chats(game);
+//  this.chatInput = new ble.tpg.ui.ChatInput();
+  this.addChild(this.chats, true);
+//  this.addChild(chatInput);
 };
 goog.inherits(ble.tpg.ui.ChatContainer, Component);
 
@@ -34,20 +34,15 @@ var ccp = ble.tpg.ui.ChatContainer.prototype;
  * @return{boolean}
  */
 ccp.canDecorate = function(element) {
-  return element.tagName == 'div';
+  return element.tagName.toLowerCase() == 'div';
 };
 
 ccp.enterDocument = function() {
-  goog.dom.removeChildren(this.getElement());
-  Component.enterDocument.call(this);
-  goog.events.listen(
-      this.game,
-      ModelType.ALL,
-      this);
+  goog.base(this, 'enterDocument');
 };
 
 ccp.exitDocument = function() {
-  Component.exitDocument.call(this);
+  goog.base(this, 'exitDocument');
   goog.events.unlisten(
       this.game,
       ModelType.ALL,
@@ -55,47 +50,63 @@ ccp.exitDocument = function() {
 };
 
 /**
+ * @constructor
+ * @param{ble.tpg.model.Game} game
+ * @extends{goog.ui.Component}
+ */
+ble.tpg.ui.Chats = function(game) {
+  Component.call(this);
+  this.game = game
+};
+goog.inherits(ble.tpg.ui.Chats, Component);
+
+var cp = ble.tpg.ui.Chats.prototype;
+
+cp.createDom_ = function() {
+  goog.base(this, 'createDom_');
+  this.getElement().className = 'chats';
+};
+
+cp.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+  goog.events.listen(
+      this.game,
+      ModelType.ALL,
+      this); 
+};
+
+cp.exitDocument = function() {
+  goog.base(this, 'exitDocument');
+  goog.events.unlisten(
+      this.game,
+      ModelType.ALL,
+      this);
+}
+
+/**
  * @param{goog.events.Event} event
  */
-ccp.handleEvent = function(event) {
+cp.handleEvent = function(event) {
   switch(event.type) {
-    case ModelType.CHAT;
-    case ModelType.PASS;
-    case ModelType.START_GAME;
-    case ModelType.COMPLETE_GAME;
-    case ModelType.JOIN_GAME;
-      this.displayEvent(event.fromServer);
-    break;
-  }
-};
-
-ccp.displayEvent = function(event) {
-  var who = event['who'];
-  var toWhom = event['toWhom'];
-  var stackId = event['stackId'];
-  var content = event['content'];
-
-  switch(event['actionType']) {
-    case "joinGame":
-      displayJoin(who);
+    case ModelType.CHAT:
       break;
-    case "chat":
-      displayChat(who, content);
+    case ModelType.PASS:
       break;
-    case "passStack":
-      displayPass(who, stackId, toWhom);
+    case ModelType.START_GAME:
       break;
-    case "startGame":
-      displayStart(who);
+    case ModelType.COMPLETE_GAME:
       break;
-    case "completeGame":
+    case ModelType.JOIN_GAME:
+      this.displayJoin(event.player);
       break;
   }
 };
 
-ccp.displayJoin = function(playerId) {
+/**
+ * @param{ble.tpg.model.Player} player
+ */
+cp.displayJoin = function(player) {
   var dom = this.dom_;
-  var player = this.game.players[playerId];
   var o = ({
     'name': player.name,
     'styleName': player.styleName});
@@ -104,7 +115,8 @@ ccp.displayJoin = function(playerId) {
   this.getElement().appendChild(line);
 };
 
-ccp.displayChat = function(playerId, content) {
+cp.displayChat = function(playerId, content) {
+  var dom = this.dom_;
   var player = this.game.players[playerId];
   var o = ({
     'name': player.name,
@@ -115,7 +127,8 @@ ccp.displayChat = function(playerId, content) {
   this.getElement().appendChild(line);
 };
 
-ccp.displayPass = function(playerId, stackId, toWhom) {
+cp.displayPass = function(playerId, stackId, toWhom) {
+  var dom = this.dom_;
   var player = this.game.players[playerId];
   var o = ({
     'name': player.name,
@@ -130,7 +143,8 @@ ccp.displayPass = function(playerId, stackId, toWhom) {
   this.getElement().appendChild(line);
 };
 
-ccp.displayStart = function(playerId) {
+cp.displayStart = function(playerId) {
+  var dom = this.dom_;
   var player = this.game.players[playerId];
   var o = ({
     'name': player.name,
@@ -140,16 +154,6 @@ ccp.displayStart = function(playerId) {
   this.getElement().appendChild(line);
 };
 
-/**
- * @constructor
- * @extends{goog.ui.Component}
- */
-ble.tpg.ui.Chats = function() {
-  Component.call(this);
-};
-goog.inherits(ble.tpg.ui.Chats, Component);
-
-//var cp = 
 //ble.tpg.ui.
 //scope-end
 });
