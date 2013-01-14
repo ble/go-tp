@@ -117,7 +117,7 @@ cp.handleEvent = function(event) {
  * @param{ble.tpg.model.Player} player
  */
 cp.displayJoin = function(player) {
-  var dom = this.dom_;
+  var dom = this.getDomHelper();
   var o = ({
     'name': player.name,
     'styleName': player.styleName});
@@ -127,6 +127,7 @@ cp.displayJoin = function(player) {
 };
 
 cp.displayChat = function(player, content) {
+  var dom = this.getDomHelper();
   var o = ({
     'name': player.name,
     'styleName': player.styleName,

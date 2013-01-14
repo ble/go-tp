@@ -123,6 +123,9 @@ ble.tpg.model.Game = function(id, lastTime, players, stacks, inPlay, url) {
   this.stacks = stacks;
   this.inPlay = inPlay;
   this.url = url;
+  this.playersById = {};
+  for(var i = 0; i < players.length; i++)
+    this.playersById[players[i].id] = players[i];
 };
 goog.inherits(ble.tpg.model.Game, goog.events.EventTarget);
 var Game = ble.tpg.model.Game;
@@ -153,16 +156,33 @@ Game.prototype.handleEvent = function(event) {
   }
 };
 
+Game.prototype.addPlayer = function(id, name) { 
+  if(id in this.playersById)
+    throw new Error('duplicate player id');
+  var newPlayer = Player.newForArray(this.players, id, name);
+  this.players.push(newPlayer);
+  this.playersById[id] = newPlayer;
+  return newPlayer;
+};
+
 var Event = goog.events.Event;
 Game.prototype.processJsonEvent = function(o) {
   var event;
   switch(o['actionType']) {
     case 'joinGame':
-      var newPlayer = Player.newForArray(this.players, o['who'], o['name']);
-      this.players.push(newPlayer);
+      var newPlayer = this.addPlayer(o['who'], o['name'])
       event = new Event(EventType.JOIN_GAME, this);
       event.player = newPlayer; 
       this.dispatchEvent(event);
+      break;
+    case 'chat':
+      var player = this.playersById[o['who']]
+      event = new Event(EventType.CHAT, this);
+      event.player = player; 
+      event.content = o['content'];
+      this.dispatchEvent(event);
+      break;
+
   }
 }
 //scope-end
