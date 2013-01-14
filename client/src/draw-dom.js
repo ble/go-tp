@@ -1,6 +1,13 @@
 goog.require('goog.dom');
+goog.require('goog.dom.forms');
 goog.require('goog.events');
+
+goog.require('goog.labs.net.xhr');
+
 goog.require('goog.ui.Component');
+
+goog.require('ble.util.formToJSMap');
+goog.require('ble.util.clearFormText');
 goog.require('ble.tpg.templates');
 goog.require('ble.tpg.model.EventType');
 
@@ -11,6 +18,9 @@ goog.scope(function() {
 var Component = goog.ui.Component;
 var ModelType = ble.tpg.model.EventType;
 var templates = ble.tpg.templates;
+var xhr = goog.labs.net.xhr;
+var resultState = goog.result.Result.State;
+var forms = goog.dom.forms;
 
 /**
  * @constructor
@@ -21,7 +31,7 @@ ble.tpg.ui.ChatContainer = function(game) {
   Component.call(this);
   this.game = game;
   this.chats = new ble.tpg.ui.Chats(game);
-  this.chatInput = new ble.tpg.ui.ChatInput();
+  this.chatInput = new ble.tpg.ui.ChatInput(game);
   this.addChild(this.chats, true);
   this.addChild(this.chatInput, true);
 };
@@ -157,8 +167,9 @@ cp.displayStart = function(playerId) {
  * @constructor
  * @extends{goog.ui.Component}
  */
-ble.tpg.ui.ChatInput = function() {
+ble.tpg.ui.ChatInput = function(game) {
   Component.call(this);
+  this.game = game;
 };
 goog.inherits(ble.tpg.ui.ChatInput, Component);
 
@@ -170,22 +181,46 @@ cip.createDom = function() {
   var dom = this.getDomHelper();
   var text = dom.createDom(
       'input', 
-      {'type': 'text', 'name': 'chat-text', 'class': 'chat-text'});
+      {'type': 'text', 'name': 'content', 'class': 'chat-text'});
   var button = dom.createDom(
       'input',
-      {'type': 'button', 'value': 'chat!', 'class': 'chat-button'});
-  var form = dom.createDom('form', null, text, button);
+      {'type': 'submit', 'value': 'chat!', 'class': 'chat-button'});
+  var actionType = dom.createDom(
+      'input',
+      {'type': 'hidden', 'name': 'actionType', 'value': 'chat'});
+  var form = dom.createDom('form', null, text, button, actionType);
+  this.form = form;
   elt.appendChild(form);
-
-/*
-          <div class="chat-input"><form>
-              <input type="text" name="chat-text" class="chat-text">
-              <input type="button" value="chat!" class="chat-button">
-          </form></div>
-
- */
 };
 
+cip.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+  goog.events.listen(this.form, 'submit', this);
+};
+
+cip.handleEvent = function(event) {
+  event.preventDefault();
+  if(this.form.children[0].disabled)
+    return;
+  var form = this.form;
+  var map = ble.util.formToJSMap(this.form);
+  forms.setDisabled(form, true);
+  var chatRequest = xhr.post(
+      this.game.url + "chat",
+      JSON.stringify(map),
+      {
+        'headers': {
+          'Content-Type': 'application/json'}
+      });
+  chatRequest.wait(function(result) {
+    forms.setDisabled(form, false);
+    if(result.getState() == resultState.SUCCESS) {
+      ble.util.clearFormText(form);
+    }
+  });
+  console.log(map);
+  console.log(event);
+};
 
 //scope-end
 });
