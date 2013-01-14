@@ -21,6 +21,8 @@ var templates = ble.tpg.templates;
 var xhr = goog.labs.net.xhr;
 var resultState = goog.result.Result.State;
 var forms = goog.dom.forms;
+var console = window.console;
+var JSON = window.JSON;
 
 /**
  * @constructor

@@ -156,7 +156,7 @@ Game.prototype.handleEvent = function(event) {
   }
 };
 
-Game.prototype.addPlayer = function(id, name) { 
+Game.prototype.addPlayer = function(id, name) {
   if(id in this.playersById)
     throw new Error('duplicate player id');
   var newPlayer = Player.newForArray(this.players, id, name);
@@ -172,13 +172,13 @@ Game.prototype.processJsonEvent = function(o) {
     case 'joinGame':
       var newPlayer = this.addPlayer(o['who'], o['name'])
       event = new Event(EventType.JOIN_GAME, this);
-      event.player = newPlayer; 
+      event.player = newPlayer;
       this.dispatchEvent(event);
       break;
     case 'chat':
       var player = this.playersById[o['who']]
       event = new Event(EventType.CHAT, this);
-      event.player = player; 
+      event.player = player;
       event.content = o['content'];
       this.dispatchEvent(event);
       break;
