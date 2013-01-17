@@ -217,6 +217,7 @@ cip.handleEvent = function(event) {
       });
   chatRequest.wait(function(result) {
     forms.setDisabled(form, false);
+    form.children[0].focus();
     if(result.getState() == resultState.SUCCESS) {
       ble.util.clearFormText(form);
     }
