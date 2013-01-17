@@ -1,7 +1,10 @@
 goog.require('goog.dom.forms');
+goog.require('goog.dom');
+goog.require('goog.ui.Component');
 
 goog.provide('ble.util.formToJSMap');
 goog.provide('ble.util.clearFormText');
+goog.provide('ble.util.replaceElemWithComponent');
 
 ble.util.formToJSMap = function(form) {
   var map = goog.dom.forms.getFormDataMap(form);
@@ -22,3 +25,15 @@ ble.util.clearFormText = function(form) {
     }
   }
 };
+
+/**
+ * @param {Element} oldElem
+ * @param {goog.ui.Component} newComponent
+ */
+ble.util.replaceElemWithComponent = function(oldElem, newComponent) {
+  newComponent.render(oldElem);
+  var newElem = newComponent.getElement();
+  goog.dom.replaceNode(newElem, oldElem);
+  newElem.id = oldElem.id;
+  newElem.className += ' ' + oldElem.className;
+}

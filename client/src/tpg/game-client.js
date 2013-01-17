@@ -64,14 +64,9 @@ Client.prototype.processStateResponse = function(stateResponse) {
       this.game = Game.fromJSON(jsonObj);
 
       //set up the chat ui
-      var oldElem = this.chatContainerDiv;
       this.chatContainer = new ble.tpg.ui.ChatContainer(this.game);
-      this.chatContainer.render(oldElem);
-      var newElem = this.chatContainer.getElement();
-      goog.dom.replaceNode(newElem, oldElem);
-      newElem.id = oldElem;
-      newElem.id += oldElem.className;
-     
+      ble.util.replaceElemWithComponent(this.chatContainerDiv, this.chatContainer);
+    
       //set up the comet loop
       goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
       this.cometLoop.runAt(this.game.lastTime); 
