@@ -1,4 +1,8 @@
 goog.require('goog.events');
+
+goog.require('goog.ui.Component');
+goog.require('goog.ui.Button');
+
 goog.require('goog.net.EventType');
 
 goog.require('goog.labs.net.xhr');
@@ -46,6 +50,7 @@ Client.prototype.initialize = function() {
 Client.prototype.bindToExistingDom = function() {
   this.chatContainerDiv    = document.getElementById('chat-container');
   this.drawingContainerDiv = document.getElementById('drawing-container');
+  this.startButtonDiv = document.getElementById('start-game-button');
 };
 
 Client.prototype.requestInitialState = function() {
@@ -72,6 +77,17 @@ Client.prototype.processStateResponse = function(stateResponse) {
       this.scribbler = new ble.tpg.ui.Scribbler(this.game);
       ble.util.replaceElemWithComponent(this.drawingContainerDiv, this.scribbler);
       this.scribbler.scribble.setEnabled(false);
+
+      this.startButton = new goog.ui.Button("start game!");
+
+      ble.util.replaceElemWithComponent(this.startButtonDiv, this.startButton);
+      goog.events.listen(
+        this.startButton,
+        goog.ui.Component.EventType.ACTION,
+        this.postStartGame,
+        false,
+        this);
+
       //set up the comet loop
       goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
       goog.events.listen(this.game, modelType.ALL, this.handleGameEvent, false, this);
@@ -84,6 +100,26 @@ Client.prototype.processStateResponse = function(stateResponse) {
   } else {
     this.requestInitialState();
   }
+};
+
+Client.prototype.postStartGame = function() {
+  this.startButton.setEnabled(false);
+  var startRequest = xhr.post(
+      "./start",
+      JSON.stringify({'actionType': 'startGame'}),
+      {
+        'headers': {
+          'Content-Type': 'application/json'
+        }  
+      });
+  startRequest.wait((function(result) {
+    if(result.getState() == resultState.SUCCESS) {
+      this.startButton.dispose(); 
+    } else {
+      this.startButton.setEnabled(true);
+    }
+  }).bind(this));
+
 };
 
 Client.prototype.handleGameEvent = function(e) {
