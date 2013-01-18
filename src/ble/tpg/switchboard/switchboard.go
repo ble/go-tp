@@ -55,7 +55,7 @@ func (s *Switchboard) GetEphemera() ephemeral.UserEphemera {
 }
 
 func NewSwitchboard(b *persistence.Backend) *Switchboard {
-	mappings := []mapping{nil, nil, nil, nil}
+	mappings := []mapping{nil, nil, nil, nil, nil}
 	eph := ephemeral.NewEphemera(b)
 	sb := &Switchboard{
 		mappings: mappings,
@@ -66,5 +66,6 @@ func NewSwitchboard(b *persistence.Backend) *Switchboard {
 	mappings[1] = newStackMapping(nil)
 	mappings[2] = newDrawingMapping(nil)
 	mappings[3] = newEphMapping(eph)
+	mappings[4] = newStaticMapping("./static/", "/static/")
 	return sb
 }

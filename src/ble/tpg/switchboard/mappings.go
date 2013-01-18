@@ -98,3 +98,26 @@ func (e *ephMapping) canMap(obj interface{}) bool {
 func (e *ephMapping) pathFor(obj interface{}) string {
 	return e.pathPrefix() + obj.(ephemeral.Ephemeris).Id()
 }
+
+type staticMapping struct {
+	http.Handler
+	prefix string
+}
+
+func newStaticMapping(dir, path string) *staticMapping {
+	return &staticMapping{
+		http.StripPrefix(path, http.FileServer(http.Dir(dir))),
+		path}
+}
+
+func (s *staticMapping) pathPrefix() string {
+	return s.prefix
+}
+
+func (s *staticMapping) canMap(interface{}) bool {
+	return false
+}
+
+func (s *staticMapping) pathFor(interface{}) string {
+	return ""
+}
