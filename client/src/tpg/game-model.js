@@ -57,8 +57,8 @@ Player.arrayFromJSON = function(o) {
   return result;
 };
 
-Player.newForArray = function(array, id, name) {
-  var player = new Player(id, name);
+Player.newForArray = function(array, id, name, isYou) {
+  var player = new Player(id, name, isYou);
   player.styleName = 'player-' + array.length.toString();
   return player;
 };
@@ -121,13 +121,17 @@ Stack.arrayFromJSON = function(o) {
 ble.tpg.model.Game = function(id, lastTime, players, stacks, inPlay, url) {
   this.id = id;
   this.lastTime = lastTime;
-  this.players = players;
   this.stacks = stacks;
   this.inPlay = inPlay;
   this.url = url;
+
+  this.playerMe = null;
+  this.players = [];
   this.playersById = {};
-  for(var i = 0; i < players.length; i++)
-    this.playersById[players[i].id] = players[i];
+
+  for(var i = 0; i < players.length; i++) {
+    this.addPlayer(players[i]);
+  }
 };
 goog.inherits(ble.tpg.model.Game, goog.events.EventTarget);
 var Game = ble.tpg.model.Game;
@@ -143,6 +147,10 @@ Game.fromJSON = function(o) {
       Stack.arrayFromJSON(o['stacks']),
       o['stacksInPlay'],
       o['url']);
+};
+
+Game.prototype.getMyPlayer = function() {
+  return this.playerMe;
 };
 
 var cometType = ble.net.EventType;
@@ -161,12 +169,12 @@ Game.prototype.handleEvent = function(event) {
   }
 };
 
-Game.prototype.addPlayer = function(id, name) {
-  if(id in this.playersById)
+Game.prototype.addPlayer = function(player) {
+  if(player.id in this.playersById)
     throw new Error('duplicate player id');
-  var newPlayer = Player.newForArray(this.players, id, name);
+  var newPlayer = Player.newForArray(this.players, player.id, player.name, player.isYou);
   this.players.push(newPlayer);
-  this.playersById[id] = newPlayer;
+  this.playersById[newPlayer.id] = newPlayer;
   return newPlayer;
 };
 
@@ -175,7 +183,8 @@ Game.prototype.processJsonEvent = function(o) {
   var event;
   switch(o['actionType']) {
     case 'joinGame':
-      var newPlayer = this.addPlayer(o['who'], o['name'])
+      
+      var newPlayer = this.addPlayer(new Player(o['who'], o['name'], o['isYou']));
       event = new Event(EventType.JOIN_GAME, this);
       event.player = newPlayer;
       this.dispatchEvent(event);

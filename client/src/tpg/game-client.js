@@ -58,7 +58,7 @@ Client.prototype.processStateResponse = function(stateResponse) {
   if(stateResponse.getState() == resultState.SUCCESS) {
     console.log('got state response');
     console.log(stateResponse.getValue());
-    try {
+    //try {
       //set up the game model
       var jsonObj = JSON.parse(stateResponse.getValue());
       var lastTime = jsonObj['lastTime'] || 0;
@@ -74,13 +74,29 @@ Client.prototype.processStateResponse = function(stateResponse) {
       this.scribbler.scribble.setEnabled(false);
       //set up the comet loop
       goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
+      goog.events.listen(this.game, modelType.ALL, this.handleGameEvent, false, this);
       this.cometLoop.runAt(this.game.lastTime); 
-    } catch(e) {
+      this.setupGameState();
+ /*   } catch(e) {
       console.log('frickin\' error.');
       console.log(e);
-    }
+    }*/
   } else {
     this.requestInitialState();
+  }
+};
+
+Client.prototype.handleGameEvent = function(e) {
+
+};
+
+Client.prototype.setupGameState = function() {
+  var game = this.game;
+  var me = game.getMyPlayer();
+  if(game.isStarted &&
+     goog.isDefAndNotNull(me) &&
+     game.inPlay[me.id] > 0) {
+    console.log("i guess we should have a drawing or something");
   }
 };
 
