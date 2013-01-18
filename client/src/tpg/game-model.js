@@ -132,6 +132,9 @@ ble.tpg.model.Game = function(id, lastTime, players, stacks, inPlay, url) {
 goog.inherits(ble.tpg.model.Game, goog.events.EventTarget);
 var Game = ble.tpg.model.Game;
 
+Game.prototype.width = 360;
+Game.prototype.height = 270;
+
 Game.fromJSON = function(o) {
   return new Game(
       o['id'],

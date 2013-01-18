@@ -7,7 +7,7 @@ goog.require('ble.net.QueryTimeComet');
 goog.require('ble.tpg.model.Game');
 
 goog.require('ble.tpg.ui.ChatContainer');
-//goog.require('ble.tpg.ui.Scribbler');
+goog.require('ble.tpg.ui.Scribbler');
 
 
 
@@ -57,6 +57,7 @@ Client.prototype.requestInitialState = function() {
 Client.prototype.processStateResponse = function(stateResponse) {
   if(stateResponse.getState() == resultState.SUCCESS) {
     console.log('got state response');
+    console.log(stateResponse.getValue());
     try {
       //set up the game model
       var jsonObj = JSON.parse(stateResponse.getValue());
@@ -67,6 +68,10 @@ Client.prototype.processStateResponse = function(stateResponse) {
       this.chatContainer = new ble.tpg.ui.ChatContainer(this.game);
       ble.util.replaceElemWithComponent(this.chatContainerDiv, this.chatContainer);
     
+      //set up the scribbler
+      this.scribbler = new ble.tpg.ui.Scribbler(this.game);
+      ble.util.replaceElemWithComponent(this.drawingContainerDiv, this.scribbler);
+      this.scribbler.scribble.setEnabled(false);
       //set up the comet loop
       goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
       this.cometLoop.runAt(this.game.lastTime); 
