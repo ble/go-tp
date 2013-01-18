@@ -51,7 +51,7 @@ func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			Error(w, "", StatusMethodNotAllowed)
 			return
 		} else {
-			stateJson, _ := json.Marshal(room.GetState())
+			stateJson, _ := json.Marshal(room.GetState(playerId))
 			w.Write(stateJson)
 		}
 	} else if len(parts) == 2 {

@@ -33,16 +33,18 @@ EventType.ALL = [
  * @constructor
  * @param{string} id
  * @param{string} name
+ * @param{boolean=} isYou
  */
-ble.tpg.model.Player = function(id, name) {
+ble.tpg.model.Player = function(id, name, isYou) {
   this.id = id;
   this.name = name;
+  this.isYou = isYou ? true : false;
   this.styleName = '';
 };
 var Player = ble.tpg.model.Player;
 
 Player.fromJSON = function(o) {
-  return new Player(o['id'], o['pseudonym']);
+  return new Player(o['id'], o['pseudonym'], o['isYou']);
 };
 
 Player.arrayFromJSON = function(o) {

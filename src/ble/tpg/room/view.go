@@ -7,12 +7,18 @@ import (
 	"time"
 )
 
-type playerJson struct{ model.Player }
+type playerJson struct {
+	model.Player
+	IsYou bool
+}
 
 func (p playerJson) MarshalJSON() ([]byte, error) {
 	result := make(map[string]interface{})
 	result["pseudonym"] = p.Pseudonym()
 	result["id"] = p.Pid()
+	if p.IsYou {
+		result["isYou"] = true
+	}
 	return json.Marshal(result)
 }
 
@@ -77,6 +83,7 @@ type gameJson struct {
 	model.Game
 	lastTime time.Time
 	web.Switchboard
+	requestingPlayerId string
 }
 
 func (g gameJson) MarshalJSON() ([]byte, error) {
@@ -109,9 +116,11 @@ func (g gameJson) MarshalJSON() ([]byte, error) {
 	players := g.Players()
 	cPlayers := make([]playerJson, len(players), len(players))
 	for i, player := range players {
-		cPlayers[i] = playerJson{player}
+		cPlayers[i] = playerJson{player, g.requestingPlayerId == player.Pid()}
 	}
 	result["players"] = cPlayers
 	result["lastTime"] = g.lastTime.UnixNano() / 1000
+	result["isStarted"] = g.IsStarted()
+	result["isComplete"] = g.IsComplete()
 	return json.Marshal(result)
 }

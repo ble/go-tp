@@ -59,8 +59,8 @@ func (a *aRoom) GetGame() model.Game {
 	return a.game
 }
 
-func (a *aRoom) GetState() interface{} {
-	return gameJson{a.game, a.GetLastEventTime(), a.roomService.switchboard}
+func (a *aRoom) GetState(pid string) interface{} {
+	return gameJson{a.game, a.GetLastEventTime(), a.roomService.switchboard, pid}
 }
 
 func (a *aRoom) Chat(uid, pid string, body []byte) error {

@@ -13,7 +13,7 @@ type RoomService interface {
 
 type Room interface {
 	GetGame() model.Game
-	GetState() interface{}
+	GetState(pid string) interface{}
 	Chat(uid, pid string, body []byte) error
 	Join(uid, pid string, body []byte) (string, error)
 	Pass(uid, pid string, body []byte) error
