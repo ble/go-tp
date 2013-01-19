@@ -1,7 +1,8 @@
 goog.require('goog.object');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.Event');
-goog.require('goog.net.EventType');
+goog.require('goog.labs.net.xhr');
+
 goog.require('ble.scribble.Drawing');
 
 goog.provide('ble.tpg.model.EventType');
@@ -12,6 +13,8 @@ goog.provide('ble.tpg.model.Game');
 
 goog.scope(function() {
 //scope-start
+
+var xhr = goog.labs.net.xhr;
 
 /**
  * @enum{string}
@@ -70,7 +73,7 @@ Player.newForArray = function(array, id, name, isYou) {
  * @param{string?} content
  * @param{string} url
  */
-ble.tpg.model.Drawing = function(id, content, url) {
+ble.tpg.model.Drawing = function(id, url, content) {
   this.id = id;
   this.content = content;
   this.url = url;
@@ -119,11 +122,15 @@ Stack.arrayFromJSON = function(o) {
  * @constructor
  * @extends{goog.events.EventTarget}
  */
-ble.tpg.model.Game = function(id, lastTime, players, stacks, inPlay, url) {
+ble.tpg.model.Game = function(
+    id, lastTime, players, stacks,
+    inPlay, url, isStarted, isComplete) {
   this.id = id;
   this.lastTime = lastTime;
   this.url = url;
 
+  this.isStarted = isStarted;
+  this.isComplete = isComplete;
 
   this.playerMe = null;
   this.players = [];
@@ -170,12 +177,19 @@ Game.fromJSON = function(o) {
       Player.arrayFromJSON(o['players']),
       Stack.arrayFromJSON(o['stacks']),
       o['stacksInPlay'],
-      o['url']);
+      o['url'],
+      o['isStarted'],
+      o['isComplete']);
 };
 
 Game.prototype.getMyPlayer = function() {
   return this.playerMe;
 };
+
+Game.prototype.getMyStacks = function() {
+  var me = this.playerMe; 
+  return this.stacksByHolderId[me.id];
+}
 
 var cometType = ble.net.EventType;
 var JSON = window.JSON;
@@ -197,6 +211,8 @@ Game.prototype.addPlayer = function(player) {
   var newPlayer = Player.newForArray(this.players, player.id, player.name, player.isYou);
   this.players.push(newPlayer);
   this.playersById[newPlayer.id] = newPlayer;
+  if(newPlayer.isYou)
+    this.playerMe = newPlayer;
   return newPlayer;
 };
 
@@ -208,6 +224,7 @@ Game.prototype.passStack = function(pFrom, pTo, stackId, url) {
     theStack = new Stack(stackId, url, null);
     this.stacks.push(theStack);
     this.stacksByHolderId[pTo.id] = [];
+    this.stacksById[theStack.id] = theStack;
   } else {
     theStack = this.stacksById[stackId];
   }
@@ -252,7 +269,6 @@ Game.prototype.processJsonEvent = function(o) {
       event.stack = this.stacksById[stackId];
       this.dispatchEvent(event);
       break;
-
   }
 }
 //scope-end

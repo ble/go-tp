@@ -31,6 +31,7 @@ var cometType = ble.net.EventType;
 var modelType = ble.tpg.model.EventType; 
 
 var Game = ble.tpg.model.Game;
+var Stack = ble.tpg.model.Stack;
 
 /** @constructor */
 ble.tpg.Client = function() {
@@ -90,7 +91,7 @@ Client.prototype.processStateResponse = function(stateResponse) {
 
       //set up the comet loop
       goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
-      goog.events.listen(this.game, modelType.ALL, this.handleGameEvent, false, this);
+      goog.events.listen(this.game, modelType.PASS, this.handlePass, false, this);
       this.cometLoop.runAt(this.game.lastTime); 
       this.setupGameState();
  /*   } catch(e) {
@@ -122,8 +123,27 @@ Client.prototype.postStartGame = function() {
 
 };
 
-Client.prototype.handleGameEvent = function(e) {
+Client.prototype.handlePass = function(e) {
+  if(e.to.isYou && e.stack === this.game.getMyStacks()[0]) {
+    this.makeDrawingReady();
+  }
+};
 
+Client.prototype.makeDrawingReady = function(e) {
+  var myStack = this.game.getMyStacks()[0];
+  var stackResponse = xhr.get(myStack.url);
+  stackResponse.wait(this.handleStackResult.bind(this));
+};
+
+Client.prototype.handleStackResult = function(result) {
+  if(result.getState() == resultState.SUCCESS) {
+    var newStack = Stack.fromJSON(JSON.parse(result.getValue()));
+    var oldStack = this.game.stacksById[newStack.id];
+    oldStack.drawings = newStack.drawings; 
+    this.scribbler.scribble.setEnabled(true);
+  } else {
+    console.error("shoot");
+  }
 };
 
 Client.prototype.setupGameState = function() {
@@ -131,6 +151,7 @@ Client.prototype.setupGameState = function() {
   var me = game.getMyPlayer();
   if(game.isStarted &&
      goog.isDefAndNotNull(me) ) {
+    this.scribbler.scribble.setEnabled(true);
     console.log("i guess we should have a drawing or something");
   }
 };
