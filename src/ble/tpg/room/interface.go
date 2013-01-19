@@ -2,13 +2,16 @@ package room
 
 import (
 	"ble/tpg/model"
+	"ble/web"
 	"net/url"
 	"time"
 )
 
 type RoomService interface {
 	GetRoom(string) (Room, error)
+	GetStackAndRoom(string) (model.Stack, Room, error)
 	PathTo(interface{}) (*url.URL, error)
+	GetSwitchboard() web.Switchboard
 }
 
 type Room interface {

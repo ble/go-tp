@@ -56,12 +56,12 @@ func (s stackJsonSimple) MarshalJSON() ([]byte, error) {
 	return json.Marshal(result)
 }
 
-type stackJson struct {
+type StackJson struct {
 	model.Stack
 	web.Switchboard
 }
 
-func (s stackJson) MarshalJSON() ([]byte, error) {
+func (s StackJson) MarshalJSON() ([]byte, error) {
 	result := make(map[string]interface{})
 	result["id"] = s.Sid()
 	url := s.URLOf(s.Stack)
@@ -107,9 +107,9 @@ func (g gameJson) MarshalJSON() ([]byte, error) {
 	result["stacksInPlay"] = stacksInPlayIds
 
 	stacks := g.Stacks()
-	cStacks := make([]stackJson, len(stacks), len(stacks))
+	cStacks := make([]StackJson, len(stacks), len(stacks))
 	for i, stack := range stacks {
-		cStacks[i] = stackJson{stack, g.Switchboard}
+		cStacks[i] = StackJson{stack, g.Switchboard}
 	}
 	result["stacks"] = cStacks
 

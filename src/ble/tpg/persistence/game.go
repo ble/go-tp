@@ -277,6 +277,7 @@ func (g *game) Start() error {
 			g:            g,
 			ds:           make([]model.Drawing, 0, N),
 			completed:    false}
+		g.recordNewStack(stack)
 		drawing := &drawing{
 			drawingBackend: g.drawingBackend,
 			did:            drawingId,

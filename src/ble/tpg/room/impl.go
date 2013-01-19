@@ -39,6 +39,24 @@ func (r *roomService) GetRoom(gameId string) (Room, error) {
 	return newRoom, nil
 }
 
+func (r *roomService) GetSwitchboard() web.Switchboard {
+	return r.switchboard
+}
+
+func (r *roomService) GetStackAndRoom(sid string) (model.Stack, Room, error) {
+	theStack, ok := r.backend.GetStackForId(sid)
+	if !ok {
+		return nil, nil, errors.New("no such stack")
+	}
+
+	theRoom, err := r.GetRoom(theStack.Game().Gid())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return theStack, theRoom, nil
+}
+
 func (r *roomService) PathTo(obj interface{}) (*url.URL, error) {
 	url := r.switchboard.URLOf(obj)
 	if url == nil {

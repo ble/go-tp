@@ -61,9 +61,13 @@ func NewSwitchboard(b *persistence.Backend) *Switchboard {
 		mappings: mappings,
 		ephemera: eph,
 		fallback: http.NotFoundHandler()}
-	gameHandler := handler.NewGameHandler(room.NewRoomService(sb, b))
+
+	roomService := room.NewRoomService(sb, b)
+	gameHandler := handler.NewGameHandler(roomService)
 	mappings[0] = newGameMapping(gameHandler)
-	mappings[1] = newStackMapping(nil)
+
+	stackHandler := handler.NewStackHandler(roomService)
+	mappings[1] = newStackMapping(stackHandler)
 	mappings[2] = newDrawingMapping(nil)
 	mappings[3] = newEphMapping(eph)
 	mappings[4] = newStaticMapping("./static/", "/static/")
