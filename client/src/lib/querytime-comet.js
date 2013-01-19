@@ -6,7 +6,6 @@ goog.provide('ble.net.QueryTimeComet');
 goog.scope(function() {
 var netType = goog.net.EventType;
 var JSON = window.JSON;
-var console = window.console;
 
 /**
  * @constructor
