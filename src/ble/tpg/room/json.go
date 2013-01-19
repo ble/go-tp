@@ -12,6 +12,7 @@ type action struct {
 	StackId    string `json:"stackId,omitempty"`
 	Content    string `json:"content,omitempty"`
 	Name       string `json:"name,omitempty"`
+	URL        string `json:"url,omitempty"`
 }
 
 func asjoingame(data []byte) (*action, error) {
@@ -66,12 +67,13 @@ func aspassstack(data []byte) (*action, error) {
 	return nil, errors.New("bad input json")
 }
 
-func passstack(playerid, recipientid, stackid string) action {
+func passstack(playerid, recipientid, stackid, url string) action {
 	return action{
 		ActionType: "passStack",
 		Who:        playerid,
 		ToWhom:     recipientid,
-		StackId:    stackid}
+		StackId:    stackid,
+		URL:        url}
 }
 
 func asstartgame(data []byte) (*action, error) {

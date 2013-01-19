@@ -1,7 +1,8 @@
+goog.require('goog.object');
 goog.require('goog.events.EventTarget');
-goog.require('ble.scribble.Drawing');
-goog.require('goog.net.EventType');
 goog.require('goog.events.Event');
+goog.require('goog.net.EventType');
+goog.require('ble.scribble.Drawing');
 
 goog.provide('ble.tpg.model.EventType');
 goog.provide('ble.tpg.model.Player');
@@ -121,9 +122,8 @@ Stack.arrayFromJSON = function(o) {
 ble.tpg.model.Game = function(id, lastTime, players, stacks, inPlay, url) {
   this.id = id;
   this.lastTime = lastTime;
-  this.stacks = stacks;
-  this.inPlay = inPlay;
   this.url = url;
+
 
   this.playerMe = null;
   this.players = [];
@@ -132,9 +132,33 @@ ble.tpg.model.Game = function(id, lastTime, players, stacks, inPlay, url) {
   for(var i = 0; i < players.length; i++) {
     this.addPlayer(players[i]);
   }
+
+  this.stacks = [];
+  this.stacksById = {};
+  this.stacksByHolderId = {};
+
+  this.addStacks(stacks, inPlay);
 };
 goog.inherits(ble.tpg.model.Game, goog.events.EventTarget);
 var Game = ble.tpg.model.Game;
+
+Game.prototype.addStacks = function(stacks, inPlay) {
+  for(var i = 0; i < stacks.length; i++) {
+    var stack = stacks[i];
+    this.stacks.push(stack);
+    this.stacksById[stack.id] = stack;
+  }
+  goog.object.forEach(
+      inPlay,
+      function(stackIds, holderId) {
+        var held = [];
+        this.stacksByHolderId[holderId] = held;
+        for(var i = 0; i < stackIds.length; i++) {
+          held.push(this.stacksById[stackIds[i]]);
+        }
+      },
+      this);
+};
 
 Game.prototype.width = 360;
 Game.prototype.height = 270;
@@ -154,7 +178,6 @@ Game.prototype.getMyPlayer = function() {
 };
 
 var cometType = ble.net.EventType;
-var console = window.console;
 var JSON = window.JSON;
 Game.prototype.handleEvent = function(event) {
   if(event.type == cometType.COMET_DATA) {
@@ -165,7 +188,6 @@ Game.prototype.handleEvent = function(event) {
         this.processJsonEvent(receivedEvents[i]);
       }
     }
-    console.log(json);
   }
 };
 
@@ -176,6 +198,28 @@ Game.prototype.addPlayer = function(player) {
   this.players.push(newPlayer);
   this.playersById[newPlayer.id] = newPlayer;
   return newPlayer;
+};
+
+Game.prototype.passStack = function(pFrom, pTo, stackId, url) {
+  var theStack;
+  //if this stack is not being passed from someone,
+  //it's just been created at the start of the game.
+  if(!goog.isDefAndNotNull(pFrom)) {
+    theStack = new Stack(stackId, url, null);
+    this.stacks.push(theStack);
+    this.stacksByHolderId[pTo.id] = [];
+  } else {
+    theStack = this.stacksById[stackId];
+  }
+
+  this.stacksByHolderId[pTo.id].push(theStack); 
+
+  if(goog.isDefAndNotNull(pFrom)) {
+    var heldByPasser = this.stacksByHolderId[pFrom];
+    if(heldByPasser[0] !== theStack)
+      throw new Error("expected first stack to be passed");
+    heldByPasser.shift();
+  }
 };
 
 var Event = goog.events.Event;
@@ -190,10 +234,22 @@ Game.prototype.processJsonEvent = function(o) {
       this.dispatchEvent(event);
       break;
     case 'chat':
-      var player = this.playersById[o['who']]
+      var player = this.playersById[o['who']];
       event = new Event(EventType.CHAT, this);
       event.player = player;
       event.content = o['content'];
+      this.dispatchEvent(event);
+      break;
+    case 'passStack':
+      var playerFrom = this.playersById[o['who']];
+      var playerTo = this.playersById[o['toWhom']];
+      var stackId = o['stackId'];
+      var url = o['url'];
+      this.passStack(playerFrom, playerTo, stackId, url);
+      event = new Event(EventType.PASS);
+      event.from = playerFrom;
+      event.to = playerTo;
+      event.stack = this.stacksById[stackId];
       this.dispatchEvent(event);
       break;
 

@@ -96,15 +96,15 @@ func (g gameJson) MarshalJSON() ([]byte, error) {
 		result["url"] = nil
 	}
 	stacksInPlay := g.StacksInProgress()
-	cStacksInPlay := make(map[string][]stackJsonSimple)
+	stacksInPlayIds := make(map[string][]string)
 	for player, stacks := range stacksInPlay {
-		cStacks := make([]stackJsonSimple, len(stacks), len(stacks))
+		stackIds := make([]string, len(stacks), len(stacks))
 		for i, stack := range stacks {
-			cStacks[i] = stackJsonSimple{stack, g.Switchboard}
+			stackIds[i] = stack.Sid()
 		}
-		cStacksInPlay[player.Pid()] = cStacks
+		stacksInPlayIds[player.Pid()] = stackIds
 	}
-	result["stacksInPlay"] = cStacksInPlay
+	result["stacksInPlay"] = stacksInPlayIds
 
 	stacks := g.Stacks()
 	cStacks := make([]stackJson, len(stacks), len(stacks))

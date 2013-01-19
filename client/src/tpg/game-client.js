@@ -130,8 +130,7 @@ Client.prototype.setupGameState = function() {
   var game = this.game;
   var me = game.getMyPlayer();
   if(game.isStarted &&
-     goog.isDefAndNotNull(me) &&
-     game.inPlay[me.id] > 0) {
+     goog.isDefAndNotNull(me) ) {
     console.log("i guess we should have a drawing or something");
   }
 };

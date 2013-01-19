@@ -105,11 +105,13 @@ func (a *aRoom) Pass(uid, pid string, body []byte) error {
 		return err
 	}
 
+	switchboard := a.roomService.switchboard
+	url := switchboard.URLOf(stack).String()
 	if stack.TopDrawing().Player() != player {
 		nextPlayer := a.game.NextPlayer(player)
-		a.events <- passstack(player.Pid(), nextPlayer.Pid(), stack.Sid())
+		a.events <- passstack(player.Pid(), nextPlayer.Pid(), stack.Sid(), url)
 	} else {
-		a.events <- passstack(player.Pid(), "", stack.Sid())
+		a.events <- passstack(player.Pid(), "", stack.Sid(), url)
 	}
 	return nil
 }
@@ -127,7 +129,23 @@ func (a *aRoom) Start(uid, pid string, body []byte) error {
 	if err != nil {
 		return err
 	}
-	a.events <- startgame(pid)
+	switchboard := a.roomService.switchboard
+	events := make([]interface{}, 0, 10)
+	events = append(events, startgame(pid))
+	for player, stacks := range a.game.StacksInProgress() {
+		for _, stack := range stacks {
+			events = append(
+				events,
+				passstack(
+					"",
+					player.Pid(),
+					stack.Sid(),
+					switchboard.URLOf(stack).String()))
+		}
+	}
+	for _, event := range events {
+		a.events <- event
+	}
 	return nil
 }
 
