@@ -44,6 +44,7 @@ func (h HashEasy) String() string {
 
 func EasyNonce(stuff ...interface{}) string {
 	h := NewHashEasy()
+	h.Nonce()
 	for _, v := range stuff {
 		switch v.(type) {
 		case string:
