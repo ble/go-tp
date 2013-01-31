@@ -1,4 +1,5 @@
 goog.require('goog.ui.Component');
+goog.require('goog.events');
 
 goog.require('ble.scribble.UI');
 
@@ -22,6 +23,4 @@ ble.tpg.ui.Scribbler = function(game) {
   this.addChild(this.scribble, true);
 };
 goog.inherits(ble.tpg.ui.Scribbler, Component);
-
-
 });

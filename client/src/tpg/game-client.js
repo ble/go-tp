@@ -7,6 +7,8 @@ goog.require('goog.net.EventType');
 
 goog.require('goog.labs.net.xhr');
 
+goog.require('ble.scribble.EventType');
+
 goog.require('ble.net.QueryTimeComet');
 goog.require('ble.tpg.model.Game');
 
@@ -68,7 +70,8 @@ Client.prototype.processStateResponse = function(stateResponse) {
       //set up the game model
       var jsonObj = JSON.parse(stateResponse.getValue());
       var lastTime = jsonObj['lastTime'] || 0;
-      this.game = Game.fromJSON(jsonObj);
+      this.game = Game.fromJSON(jsonObj); 
+      goog.events.listen(this.game, modelType.PASS, this.handlePass, false, this);
 
       //set up the chat ui
       this.chatContainer = new ble.tpg.ui.ChatContainer(this.game);
@@ -78,20 +81,28 @@ Client.prototype.processStateResponse = function(stateResponse) {
       this.scribbler = new ble.tpg.ui.Scribbler(this.game);
       ble.util.replaceElemWithComponent(this.drawingContainerDiv, this.scribbler);
       this.scribbler.scribble.setEnabled(false);
-
-      this.startButton = new goog.ui.Button("start game!");
-
-      ble.util.replaceElemWithComponent(this.startButtonDiv, this.startButton);
       goog.events.listen(
-        this.startButton,
-        goog.ui.Component.EventType.ACTION,
-        this.postStartGame,
-        false,
-        this);
+          this.scribbler, 
+          ble.scribble.EventType.DRAW_END,
+          this.postDraw,
+          false,
+          this);
+
+      if(!this.game.isStarted) {
+      //set up the start-game button
+        this.startButton = new goog.ui.Button("start game!"); 
+        ble.util.replaceElemWithComponent(this.startButtonDiv, this.startButton);
+        goog.events.listen(
+          this.startButton,
+          goog.ui.Component.EventType.ACTION,
+          this.postStartGame,
+          false,
+          this);
+      }
+
 
       //set up the comet loop
       goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
-      goog.events.listen(this.game, modelType.PASS, this.handlePass, false, this);
       this.cometLoop.runAt(this.game.lastTime); 
       this.setupGameState();
  /*   } catch(e) {
@@ -101,6 +112,10 @@ Client.prototype.processStateResponse = function(stateResponse) {
   } else {
     this.requestInitialState();
   }
+};
+
+Client.prototype.postDraw = function(e) {
+  console.log(e);
 };
 
 Client.prototype.postStartGame = function() {
@@ -140,6 +155,7 @@ Client.prototype.handleStackResult = function(result) {
     var newStack = Stack.fromJSON(JSON.parse(result.getValue()));
     var oldStack = this.game.stacksById[newStack.id];
     oldStack.drawings = newStack.drawings; 
+    this.setupGameState();
     this.scribbler.scribble.setEnabled(true);
   } else {
     console.error("shoot");
