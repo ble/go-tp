@@ -17,14 +17,14 @@ func (d *drawingsBackend) addDrawingToBackend(drawing model.Drawing) {
 	defer d.Unlock()
 }
 
-func (d *drawingsBackend) DrawingById(did string) model.Drawing {
+func (d *drawingsBackend) GetDrawingForId(did string) (model.Drawing, bool) {
 	d.RLock()
 	drawing, present := d.drawings[did]
 	d.RUnlock()
 	if !present {
-		return nil
+		return nil, false
 	}
-	return drawing
+	return drawing, true
 }
 
 func (dbe *drawingsBackend) CanDrawingBeSeen(d model.Drawing, u model.User) bool {

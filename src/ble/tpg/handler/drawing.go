@@ -31,6 +31,7 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 	}
 
 	playerId, _ := getPlayerId(r)
+	userId, _ := getUserId(r)
 
 	if isGet(r) {
 		// the stack is complete ==>
@@ -52,7 +53,7 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			}
 		}
 		if canGet {
-			jsonBytes, err := json.marshal(drawing)
+			jsonBytes, err := json.Marshal(drawing)
 			if err != nil {
 				Error(w, err.Error(), StatusInternalServerError)
 			} else {
@@ -67,6 +68,7 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			drawing.Player().Pid() != playerId {
 			Error(w, "not allowed to write to drawing", StatusBadRequest)
 		} else {
+			room.Draw(userId, playerId, drawing, r.Body)
 			//TODO: process change to drawing
 		}
 	} else {

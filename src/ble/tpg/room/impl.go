@@ -6,6 +6,7 @@ import (
 	"ble/web"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 )
 
@@ -55,6 +56,21 @@ func (r *roomService) GetStackAndRoom(sid string) (model.Stack, Room, error) {
 	}
 
 	return theStack, theRoom, nil
+}
+
+func (r *roomService) GetDrawingAndRoom(did string) (model.Drawing, Room, error) {
+	theDrawing, ok := r.backend.GetDrawingForId(did)
+	if !ok {
+		return nil, nil, errors.New("no such drawing")
+	}
+
+	gameId := theDrawing.Stack().Game().Gid()
+	theRoom, err := r.GetRoom(gameId)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return theDrawing, theRoom, nil
 }
 
 func (r *roomService) PathTo(obj interface{}) (*url.URL, error) {
@@ -163,6 +179,25 @@ func (a *aRoom) Start(uid, pid string, body []byte) error {
 	}
 	for _, event := range events {
 		a.events <- event
+	}
+	return nil
+}
+
+func (a *aRoom) Draw(uid, pid string, d model.Drawing, body io.Reader) error {
+	player := a.game.PlayerForId(pid)
+	if player == nil {
+		return errors.New("no such player")
+	}
+	if d.Player().Pid() != pid {
+		return errors.New("player not allowed to access this drawing")
+	}
+	if d.IsComplete() {
+		return errors.New("can't draw on a completed drawing")
+	}
+	if drawAction, err := readDrawAction(body); err != nil {
+		return err
+	} else {
+		d.Add(drawAction.Content)
 	}
 	return nil
 }

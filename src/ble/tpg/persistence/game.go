@@ -84,7 +84,11 @@ func (g *game) JoinGame(u model.User, pseudonym string) (model.Player, error) {
 }
 
 func (g *game) PlayerForId(pid string) model.Player {
-	return g.playersById[pid]
+	player, ok := g.playersById[pid]
+	if !ok {
+		return nil
+	}
+	return player
 }
 
 func (g *game) Stacks() []model.Stack {
