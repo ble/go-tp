@@ -68,7 +68,10 @@ func NewSwitchboard(b *persistence.Backend) *Switchboard {
 
 	stackHandler := handler.NewStackHandler(roomService)
 	mappings[1] = newStackMapping(stackHandler)
-	mappings[2] = newDrawingMapping(nil)
+
+	drawingHandler := handler.NewDrawingHandler(roomService)
+	mappings[2] = newDrawingMapping(drawingHandler)
+
 	mappings[3] = newEphMapping(eph)
 	mappings[4] = newStaticMapping("./static/", "/static/")
 	return sb

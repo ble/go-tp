@@ -23,7 +23,7 @@ type Room interface {
 	Join(uid, pid string, body []byte) (string, error)
 	Pass(uid, pid string, body []byte) error
 	Start(uid, pid string, body []byte) error
-	Draw(uid, pid string, d model.Drawing, body io.Reader) error
+	Draw(uid string, d model.Drawing, body io.Reader) error
 	AccessClient(uid, pid string) error
 	AccessJoinClient(uid, pid string) (string, error)
 	GetEvents(uid, pid string, lastQueryTime time.Time) (interface{}, error)

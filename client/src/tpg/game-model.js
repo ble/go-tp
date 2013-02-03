@@ -81,7 +81,7 @@ ble.tpg.model.Drawing = function(id, url, content) {
 var Drawing = ble.tpg.model.Drawing;
 
 Drawing.fromJSON = function(o) {
-  return new Drawing(o['id'], null, o['url']);
+  return new Drawing(o['id'], o['url'], null);
 };
 
 Drawing.arrayFromJSON = function(o) {

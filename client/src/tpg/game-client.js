@@ -115,7 +115,24 @@ Client.prototype.processStateResponse = function(stateResponse) {
 };
 
 Client.prototype.postDraw = function(e) {
+  //TODO: disable drawing while waiting for a draw part to post?
+  var myStack = this.game.getMyStacks()[0];
+  var myDrawing = myStack.drawings[0];
+  console.log(myDrawing);
+  var drawRequest = xhr.post(
+      myDrawing.url,
+      JSON.stringify({
+        'actionType': 'draw',
+        'content': e.drawn}),
+      {'headers':
+        {'Content-Type': 'application/json'}});
+
   console.log(e);
+  drawRequest.wait((function(result) {
+    console.log(result.getState());
+    console.log(result);
+  }).bind(this));
+
 };
 
 Client.prototype.postStartGame = function() {
@@ -157,6 +174,7 @@ Client.prototype.handleStackResult = function(result) {
     oldStack.drawings = newStack.drawings; 
     this.setupGameState();
     this.scribbler.scribble.setEnabled(true);
+    //TODO: get the relevant drawings here...
   } else {
     console.error("shoot");
   }

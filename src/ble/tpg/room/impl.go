@@ -183,12 +183,8 @@ func (a *aRoom) Start(uid, pid string, body []byte) error {
 	return nil
 }
 
-func (a *aRoom) Draw(uid, pid string, d model.Drawing, body io.Reader) error {
-	player := a.game.PlayerForId(pid)
-	if player == nil {
-		return errors.New("no such player")
-	}
-	if d.Player().Pid() != pid {
+func (a *aRoom) Draw(uid string, d model.Drawing, body io.Reader) error {
+	if d.Player().User().Uid() != uid {
 		return errors.New("player not allowed to access this drawing")
 	}
 	if d.IsComplete() {

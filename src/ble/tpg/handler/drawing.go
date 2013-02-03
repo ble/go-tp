@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"ble/tpg/model"
 	"ble/tpg/room"
 	"encoding/json"
 	. "net/http"
@@ -30,22 +31,24 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		Error(w, err.Error(), StatusNotFound)
 	}
 
-	playerId, _ := getPlayerId(r)
 	userId, _ := getUserId(r)
+	sameUserId := func(uid string, d model.Drawing) bool {
+		return uid == d.Player().User().Uid()
+	}
 
 	if isGet(r) {
 		// the stack is complete ==>
 		//        anyone can get the drawing.
 		canGet := drawing.Stack().IsComplete()
 		//        the drawing player can always get it
-		canGet = canGet || drawing.Player().Pid() == playerId
+		canGet = canGet || sameUserId(userId, drawing)
 		// the drawing is complete ==>
 		//        any player who has completed a drawing
 		//        in this stack can get it
 		if !canGet && drawing.IsComplete() {
 			stack := drawing.Stack()
 			for _, otherDrawing := range stack.AllDrawings() {
-				if otherDrawing.Player().Pid() == playerId &&
+				if sameUserId(userId, otherDrawing) &&
 					otherDrawing.IsComplete() {
 					canGet = true
 					break
@@ -65,11 +68,10 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		return
 	} else if isPost(r) {
 		if drawing.IsComplete() ||
-			drawing.Player().Pid() != playerId {
+			!sameUserId(userId, drawing) {
 			Error(w, "not allowed to write to drawing", StatusBadRequest)
 		} else {
-			room.Draw(userId, playerId, drawing, r.Body)
-			//TODO: process change to drawing
+			room.Draw(userId, drawing, r.Body)
 		}
 	} else {
 		Error(w, "method not allowed", StatusMethodNotAllowed)
