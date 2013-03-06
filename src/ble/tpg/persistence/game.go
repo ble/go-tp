@@ -4,6 +4,7 @@ import (
 	"ble/hash"
 	"ble/tpg/model"
 	"database/sql"
+	"encoding/json"
 	"errors"
 )
 
@@ -287,7 +288,7 @@ func (g *game) Start() error {
 			did:            drawingId,
 			s:              stack,
 			p:              player,
-			content:        make([]interface{}, 0, 32),
+			content:        make([]json.Marshaler, 0, 32),
 			completed:      false}
 		stack.ds = append(stack.ds, drawing)
 		stacks = append(stacks, stack)

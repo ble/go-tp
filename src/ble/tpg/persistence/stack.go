@@ -4,6 +4,7 @@ import (
 	"ble/hash"
 	"ble/tpg/model"
 	"database/sql"
+	"encoding/json"
 	"errors"
 )
 
@@ -74,7 +75,7 @@ func (s *stack) AddDrawing(p model.Player) (model.Drawing, error) {
 		did:            drawingId,
 		s:              s,
 		p:              p,
-		content:        make([]interface{}, 0, 32),
+		content:        make([]json.Marshaler, 0, 32),
 		completed:      false}
 	s.ds = append(s.ds, drawing)
 	s.addDrawingToBackend(drawing)

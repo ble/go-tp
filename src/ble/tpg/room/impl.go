@@ -193,7 +193,7 @@ func (a *aRoom) Draw(uid string, d model.Drawing, body io.Reader) error {
 	if drawAction, err := readDrawAction(body); err != nil {
 		return err
 	} else {
-		d.Add(drawAction.Content)
+		return d.Add(drawAction.Content)
 	}
 	return nil
 }

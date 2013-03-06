@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	D "ble/tpg/drawing"
 	"ble/tpg/model"
 	"database/sql"
 	"encoding/json"
@@ -25,7 +26,7 @@ type drawing struct {
 	did       string
 	s         model.Stack
 	p         model.Player
-	content   []interface{}
+	content   []json.Marshaler
 	completed bool
 }
 
@@ -45,7 +46,7 @@ func (d drawing) Player() model.Player {
 	return d.p
 }
 
-func (d drawing) Content() []interface{} {
+func (d drawing) Content() []json.Marshaler {
 	return d.content
 }
 
@@ -103,10 +104,7 @@ func (d *drawing) Complete() error {
 	return nil
 }
 
-func (d *drawing) Add(x interface{}) error {
-	if !d.validateDrawPart(x) {
-		return errors.New("invalid draw part")
-	}
+func (d *drawing) Add(x D.DrawPart) error {
 	if err := d.prepStatement(
 		"addDrawPart",
 		`INSERT INTO drawParts (did, ord, json)

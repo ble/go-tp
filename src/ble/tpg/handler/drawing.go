@@ -56,7 +56,7 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			}
 		}
 		if canGet {
-			jsonBytes, err := json.Marshal(drawing)
+			jsonBytes, err := json.Marshal(drawing.Content())
 			if err != nil {
 				Error(w, err.Error(), StatusInternalServerError)
 			} else {
@@ -71,7 +71,10 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 			!sameUserId(userId, drawing) {
 			Error(w, "not allowed to write to drawing", StatusBadRequest)
 		} else {
-			room.Draw(userId, drawing, r.Body)
+			err := room.Draw(userId, drawing, r.Body)
+			if err != nil {
+				Error(w, err.Error(), StatusBadRequest)
+			}
 		}
 	} else {
 		Error(w, "method not allowed", StatusMethodNotAllowed)

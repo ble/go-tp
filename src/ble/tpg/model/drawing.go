@@ -1,12 +1,15 @@
 package model
 
+import "ble/tpg/drawing"
+import "encoding/json"
+
 type Drawing interface {
 	Did() string
 	Stack() Stack
 	Player() Player
-	Content() []interface{}
+	Content() []json.Marshaler
 
-	Add(interface{}) error
+	Add(drawing.DrawPart) error
 
 	IsComplete() bool
 	Complete() error
