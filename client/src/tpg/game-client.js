@@ -46,7 +46,9 @@ Client.prototype.initialize = function() {
   if(this.initialized)
     return;
   this.bindToExistingDom();
-  this.requestInitialState();
+  this.game = new Game('./');
+  goog.events.listen(this.game, modelType.READ_STATE, this.setupWithState, false, this);
+  this.game.requestState();
 };
 
 
@@ -56,63 +58,41 @@ Client.prototype.bindToExistingDom = function() {
   this.startButtonDiv = document.getElementById('start-game-button');
 };
 
-Client.prototype.requestInitialState = function() {
-  var url = './'; 
-  var stateRequest = xhr.get(url);
-  stateRequest.wait(goog.bind(this.processStateResponse, this));
-};
+Client.prototype.setupWithState = function() {
+  goog.events.listen(this.game, modelType.PASS, this.handlePass, false, this);
 
-Client.prototype.processStateResponse = function(stateResponse) {
-  if(stateResponse.getState() == resultState.SUCCESS) {
-    console.log('got state response');
-    console.log(stateResponse.getValue());
-    //try {
-      //set up the game model
-      var jsonObj = JSON.parse(stateResponse.getValue());
-      var lastTime = jsonObj['lastTime'] || 0;
-      this.game = Game.fromJSON(jsonObj); 
-      goog.events.listen(this.game, modelType.PASS, this.handlePass, false, this);
+  //set up the chat ui
+  this.chatContainer = new ble.tpg.ui.ChatContainer(this.game);
+  ble.util.replaceElemWithComponent(this.chatContainerDiv, this.chatContainer);
 
-      //set up the chat ui
-      this.chatContainer = new ble.tpg.ui.ChatContainer(this.game);
-      ble.util.replaceElemWithComponent(this.chatContainerDiv, this.chatContainer);
-    
-      //set up the scribbler
-      this.scribbler = new ble.tpg.ui.Scribbler(this.game);
-      ble.util.replaceElemWithComponent(this.drawingContainerDiv, this.scribbler);
-      this.scribbler.scribble.setEnabled(false);
-      goog.events.listen(
-          this.scribbler, 
-          ble.scribble.EventType.DRAW_END,
-          this.postDraw,
-          false,
-          this);
+  //set up the scribbler
+  this.scribbler = new ble.tpg.ui.Scribbler(this.game);
+  ble.util.replaceElemWithComponent(this.drawingContainerDiv, this.scribbler);
+  this.scribbler.scribble.setEnabled(false);
+  goog.events.listen(
+      this.scribbler, 
+      ble.scribble.EventType.DRAW_END,
+      this.postDraw,
+      false,
+      this);
 
-      if(!this.game.isStarted) {
-      //set up the start-game button
-        this.startButton = new goog.ui.Button("start game!"); 
-        ble.util.replaceElemWithComponent(this.startButtonDiv, this.startButton);
-        goog.events.listen(
-          this.startButton,
-          goog.ui.Component.EventType.ACTION,
-          this.postStartGame,
-          false,
-          this);
-      }
-
-
-      //set up the comet loop
-      goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
-      this.cometLoop.runAt(this.game.lastTime); 
-      this.setupGameState();
- /*   } catch(e) {
-      console.log('frickin\' error.');
-      console.log(e);
-    }*/
-  } else {
-    this.requestInitialState();
+  if(!this.game.isStarted) {
+  //set up the start-game button
+    this.startButton = new goog.ui.Button("start game!"); 
+    ble.util.replaceElemWithComponent(this.startButtonDiv, this.startButton);
+    goog.events.listen(
+      this.startButton,
+      goog.ui.Component.EventType.ACTION,
+      this.postStartGame,
+      false,
+      this);
   }
-};
+
+  //set up the comet loop
+  goog.events.listen(this.cometLoop, cometType.COMET_DATA, this.game);
+  this.cometLoop.runAt(this.game.lastTime); 
+  this.setupGameState(); 
+}
 
 Client.prototype.postDraw = function(e) {
   //TODO: disable drawing while waiting for a draw part to post?

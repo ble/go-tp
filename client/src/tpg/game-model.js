@@ -20,6 +20,7 @@ var xhr = goog.labs.net.xhr;
  * @enum{string}
  */
 ble.tpg.model.EventType = ({
+  READ_STATE: 'tpg-read-state',
   CHAT: 'tpg-chat',
   PASS: 'tpg-pass',
   START_GAME: 'tpg-start-game',
@@ -33,6 +34,7 @@ EventType.ALL = [
   EventType.COMPLETE_GAME,
   EventType.JOIN_GAME];
 
+var resultState = goog.result.Result.State;
 /**
  * @constructor
  * @param{string} id
@@ -122,32 +124,58 @@ Stack.arrayFromJSON = function(o) {
  * @constructor
  * @extends{goog.events.EventTarget}
  */
-ble.tpg.model.Game = function(
-    id, lastTime, players, stacks,
-    inPlay, url, isStarted, isComplete) {
-  this.id = id;
-  this.lastTime = lastTime;
+ble.tpg.model.Game = function(url) {
   this.url = url;
+  this.id = null;
+  this.lastTime = null;
 
-  this.isStarted = isStarted;
-  this.isComplete = isComplete;
+  this.isStarted = false;
+  this.isComplete = false;
 
   this.playerMe = null;
   this.players = [];
   this.playersById = {};
 
-  for(var i = 0; i < players.length; i++) {
-    this.addPlayer(players[i]);
+  this.stacks = [];
+  this.stacksById = {};
+  this.stacksByHolderId = {}
+};
+goog.inherits(ble.tpg.model.Game, goog.events.EventTarget);
+var Game = ble.tpg.model.Game;
+
+Game.prototype.requestState = function() {
+  var stateReq = xhr.get(this.url);
+  stateReq.wait(goog.bind(this.processStateResponse, this));
+};
+
+Game.prototype.processStateResponse = function(stateResp) {
+  if(stateResp.getState() == resultState.SUCCESS) {
+    var obj = JSON.parse(stateResp.getValue());
+    this.populateFromJSON(obj);
+    this.dispatchEvent(new Event(EventType.READ_STATE));
   }
+};
+
+Game.prototype.width = 360;
+Game.prototype.height = 270;
+
+Game.prototype.populateFromJSON = function(o) {
+  this.id = o['id'];
+  this.lastTime = o['lastTime'];
+  this.url = o['url'];
+  this.isStarted = o['isStarted'];
+  this.isComplete = o['isComplete'];
+
+  var players = Player.arrayFromJSON(o['players']);
+  for(var i = 0; i < players.length; i++)
+    this.addPlayer(players[i]);
 
   this.stacks = [];
   this.stacksById = {};
   this.stacksByHolderId = {};
-
-  this.addStacks(stacks, inPlay);
+  var stacks = Stack.arrayFromJSON(o['stacks']);
+  this.addStacks(stacks, o['stacksInPlay']);
 };
-goog.inherits(ble.tpg.model.Game, goog.events.EventTarget);
-var Game = ble.tpg.model.Game;
 
 Game.prototype.addStacks = function(stacks, inPlay) {
   for(var i = 0; i < stacks.length; i++) {
@@ -167,27 +195,14 @@ Game.prototype.addStacks = function(stacks, inPlay) {
       this);
 };
 
-Game.prototype.width = 360;
-Game.prototype.height = 270;
 
-Game.fromJSON = function(o) {
-  return new Game(
-      o['id'],
-      o['lastTime'],
-      Player.arrayFromJSON(o['players']),
-      Stack.arrayFromJSON(o['stacks']),
-      o['stacksInPlay'],
-      o['url'],
-      o['isStarted'],
-      o['isComplete']);
-};
 
 Game.prototype.getMyPlayer = function() {
   return this.playerMe;
 };
 
 Game.prototype.getMyStacks = function() {
-  var me = this.playerMe; 
+  var me = this.playerMe;
   return this.stacksByHolderId[me.id];
 }
 
@@ -229,7 +244,7 @@ Game.prototype.passStack = function(pFrom, pTo, stackId, url) {
     theStack = this.stacksById[stackId];
   }
 
-  this.stacksByHolderId[pTo.id].push(theStack); 
+  this.stacksByHolderId[pTo.id].push(theStack);
 
   if(goog.isDefAndNotNull(pFrom)) {
     var heldByPasser = this.stacksByHolderId[pFrom];
@@ -244,7 +259,7 @@ Game.prototype.processJsonEvent = function(o) {
   var event;
   switch(o['actionType']) {
     case 'joinGame':
-      
+
       var newPlayer = this.addPlayer(new Player(o['who'], o['name'], o['isYou']));
       event = new Event(EventType.JOIN_GAME, this);
       event.player = newPlayer;
