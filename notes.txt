@@ -1,32 +1,33 @@
-GAME CLIENT:
-  How should we set up our fancy-dancy game client UI?
-  Decorate... stuff...
-    .game-title <-- name of game
-    .status-container <-- status
-    .chat-container <-- chat lines
-    .drawing-container <-- canvas, etc.
+Structure of the client-side:
+
+Client-Passive
+Model
+Client-Active
+UI
 
 
-OUTSTANDING FUNCTIONALITY ISSUES:
-  + Chatting
-  + Starting games
-  + Access to drawings
-  + Handler for drawings
-  + Grand JSON event stream
+Active client requests game state, creates model, starts passive client
+passive client polls / websockets for game state updates and mutates the model
 
 
-+ ACCESS TO DRAWINGS
-An incomplete drawing can only be accessed by the user who is drawing it.
-A complete drawing in an incomplete stack can only be accessed by a user who
-drew a picture in that stack.
-A complete drawing in a complete stack can be accessed by anyone.
-+ HANDLER FOR DRAWINGS
-Need to grab either the in-memory or persistent drawing, yuck.
-Need to ensure consistent access when adding parts to drawing, completing
-drawing
 
-+ GRAND JSON EVENT STREAM
-Yes, please.
+Client
+  Active (part of client interface)
+  Passive (owned by client)
+  Game model (owned by client)
+  Wiring (owned by client?) that processes passive client events into game model updates
+
+
+Active client interface:
+  GetGameState()
+  GetStack()
+  GetDrawing()
+  AppendToDrawing()
+  PassStack()
+  Chat()
+
+ALL OF THESE RETURN RESULTS
+
 
 
 OUTSTANDING IMPLEMENTATION/CONVENIENCE ISSUES:
@@ -35,5 +36,13 @@ OUTSTANDING IMPLEMENTATION/CONVENIENCE ISSUES:
   + Better testing functionality for constructing HTTP requests and verifying
     HTTP responses
 
+
+GAME CLIENT:
+  How should we set up our fancy-dancy game client UI?
+  Decorate... stuff...
+    .game-title <-- name of game
+    .status-container <-- status
+    .chat-container <-- chat lines
+    .drawing-container <-- canvas, etc.
 
 
