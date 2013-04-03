@@ -31,10 +31,11 @@ _.Client.prototype.getStack = function(stackId){};
 _.Client.prototype.getDrawing = function(drawingId){};
 
 /**
+ * @param {string} drawingId
  * @param {DrawPart} part
  * @return Result.<*>
  */ 
-_.Client.prototype.appendToDrawing = function(part){};
+_.Client.prototype.appendToDrawing = function(drawingId, part){};
 
 /**
  * @param {string} stackId

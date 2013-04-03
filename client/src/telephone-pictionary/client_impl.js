@@ -2,7 +2,7 @@ goog.provide('ble.telephone_pictionary.ClientImpl');
 
 goog.require('ble.telephone_pictionary.Client');
 
-goog.require('ble.scribbleDeserializer');
+goog.require('ble._2d.DrawPart');
 
 goog.require('goog.result.Result');
 goog.require('goog.labs.net.xhr');
@@ -17,7 +17,7 @@ var transform = goog.result.transform;
 var JSON = window.JSON;
 var xhr = goog.labs.net.xhr;
 
-var jsonHeader = {'headers': {'Content-Type': 'application/json'}};
+_.jsonHeader = {'headers': {'Content-Type': 'application/json'}};
 /**
  * @constructor
  * @param {string} gameUrl
@@ -45,7 +45,7 @@ _.ClientImpl.prototype.appendToDrawing = function(drawingId, part) {
   //TODO: good place for ClientImpl to hook into model of current game state
   var action = {'actionType': 'draw', 'content': part};
   action = JSON.stringify(action);
-  return xhr.post(this.baseUrl + 'drawing/' + drawingId), action, jsonHeader);
+  return xhr.post(this.baseUrl + 'drawing/' + drawingId, action, _.jsonHeader);
 };
 
 _.ClientImpl.prototype.passStack = function(stackId){
@@ -55,13 +55,13 @@ _.ClientImpl.prototype.passStack = function(stackId){
   //etc.
   var action = {'actionType': 'passStack'};
   action = JSON.stringify(action);
-  return xhr.post(this.url + '/pass', action, jsonHeader);
+  return xhr.post(this.url + '/pass', action, _.jsonHeader);
 };
 
 _.ClientImpl.prototype.chat = function(message){
   var action = {'actionType': 'chat', 'content': message};
   action = JSON.stringify(action);
-  return xhr.post(this.url + '/chat', action, jsonHeader);
+  return xhr.post(this.url + '/chat', action, _.jsonHeader);
 };
 
 
