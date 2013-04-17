@@ -23,7 +23,7 @@ _.jsonHeader = {'headers': {'Content-Type': 'application/json'}};
  * @param {string} gameUrl
  * @implements _.Client
  */
-_.ClientImpl = function(gameUrl, baseUrl) {
+_.ClientImpl = function(gameUrl) {
   this.url = gameUrl;
   var urlTemp = new goog.Uri(this.url);
   this.baseUrl = urlTemp.resolve(new goog.Uri('../../')).toString();
@@ -55,13 +55,13 @@ _.ClientImpl.prototype.passStack = function(stackId){
   //etc.
   var action = {'actionType': 'passStack'};
   action = JSON.stringify(action);
-  return xhr.post(this.url + '/pass', action, _.jsonHeader);
+  return xhr.post(this.url + 'pass', action, _.jsonHeader);
 };
 
 _.ClientImpl.prototype.chat = function(message){
   var action = {'actionType': 'chat', 'content': message};
   action = JSON.stringify(action);
-  return xhr.post(this.url + '/chat', action, _.jsonHeader);
+  return xhr.post(this.url + 'chat', action, _.jsonHeader);
 };
 
 

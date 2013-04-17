@@ -1,8 +1,9 @@
 {
   "inherits": "root-config.ijson",
-  "id": "client",
+  "id": "client_test",
   "inputs": [
     "../src/telephone-pictionary/client_impl.js",
+    "../src/telephone-pictionary/client_impl_test.js",
     "../src/telephone-pictionary/game_impl.js"
   ]
 }
