@@ -13,30 +13,40 @@ goog.scope(function() {
 var _ = ble.telephone_pictionary;
 var __ = ble.telephone_pictionary.game_impl;
 var Result = goog.result.Result;
+var result = goog.result;
 var EventTarget = goog.events.EventTarget;
+/**
+ * @constructor
+ */ 
+__.GameState = function() {
+  this.id = "";
+  this.isComplete = false;
+  this.isStarted = false;
+  this.lastTime = 0;
+  this.players = [];
+  this.stacks = [];
+  this.stacksInPlay = [];
+  this.url = "";
+  this.playerMe = null;
+};
 
 /**
  * @constructor
  * @extends {EventTarget}
  * @param {_.Client} client
+ * @param {__.State=} state
  * @implements {_.Game}
  */
-__.Game = function(client) {
-  this.client = client;
-  this.started = false;
-  this.finished = false;
-  this.aPlayers = [];
-  this.oPlayersById = {};
-  this.aStacks = [];
-  this.oStacksHeldByPlayers = {};
-  this.playerMe = null;
+__.Game = function(client, state) {
+  this.client = client; 
+  this.state = goog.isDefAndNotNull(state) ? state : new __.GameState();
 };
 goog.inherits(_.game_impl.Game, EventTarget);
 
 __.Game.prototype.fetchState = function() {
   var requested = this.client.getGameState();
   requested.wait(goog.bind(this.finishFetchState, this));
-  return requested.transform(function(result) { return "succeeded."; });
+  return result.transform(requested, function(result) { return result; });
 };
 
 __.Game.prototype.isStarted = function(){ return this.started; };
@@ -58,8 +68,15 @@ __.Game.prototype.stacksByHoldingPlayerId = function(){
 /** @return {?_.Player} */
 __.Game.prototype.myPlayer = function(){ return this.playerMe; };
 
-__.Game.prototype.finishFetchState = function(result) {
-  throw "UNIMPLEMENTED";
+__.Game.prototype.finishFetchState = function(jsonResult) {
+  switch(jsonResult.getState()) {
+    case Result.State.PENDING:
+      throw "invalid state for call to finishFetchState";
+    case Result.State.ERROR:
+      throw jsonResult.getError();
+    case Result.State.SUCCESS:
+      this.state.setFromJson(jsonResult.getValue());
+  }
 };
 
 ///** @return {Array.<_.Stack>} */

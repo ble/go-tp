@@ -12,7 +12,7 @@ goog.require('goog.labs.testing.AnythingMatcher');
 
 /**
  * @constructor
- * @implements {goog.labs.testing.FromJsonMatcher}
+ * @implements {goog.labs.testing.Matcher}
  */
 goog.labs.testing.FromJsonMatcher = function(innerMatcher) {
   this.inner = innerMatcher;
@@ -46,9 +46,13 @@ goog.scope(function() {
   myTests.setUp = function() {
     this.subber = new goog.testing.PropertyReplacer();
   };
+  myTests.tearDown = function() {
+    this.subber.reset();
+    this.subber = null;
+  }
 
   myTests.add(new Test(
-      'makes correct method / URI XHRs',
+      'ClientImpl makes correct method / URI XHRs',
       function() {
         var baseUrl = 'http://localhost:24769/shard0/';
         var gameUrl = 'http://localhost:24769/shard0/game/foobar/';
@@ -75,13 +79,24 @@ goog.scope(function() {
             baseUrl+'drawing/barfoo',
             fromJson(hasEntries({'actionType':'draw','content':'hello'})),
             _.jsonHeader);
-        //TODO:
-        //instance.passStack
-        //instance.chat
-        //TODO: make directory for static HTML test pages under deps directory
+
+        instance.passStack('piffler');
+        mock.verify(xhr.post)(
+            gameUrl+'pass',
+            fromJson(hasEntries({'actionType':'passStack'})),
+            _.jsonHeader);
+
+        instance.chat('colorless green ideas sleep furiously');
+        mock.verify(xhr.post)(
+            gameUrl+'chat',
+            fromJson(hasEntries({
+              'actionType':'chat',
+              'content':'colorless green ideas sleep furiously'})),
+            _.jsonHeader);
+
       },
       myTests));
 });
 
-G_testRunner.initialize(myTests);
+window.G_testRunner.initialize(myTests);
 
