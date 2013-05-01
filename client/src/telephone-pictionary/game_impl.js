@@ -217,7 +217,35 @@ _.GameImpl.GameState = function() {
   this.playerMe = null;
 };
 
-_.GameImpl.GameState.prototype.setFromJSON = function(obj) {};
+_.GameImpl.GameState.prototype.setFromJSON = function(obj) {
+  var id           = obj['id'],
+      isComplete   = obj['isComplete'],
+      isStarted    = obj['isStarted'],
+      lastTime     = obj['lastTime'],
+      players      = obj['players'],
+      stacks       = obj['stacks'],
+      stacksInPlay = obj['stacksInPlay'],
+      url          = obj['url'];
+  if(!goog.array.every(
+      [id, isComplete, isStarted, lastTime, players, stacks, stacksInPlay, url],
+      function(elem, index, array) { return isDef(elem); }) {
+    console.error("missing field in JSON");
+    return;
+  }
+  this.isComplete = Boolean(isComplete);
+  this.isStarted = Boolean(isStarted);
+  this.lastTime = Math.floor(Number(lastTime));
+  this.url = String(url);
+
+  this.players = [];
+  this.playersById = {};
+  this.stacks = [];
+  this.stacksById = {};
+  this.stacksInPlay = {}
+
+  var addAPlayer = function(id, name, isMe) {
+  };
+};
 
 /** @constructor
  *  @implements {_.Player}
