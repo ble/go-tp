@@ -73,7 +73,7 @@ _.GameImpl.prototype.joinGame = function(playerId, playerName, isMe) {
   }
   state.players.push(player);
   state.playersById[player.id()] = player;
-
+  this.dispatchEvent(new _.JoinEvent(this, player));
 };
 
 _.GameImpl.prototype.passStack = function(from, to, stackId, stackUrl) {
@@ -119,8 +119,7 @@ _.GameImpl.prototype.passStack = function(from, to, stackId, stackUrl) {
     state.stacksById[stack.id()] = stack;
   } else {
     //it must already exist
-    if(!(stackId in state.stacksById))
-    {
+    if(!(stackId in state.stacksById)) {
       console.error("missing stack id");
       return;
     }
@@ -129,29 +128,47 @@ _.GameImpl.prototype.passStack = function(from, to, stackId, stackUrl) {
     //when coming from someone, we need to remove it from their stacks held
     var stacksHeld = state.stacksInPlay[playerFrom.id()];
     var indexToRemove = stacksHeld.indexOf(stack);
-    if(indexToRemove === -1)
-    {
+    if(indexToRemove === -1) {
       console.error("could not remove stack from passing player's held stacks");
       return;
     }
     stacksHeld.splice(indexToRemove, 1);
   }
 
-  if(goog.isDefAndNotNull(playerTo))
-  {
+  if(goog.isDefAndNotNull(playerTo)) {
     if(!(playerTo.id() in state.stacksInPlay))
       state.stacksInPlay[playerTo.id()] = [];
     state.stacksInPlay[playerTo.id()].push(stack);
   }
+  this.dispatchEvent(new _.PassEvent(this, playerFrom, playerTo, stack));
 
 };
 
 _.GameImpl.prototype.startGame = function(whoId) {
-
+  var state = this.state;
+  if(state.isStarted) {
+    console.error("game is already started");
+    return;
+  }
+  if(state.isComplete) {
+    console.error("game is already complete");
+    return;
+  }
+  if(!(whoId in state.playersById)) {
+    console.error("unrecognized player started game");
+    return;
+  }
+  state.started = true;
+  this.dispatchEvent(new _.StartEvent(this, state.playersById[whoId]));
 };
 
 _.GameImpl.prototype.updateTime = function(time) {
-
+  var state = this.state;
+  if(state.lastTime > time) {
+    console.error("time value decreased");
+    return;
+  }
+  state.lastTime = time;
 };
 
 
