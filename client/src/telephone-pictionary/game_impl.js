@@ -15,6 +15,7 @@ goog.require('ble.scribbleDeserializer');
 
 goog.scope(function() {
 var _ = ble.telephone_pictionary;
+var isDef = goog.isDefAndNotNull;
 var Result = goog.result.Result;
 var result = goog.result;
 var EventTarget = goog.events.EventTarget;
@@ -31,7 +32,7 @@ var console = window.console;
  */
 _.GameImpl= function(client, state) {
   this.client = client;
-  this.state = goog.isDefAndNotNull(state) ? state : new _.GameImpl.GameState();
+  this.state = isDef(state) ? state : new _.GameImpl.GameState();
 };
 goog.inherits(_.GameImpl, EventTarget);
 
@@ -78,7 +79,7 @@ _.GameImpl.prototype.joinGame = function(playerId, playerName, isMe) {
 
 _.GameImpl.prototype.passStack = function(from, to, stackId, stackUrl) {
   var state = this.state, playerFrom, playerTo, stack;
-  if(goog.isDefAndNotNull(from)) {
+  if(isDef(from)) {
 
     if(from in state.playersById) {
       playerFrom = state.playersById[from];
@@ -90,7 +91,7 @@ _.GameImpl.prototype.passStack = function(from, to, stackId, stackUrl) {
   } else {
     playerFrom = null;
   }
-  if(goog.isDefAndNotNull(to)) {
+  if(isDef(to)) {
 
     if(to in state.playersById) {
       playerTo = state.playersById[to];
@@ -135,7 +136,7 @@ _.GameImpl.prototype.passStack = function(from, to, stackId, stackUrl) {
     stacksHeld.splice(indexToRemove, 1);
   }
 
-  if(goog.isDefAndNotNull(playerTo)) {
+  if(isDef(playerTo)) {
     if(!(playerTo.id() in state.stacksInPlay))
       state.stacksInPlay[playerTo.id()] = [];
     state.stacksInPlay[playerTo.id()].push(stack);
