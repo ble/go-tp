@@ -228,7 +228,7 @@ _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
       url          = obj['url'];
   if(!goog.array.every(
       [id, isComplete, isStarted, lastTime, players, stacks, stacksInPlay, url],
-      function(elem, index, array) { return isDef(elem); }) {
+      function(elem, index, array) { return isDef(elem); })) {
     console.error("missing field in JSON");
     return;
   }
