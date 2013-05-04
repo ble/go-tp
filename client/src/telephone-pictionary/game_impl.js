@@ -15,7 +15,7 @@ goog.require('ble.scribbleDeserializer');
 
 goog.scope(function() {
 var _ = ble.telephone_pictionary;
-var isDef = goog.isDefAndNotNull;
+var isDefNotNull = goog.isDefAndNotNull;
 var Result = goog.result.Result;
 var result = goog.result;
 var EventTarget = goog.events.EventTarget;
@@ -32,7 +32,7 @@ var console = window.console;
  */
 _.GameImpl= function(client, state) {
   this.client = client;
-  this.state = isDef(state) ? state : new _.GameImpl.GameState();
+  this.state = isDefNotNull(state) ? state : new _.GameImpl.GameState();
 };
 goog.inherits(_.GameImpl, EventTarget);
 
@@ -63,104 +63,41 @@ _.GameImpl.prototype.myPlayer = function(){ return this.state.playerMe; };
 
 _.GameImpl.prototype.joinGame = function(playerId, playerName, isMe) {
   var state = this.state;
-  var player = new _.GameImpl.Player(this, playerId, playerName);
-  if(player.id() in state.playersById) {
-    console.error("duplicate player");
-    return;
+  var addedPlayer = state.addPlayer(playerId, playerName, isMe);
+  if(isDefNotNull(addedPlayer)) {
+    this.dispatchEvent(new _.JoinEvent(this, addedPlayer));
   }
-  if(isMe && state.playerMe != null) {
-    console.error("duplicate identification of player");
-    return;
-  }
-  state.players.push(player);
-  state.playersById[player.id()] = player;
-  this.dispatchEvent(new _.JoinEvent(this, player));
 };
 
 _.GameImpl.prototype.passStack = function(from, to, stackId, stackUrl) {
-  var state = this.state, playerFrom, playerTo, stack;
-  if(isDef(from)) {
-
-    if(from in state.playersById) {
-      playerFrom = state.playersById[from];
-    } else {
-      console.error("pass from missing player");
+  var state = this.state,
+      stack;
+  if(isDefNotNull(from)) {
+    stack = state.takeStackFrom(stackId, from);
+    if(!isDefNotNull(from)) {
       return;
     }
-
   } else {
-    playerFrom = null;
-  }
-  if(isDef(to)) {
-
-    if(to in state.playersById) {
-      playerTo = state.playersById[to];
-    } else {
-      console.error("pass from missing player");
-      return;
-    }
-
-  } else {
-    playerTo = null;
+    stack = state.createStack(stackId, stackUrl);
   }
 
-  //when passed from no one, means a new stack
-  if(playerFrom === null) {
-    //stack id must be unique
-    if(stackId in state.stacksById) {
-      console.error("duplicate stack id");
+  if(isDefNotNull(to)) {
+    stack = state.giveStackTo(stackId, to);
+    if(!isDefNotNull(stack)) {
       return;
     }
-    //must be passed to somebody
-    if(playerTo === null) {
-      console.error("pass from nobody, to nobody")
-    }
-    stack = new _.GameImpl.Stack(stackId, stackUrl);
-    state.stacks.push(stack);
-    state.stacksById[stack.id()] = stack;
-  } else {
-    //it must already exist
-    if(!(stackId in state.stacksById)) {
-      console.error("missing stack id");
-      return;
-    }
-    stack = state.stacksById[stackId];
-
-    //when coming from someone, we need to remove it from their stacks held
-    var stacksHeld = state.stacksInPlay[playerFrom.id()];
-    var indexToRemove = stacksHeld.indexOf(stack);
-    if(indexToRemove === -1) {
-      console.error("could not remove stack from passing player's held stacks");
-      return;
-    }
-    stacksHeld.splice(indexToRemove, 1);
   }
-
-  if(isDef(playerTo)) {
-    if(!(playerTo.id() in state.stacksInPlay))
-      state.stacksInPlay[playerTo.id()] = [];
-    state.stacksInPlay[playerTo.id()].push(stack);
-  }
-  this.dispatchEvent(new _.PassEvent(this, playerFrom, playerTo, stack));
-
+  this.dispatchEvent(
+    new _.PassEvent(
+      this,
+      state.player(from),
+      state.player(to),
+      stack));
 };
 
 _.GameImpl.prototype.startGame = function(whoId) {
-  var state = this.state;
-  if(state.isStarted) {
-    console.error("game is already started");
-    return;
-  }
-  if(state.isComplete) {
-    console.error("game is already complete");
-    return;
-  }
-  if(!(whoId in state.playersById)) {
-    console.error("unrecognized player started game");
-    return;
-  }
-  state.started = true;
-  this.dispatchEvent(new _.StartEvent(this, state.playersById[whoId]));
+  if(this.state.startGame())
+    this.dispatchEvent(new _.StartEvent(this, this.state.playersById[whoId]));
 };
 
 _.GameImpl.prototype.updateTime = function(time) {
@@ -217,6 +154,10 @@ _.GameImpl.GameState = function() {
   this.playerMe = null;
 };
 
+_.GameImpl.GameState.prototype.player = function(id) {
+  return this.playersById[id];
+};
+
 _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
   var id           = obj['id'],
       isComplete   = obj['isComplete'],
@@ -226,12 +167,16 @@ _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
       stacks       = obj['stacks'],
       stacksInPlay = obj['stacksInPlay'],
       url          = obj['url'];
+      lastTime     = obj['lastTime'];
   if(!goog.array.every(
       [id, isComplete, isStarted, lastTime, players, stacks, stacksInPlay, url],
-      function(elem, index, array) { return isDef(elem); })) {
+      function(elem, index, array) { return isDefNotNull(elem); })) {
     console.error("missing field in JSON");
     return;
   }
+  this.id = id;
+  this.lastTime = lastTime;
+
   this.isComplete = Boolean(isComplete);
   this.isStarted = Boolean(isStarted);
   this.lastTime = Math.floor(Number(lastTime));
@@ -243,48 +188,202 @@ _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
   this.stacksById = {};
   this.stacksInPlay = {}
 
-  var addAPlayer = function(id, name, isMe) {
-  };
+  for(var i = 0; i < stacks.length; i++) {
+    var sId = stacks[i]['id'];
+    var sUrl = stacks[i]['url'];
+    if(!isDefNotNull(this.createStack(sId, sUrl))) {
+      return;
+    }
+  }
+
+  for(var i = 0; i < players.length; i++) {
+    var pId = players[i]['id'];
+    var pName = players[i]['pseudonym'];
+    var pIsMe = Boolean(players[i]['isYou']);
+    if(!isDefNotNull(this.addPlayer(pId, pName, pIsMe))) {
+      return;
+    }
+  }
+
+  for(var playerId in stacksInPlay) {
+    var held = stacksInPlay[playerId];
+    for(var i = 0; i < held.length; i++) {
+      if(!isDefNotNull(this.giveStackTo(held[i], playerId))) {
+        return;
+      }
+    }
+  }
+};
+
+_.GameImpl.GameState.prototype.addPlayer = function(id, name, isMe) {
+  if(id in this.playersById) {
+    console.error("duplicate player");
+    return null;
+  }
+  if(isMe && this.playerMe != null) {
+    console.error("duplicate identification of using player");
+    return null;
+  }
+  var player = new _.GameImpl.Player(this, id, name, isMe);
+
+  this.players.push(player);
+  this.playersById[player.id()] = player;
+  this.stacksInPlay[player.id()] = [];
+  if(player.isMe())
+    this.playerMe = player;
+  return player;
+};
+
+_.GameImpl.GameState.prototype.createStack = function(id, url) {
+  if(id in this.stacksById) {
+    console.error("duplicate stack id");
+    return null;
+  }
+  var stack = new _.GameImpl.Stack(id, url)
+
+  this.stacks.push(stack);
+  this.stacksById[stack.id()] = stack;
+  return stack;
+};
+
+_.GameImpl.GameState.prototype.takeStackFrom = function(stackId, holderId) {
+  if(!(stackId in this.stacksById)) {
+    console.error("no such stack id");
+    return null;
+  }
+  if(!(holderId in this.playersById)) {
+    console.error("no such player id");
+    return null;
+  }
+  var held = this.stacksInPlay[holderId],
+      stack = this.stacksById[stackId],
+      ix = held.indexOf(stack);
+  if(ix < 0) {
+    console.error("stack not held by player");
+    return null;
+  }
+  held.splice(ix);
+  return stack;
+};
+
+_.GameImpl.GameState.prototype.giveStackTo = function(stackId, receiverId) {
+  if(!(stackId in this.stacksById)) {
+    console.error("no such stack id");
+    return null;
+  }
+  if(!(receiverId in this.playersById)) {
+    console.error("no such player id");
+    return null;
+  }
+  var held = this.stacksInPlay[receiverId],
+      stack = this.stacksById[stackId],
+      ix = held.indexOf(stack);
+  if(ix >= 0) {
+    console.error("stack already held by player");
+    return null;
+  }
+  held.push(stack);
+  return stack;
+};
+
+_.GameImpl.GameState.prototype.startGame = function() {
+  if(this.isStarted) {
+    console.error("game is already started");
+    return false;
+  }
+  if(this.isComplete) {
+    console.error("game is already complete");
+    return false;
+  }
+ this.started = true;
+  return true;
 };
 
 /** @constructor
  *  @implements {_.Player}
- *  @param {_.Game} game
+ *  @param {_.GameImpl.GameState} state
  *  @param {string} id
  *  @param {string} name
+ *  @param {boolean} isMe
  *  */
-_.GameImpl.Player = function(game, id, name) {};
+_.GameImpl.Player = function(state, id, name, isMe) {
+  this.state = state;
+  this._id = id;
+  this._name = name;
+  this._isMe = isMe;
+};
 
 /** @return {Array.<_.Stack>} */
-_.GameImpl.Player.prototype.stacksHeld = function(){};
+_.GameImpl.Player.prototype.stacksHeld = function() {
+  return this.state.stacksInPlay[this.id()];
+};
+
 /** @return {string} */
-_.GameImpl.Player.prototype.id = function(){};
+_.GameImpl.Player.prototype.id = function() {
+  return this._id;
+};
+
 /** @return {string} */
-_.GameImpl.Player.prototype.name = function(){};
+_.GameImpl.Player.prototype.name = function() {
+  return this._name;
+};
+
 /** @return {string} */
-_.GameImpl.Player.prototype.styleClass = function(){};
+_.GameImpl.Player.prototype.styleClass = function() {
+  return "";
+};
+
+/** @return {boolean} */
+_.GameImpl.Player.prototype.isMe = function() {
+  return this._isMe;
+};
 
 
 /** @constructor
  *  @implements {_.Stack}
  *  @param {string} id
  *  @param {string} url */
-_.GameImpl.Stack = function(id, url) {};
+_.GameImpl.Stack = function(id, url) {
+  this._id = id;
+  this._url = url;
+};
+
 /** @return {Result} */
-_.GameImpl.Stack.prototype.fetchState = function(){};
+_.GameImpl.Stack.prototype.fetchState = function() {
+  throw "unimplemented";
+};
+
 /** @return {?Array.<_.Drawing>} */
-_.GameImpl.Stack.prototype.drawings = function(){};
+_.GameImpl.Stack.prototype.drawings = function() {
+  throw "unimplemented";
+};
+
 /** @return {string} */
-_.GameImpl.Stack.prototype.id = function(){};
+_.GameImpl.Stack.prototype.id = function() {
+  return this._id;
+};
 
 /** @constructor */
-_.GameImpl.Drawing = function() {};
+_.GameImpl.Drawing = function(id, player, stack) {
+  throw "unimplemented";
+};
+
 /** @return {Result} */
-_.GameImpl.Drawing.prototype.fetchState = function(){};
+_.GameImpl.Drawing.prototype.fetchState = function() {
+  throw "unimplemented";
+};
+
 /** @return {?Array.<DrawPart>} */
-_.GameImpl.Drawing.prototype.content = function(){};
+_.GameImpl.Drawing.prototype.content = function() {
+  throw "unimplemented";
+};
 /** @return {string} */
-_.GameImpl.Drawing.prototype.id = function(){};
+_.GameImpl.Drawing.prototype.id = function() {
+  throw "unimplemented";
+};
+
 /** @return {_.Player} */
-_.GameImpl.Drawing.prototype.player = function(){};
+_.GameImpl.Drawing.prototype.player = function() {
+  throw "unimplemented";
+};
 });

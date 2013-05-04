@@ -6,6 +6,8 @@
       var url = location.toString();
       url = url.replace(/\/[^\/]*$/, "/");
       var client = new _.ClientImpl(url);
+      var game = new _.GameImpl(client);
+      game.fetchState();
     </script>
   </body>
 </html>

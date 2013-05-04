@@ -60,6 +60,9 @@ _.Player.prototype.id = function(){};
 /** @return {string} */
 _.Player.prototype.name = function(){};
 
+/** @return {boolean} */
+_.Player.prototype.isMe = function(){};
+
 /** @return {string} */
 _.Player.prototype.styleClass = function(){};
 
