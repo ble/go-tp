@@ -8,7 +8,7 @@ goog.require('goog.result.Result');
 goog.require('goog.labs.net.xhr');
 goog.require('goog.Uri');
 
-goog.scope(function() { 
+goog.scope(function() {
 
 var _ = ble.telephone_pictionary;
 
@@ -64,5 +64,10 @@ _.ClientImpl.prototype.chat = function(message){
   return xhr.post(this.url + 'chat', action, _.jsonHeader);
 };
 
+_.ClientImpl.prototype.startGame = function(){
+  var action = {'actionType': 'startGame'};
+  action = JSON.stringify(action);
+  return xhr.post(this.url + 'start', action, _.jsonHeader);
+};
 
 });

@@ -34,7 +34,7 @@ _.Client.prototype.getDrawing = function(drawingId){};
  * @param {string} drawingId
  * @param {DrawPart} part
  * @return Result.<*>
- */ 
+ */
 _.Client.prototype.appendToDrawing = function(drawingId, part){};
 
 /**
@@ -48,5 +48,11 @@ _.Client.prototype.passStack = function(stackId){};
  * @return Result.<*>
  */
 _.Client.prototype.chat = function(message){};
+
+/**
+ * @return Result.<*>
+ */
+_.Client.prototype.startGame = function(){};
+
 
 });
