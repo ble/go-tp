@@ -2,28 +2,61 @@
   <body>
     <script src="http://localhost:9810/compile?id=client"></script>
     <script>
-      var _ = ble.telephone_pictionary;
-      var url = location.toString();
-      url = url.replace(/\/[^\/]*$/, '/');
-      var client = new _.ClientImpl(url);
-      var game = new _.GameImpl(client);
-      var fetchRequest = game.fetchState();
-      var comet = new ble.net.QueryTimeComet(url + 'events');
-      fetchRequest.wait(function(result) {
-        if(result.getError() !== undefined) {
-          console.error(result.getError());
-          return;
-        }
-        var value = result.getValue();
-        var time = value['lastTime'];
-        if(time === undefined) {
-          console.error('didn\'t get a time');
-          return
-        }
+var _ = ble.telephone_pictionary;
+var url = location.toString();
+url = url.replace(/\/[^\/]*$/, '/');
+var client = new _.ClientImpl(url);
+var game = new _.GameImpl(client);
+var fetchRequest = game.fetchState();
+var comet = new ble.net.QueryTimeComet(url + 'events');
+fetchRequest.wait(function(result) {
+  if(result.getError() !== undefined) {
+    console.error(result.getError());
+    return;
+  }
+  var value = result.getValue();
+  var time = value['lastTime'];
+  if(time === undefined) {
+    console.error('didn\'t get a time');
+    return
+  }
 
-        console.log(value);
-        comet.runAt(time);
-      });
+  console.log(value);
+  comet.runAt(time);
+});
+
+/**
+ @constructor
+ @param {ble.telephone_pictionary.GameUpdater} game
+**/
+var PassiveHandler = function(game) {
+  this.game = game;
+};
+
+PassiveHandler.prototype.handleEvent = function(event) {
+  //console.log(event);
+  var text = event['responseText'];
+  if(text === undefined) {
+    console.error('missing response text');
+    return;
+  }
+  var obj = JSON.parse(text);
+  var events = obj['events'];
+  if(events === undefined) {
+    console.error('missing events');
+    return;
+  }
+  if(events.length == 0) {
+    console.log("no news");
+  } else for(var i = 0; i < events.length; i++) {
+    console.log(events[i]);
+  }
+};
+
+client.chat("What's up in this piece?");
+
+var handler = new PassiveHandler(game);
+comet.listen(ble.net.EventType.COMET_DATA, handler);
     </script>
   </body>
 </html>

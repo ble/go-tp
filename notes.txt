@@ -39,3 +39,7 @@ Part 2: an extension of that basic comet loop, adding a `lastTime` url param
 While there are bits that I may not completely remember here, it seems solid
 and perhaps more importantly still a good fit for what I had in mind re making
 sure that clients do not desync too badly.
+
+IMPORTANT PIECE OF GLUE HERE:
+  between the comet time loop and the model lies something that has to make
+  calls to the game updating interface.
