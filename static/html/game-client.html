@@ -4,11 +4,26 @@
     <script>
       var _ = ble.telephone_pictionary;
       var url = location.toString();
-      url = url.replace(/\/[^\/]*$/, "/");
+      url = url.replace(/\/[^\/]*$/, '/');
       var client = new _.ClientImpl(url);
       var game = new _.GameImpl(client);
-      game.fetchState();
-      var eventUrl = url + "events"
+      var fetchRequest = game.fetchState();
+      var comet = new ble.net.QueryTimeComet(url + 'events');
+      fetchRequest.wait(function(result) {
+        if(result.getError() !== undefined) {
+          console.error(result.getError());
+          return;
+        }
+        var value = result.getValue();
+        var time = value['lastTime'];
+        if(time === undefined) {
+          console.error('didn\'t get a time');
+          return
+        }
+
+        console.log(value);
+        comet.runAt(time);
+      });
     </script>
   </body>
 </html>
