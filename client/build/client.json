@@ -3,6 +3,7 @@
   "id": "client",
   "inputs": [
     "../src/telephone-pictionary/client_impl.js",
-    "../src/telephone-pictionary/game_impl.js"
+    "../src/telephone-pictionary/game_impl.js",
+    "../src/lib/querytime-comet.js"
   ]
 }

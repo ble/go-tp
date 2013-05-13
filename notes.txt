@@ -35,3 +35,7 @@ Part 1: a basic comet loop, emitting only
   STOP
   and DATA events
 Part 2: an extension of that basic comet loop, adding a `lastTime` url param
+
+While there are bits that I may not completely remember here, it seems solid
+and perhaps more importantly still a good fit for what I had in mind re making
+sure that clients do not desync too badly.
