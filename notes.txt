@@ -43,3 +43,20 @@ sure that clients do not desync too badly.
 IMPORTANT PIECE OF GLUE HERE:
   between the comet time loop and the model lies something that has to make
   calls to the game updating interface.
+
+Now it's time to start roughing in the UI (in the roughest fashion possible)
+It's super nice that the actual client interaction is entirely available by
+literally typing `client.passStack`, `client.startGame`, etc
+
+Ah, yes, it's time for another chunk of glue: the code that will load the
+actual contents of a stack
+
+or `game.myPlayer().stacksHeld()[0].id()`
+or even
+`
+game.myPlayer().stacksHeld()[0].fetchState();
+var drawingId = game.myPlayer().stacksHeld()[0].drawings()[0].id();
+client.appendToDrawing(drawingId, {'trouble':'incoming'});
+`
+
+TODO: server-side, no way to complete drawing at present

@@ -33,7 +33,7 @@ var console = window.console;
 _.GameImpl= function(client, state) {
   EventTarget.call(this);
   this.client = client;
-  this.state = isDefNotNull(state) ? state : new _.GameImpl.GameState();
+  this.state = isDefNotNull(state) ? state : new _.GameImpl.GameState(this, client);
 };
 goog.inherits(_.GameImpl, EventTarget);
 
@@ -129,8 +129,11 @@ _.GameImpl.prototype.finishFetchState = function(jsonResult) {
 
 /**
  * @constructor
+ * @param {_.Client} client
  */
-_.GameImpl.GameState = function() {
+_.GameImpl.GameState = function(game, client) {
+  this.game = game;
+  this.client = client;
   this.id = "";
   this.isComplete = false;
   this.isStarted = false;
@@ -240,7 +243,7 @@ _.GameImpl.GameState.prototype.createStack = function(id, url) {
     console.error("duplicate stack id");
     return null;
   }
-  var stack = new _.GameImpl.Stack(id, url)
+  var stack = new _.GameImpl.Stack(id, url, this.game, this.client)
 
   this.stacks.push(stack);
   this.stacksById[stack.id()] = stack;
@@ -343,20 +346,42 @@ _.GameImpl.Player.prototype.isMe = function() {
 /** @constructor
  *  @implements {_.Stack}
  *  @param {string} id
- *  @param {string} url */
-_.GameImpl.Stack = function(id, url) {
+ *  @param {string} url
+ *  @param {_.Game} game
+ *  @param {_.Client} client */
+_.GameImpl.Stack = function(id, url, game, client) {
+  this.game = game;
+  this.client = client;
   this._id = id;
   this._url = url;
+  this._drawings = null;
 };
 
 /** @return {Result} */
 _.GameImpl.Stack.prototype.fetchState = function() {
-  throw "unimplemented";
+  //TODO: actually cache as appropriate?
+  var request = this.client.getStack(this.id());
+  request.wait(goog.bind(this._processFetch, this));
+  return request;
+};
+
+/** @param {Result} response */
+_.GameImpl.Stack.prototype._processFetch = function(response) {
+  var drawings = response.getValue()['drawings'];
+  this._drawings = [];
+  for(var i = 0; i < drawings.length; i++) {
+    var dObj = drawings[i];
+    var d = new _.GameImpl.Drawing(dObj['id'], /** TODO: fill me in */ null, this, this.client);
+    this._drawings.push(d);
+  }
+  console.log(response.getValue());
+  console.log(response.getError());
 };
 
 /** @return {?Array.<_.Drawing>} */
 _.GameImpl.Stack.prototype.drawings = function() {
-  throw "unimplemented";
+  //TODO: actually cache as appropriate?
+  return this._drawings
 };
 
 /** @return {string} */
@@ -365,8 +390,12 @@ _.GameImpl.Stack.prototype.id = function() {
 };
 
 /** @constructor */
-_.GameImpl.Drawing = function(id, player, stack) {
-  throw "unimplemented";
+_.GameImpl.Drawing = function(id, player, stack, client) {
+  this._id = id;
+  this._player = player;
+  this._stack = stack;
+  this._content = null;
+  this.client = client;
 };
 
 /** @return {Result} */
@@ -376,15 +405,15 @@ _.GameImpl.Drawing.prototype.fetchState = function() {
 
 /** @return {?Array.<DrawPart>} */
 _.GameImpl.Drawing.prototype.content = function() {
-  throw "unimplemented";
+  return this._content;
 };
 /** @return {string} */
 _.GameImpl.Drawing.prototype.id = function() {
-  throw "unimplemented";
+  return this._id;
 };
 
 /** @return {_.Player} */
 _.GameImpl.Drawing.prototype.player = function() {
-  throw "unimplemented";
+  return this._player;
 };
 });
