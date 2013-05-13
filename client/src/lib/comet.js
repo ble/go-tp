@@ -34,7 +34,7 @@ var cType = ble.net.EventType;
  * @param {number} timeout milliseconds
  * @param {number} successWait milliseconds
  * @param {number} retryWait milliseconds
- */ 
+ */
 ble.net.CometLoop =
  function(uri, timeout, successWait, retryWait) {
   this.uri = uri

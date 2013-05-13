@@ -28,3 +28,10 @@ The active client and model parts of this design have been basically achieved;
 that means it's time to get the passive client right.
 
 How should this connect with the existing comet loop code, if at all?
+
+What is the existing comet loop code?
+Part 1: a basic comet loop, emitting only
+  START
+  STOP
+  and DATA events
+Part 2: an extension of that basic comet loop, adding a `lastTime` url param
