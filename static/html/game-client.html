@@ -7,24 +7,7 @@ var url = location.toString();
 url = url.replace(/\/[^\/]*$/, '/');
 var client = new _.ClientImpl(url);
 var game = new _.GameImpl(client);
-var fetchRequest = game.fetchState();
 var comet = new ble.net.QueryTimeComet(url + 'events');
-fetchRequest.wait(function(result) {
-  if(result.getError() !== undefined) {
-    console.error(result.getError());
-    return;
-  }
-  var value = result.getValue();
-  var time = value['lastTime'];
-  if(time === undefined) {
-    console.error('didn\'t get a time');
-    return
-  }
-
-  console.log(value);
-  comet.runAt(time);
-});
-
 /**
  @constructor
  @param {ble.telephone_pictionary.GameUpdater} game
@@ -46,9 +29,25 @@ PassiveHandler.prototype.handleEvent = function(event) {
     console.error('missing events');
     return;
   }
-  if(events.length == 0) {
-    console.log("no news");
-  } else for(var i = 0; i < events.length; i++) {
+  for(var i = 0; i < events.length; i++) {
+    var gameEvent = events[i];
+    var type = gameEvent['actionType'];
+    switch(type) {
+    case 'joinGame':
+      console.log(gameEvent['who']);
+      console.log(gameEvent['name']);
+      this.game.joinGame(gameEvent['who'], gameEvent['name'], false);
+      break;
+    case 'chat':
+      //TODO: wire this up to the chat UI
+      break;
+    case 'startGame':
+      game.startGame(gameEvent['who']);
+      break;
+    case 'passStack':
+      game.passStack(gameEvent['who'], gameEvent['toWhom'], gameEvent['stackId'], gameEvent['url']);
+      break;
+    }
     console.log(events[i]);
   }
 };
@@ -57,6 +56,31 @@ client.chat("What's up in this piece?");
 
 var handler = new PassiveHandler(game);
 comet.listen(ble.net.EventType.COMET_DATA, handler);
+
+game.listen([_.EventType.JOIN, _.EventType.PASS, _.EventType.START], function(event) {
+  console.log("A GAME EVENT OCCURRED:");
+  console.log(event);
+});
+
+var fetchRequest = game.fetchState();
+fetchRequest.wait(function(result) {
+  if(result.getError() !== undefined) {
+    console.error(result.getError());
+    return;
+  }
+  var value = result.getValue();
+  var time = value['lastTime'];
+  if(time === undefined) {
+    console.error('didn\'t get a time');
+    return
+  }
+
+  console.log(value);
+  comet.runAt(time);
+});
+
+
+
     </script>
   </body>
 </html>
