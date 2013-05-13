@@ -37,6 +37,7 @@ var cType = ble.net.EventType;
  */
 ble.net.CometLoop =
  function(uri, timeout, successWait, retryWait) {
+  goog.events.EventTarget.call(this);
   this.uri = uri
   this.timeout = timeout;
   this.successWait = successWait;
