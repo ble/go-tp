@@ -31,6 +31,7 @@ var console = window.console;
  * @implements {_.GameUpdater}
  */
 _.GameImpl= function(client, state) {
+  EventTarget.call(this);
   this.client = client;
   this.state = isDefNotNull(state) ? state : new _.GameImpl.GameState();
 };
