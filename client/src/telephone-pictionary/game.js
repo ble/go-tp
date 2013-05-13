@@ -24,7 +24,7 @@ _.Player = function() {};
 /** @interface */
 _.Stack = function() {};
 
-/** @interface */ 
+/** @interface */
 _.Drawing = function() {};
 
 /** @return {Result} */

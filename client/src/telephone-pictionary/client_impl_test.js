@@ -35,7 +35,7 @@ goog.scope(function() {
   var Test = goog.testing.TestCase.Test;
 
   var mock = goog.labs.mock;
-  var testing = goog.labs.testing; 
+  var testing = goog.labs.testing;
   var xhr = goog.labs.net.xhr;
   var result = goog.result;
 
@@ -58,13 +58,13 @@ goog.scope(function() {
         var gameUrl = 'http://localhost:24769/shard0/game/foobar/';
 
         var instance = new ClientImpl(gameUrl);
-        this.subber.replace(xhr, 'get', mock.mockFunction(xhr.get)); 
-        this.subber.replace(xhr, 'post', mock.mockFunction(xhr.post)); 
+        this.subber.replace(xhr, 'get', mock.mockFunction(xhr.get));
+        this.subber.replace(xhr, 'post', mock.mockFunction(xhr.post));
         var fake = new result.SimpleResult();
 
         mock.when(xhr.get)(anything()).thenReturn(fake);
         mock.when(xhr.post)(anything(), fromJson(anything()), _.jsonHeader).thenReturn(fake);
-        
+
         instance.getGameState();
         mock.verify(xhr.get)(gameUrl);
 
