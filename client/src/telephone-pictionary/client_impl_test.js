@@ -74,6 +74,12 @@ goog.scope(function() {
         instance.getDrawing('barfoo');
         mock.verify(xhr.get)(baseUrl+'drawing/barfoo');
 
+        instance.startGame();
+        mock.verify(xhr.post)(
+            gameUrl+'start',
+            fromJson(hasEntries({'actionType':'startGame'})),
+            _.jsonHeader);
+
         instance.appendToDrawing('barfoo', "hello");
         mock.verify(xhr.post)(
             baseUrl+'drawing/barfoo',
