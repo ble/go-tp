@@ -1,4 +1,10 @@
 
 
 Testing changes to client and server simultaneously
+
 ?Always generating a new id for everything even while testing in development
+
+architecture is a little unclear, or at least I haven't bothered to clarify it
+in a while.
+
+architecture and naming seem awkward

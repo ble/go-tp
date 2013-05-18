@@ -21,82 +21,25 @@ initializing `client` with correct URL
 initializing `game` with client
 starting `comet`
 sends a test chat
-listens for game events (??!never triggered??!)
-  -->never triggered because we're passing an array of event types to
-     `game.listen` which apparently doesn't understand that...
-
 definition of PassiveHandler
+creation of PassiveHandler
+coupling of PassiveHandler to comet
+diagnostic listening to game events
 
-client.chat("What's up in this piece?");
+call to `game.fetchState()`
+coupling `game.fetchState()` success to starting of comet loop
 
-var handler = new PassiveHandler(game);
-comet.listen(ble.net.EventType.COMET_DATA, handler);
+making the following happen in an appropriate, async fashion,
+keyed off of the `fetchState` success:
+  start the game if it hasn't been started
+  fetch the contents of the first stack player is holding
+  fetch the contents of the top drawing in that stack
 
-game.listen([_.EventType.JOIN, _.EventType.PASS, _.EventType.START], function(event) {
-  console.log("A GAME EVENT OCCURRED:");
-  console.log(event);
-});
+A fair amount of that code really needs to be put in a unified location
+that is not directly coupled to UI;
 
-var fetchRequest = game.fetchState();
-fetchRequest.wait(function(result) {
-  if(result.getError() !== undefined) {
-    console.error(result.getError());
-    return;
-  }
-  var value = result.getValue();
-  var time = value['lastTime'];
-  if(time === undefined) {
-    console.error('didn\'t get a time');
-    return
-  }
+I think the combination of CLIENT, PASSIVE CLIENT, and MODEL should be
+considered to be the state of the SERVER as perceived by the browser
 
-  console.log(value);
-  comet.runAt(time);
-});
-
-//test some basic functionality...
-
-//check if we're holding a stack, asynchronously update its contents
-var withStartedGame = function() {
-  var me = game.myPlayer();  
-  var myStacks = me.stacksHeld();
-  if(myStacks.length < 1)
-    return;
-  var topStack = myStacks[0];
-  var request = topStack.fetchState();
-  request.wait(goog.bind(withLoadedStack, this, topStack));
-};
-
-//get the top drawing of the stack, asynchronously fetch its contents
-var withLoadedStack = function(topStack) {
-  var topDrawing = topStack.drawings()[0];
-  var request = topDrawing.fetchState();
-  request.wait(goog.bind(withLoadedDrawing, this, topDrawing));
-};
-
-//just show that we got the drawing
-var withLoadedDrawing = function(topDrawing) {
-  console.log(topDrawing.player());
-  console.log(topDrawing.content());
-};
-
-
-//When we're done getting the initial game state...
-fetchRequest.wait(function(result) {
-  if(result.getError() !== undefined) {
-    return;
-  }
-
-  //start the game if need be and wait for stacks to be passed...
-  if(!game.isStarted()) {
-    var request = client.startGame();
-    goog.events.listen(game, _.EventType.PASS, withStartedGame);
-  } else {
-  //if the game's already started, we should already have stacks
-    withStartedGame();
-  }
-});
-
-
-
-
+so maybe call the thing Server or ServerInterface?
+ugh, not that cool
