@@ -57,10 +57,13 @@ client.chat("What's up in this piece?");
 var handler = new PassiveHandler(game);
 comet.listen(ble.net.EventType.COMET_DATA, handler);
 
-game.listen([_.EventType.JOIN, _.EventType.PASS, _.EventType.START], function(event) {
+var dumbEventLogger = function(event) {
   console.log("A GAME EVENT OCCURRED:");
   console.log(event);
-});
+}
+game.listen(_.EventType.JOIN, dumbEventLogger);
+game.listen(_.EventType.PASS, dumbEventLogger);
+game.listen(_.EventType.START, dumbEventLogger);
 
 var fetchRequest = game.fetchState();
 fetchRequest.wait(function(result) {

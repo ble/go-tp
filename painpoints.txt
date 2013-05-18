@@ -1,0 +1,4 @@
+
+
+Testing changes to client and server simultaneously
+?Always generating a new id for everything even while testing in development
