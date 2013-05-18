@@ -21,7 +21,7 @@ func NewDrawingHandler(rs room.RoomService) Handler {
 
 func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 	parts := pathParts(r)
-	if len(parts) != 1 {
+	if len(parts) < 1 || len(parts) > 2 {
 		NotFound(w, r)
 		return
 	}
