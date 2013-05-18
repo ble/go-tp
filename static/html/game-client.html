@@ -79,6 +79,49 @@ fetchRequest.wait(function(result) {
   comet.runAt(time);
 });
 
+//test some basic functionality...
+
+//check if we're holding a stack, asynchronously update its contents
+var withStartedGame = function() {
+  var me = game.myPlayer();  
+  var myStacks = me.stacksHeld();
+  if(myStacks.length < 1)
+    return;
+  var topStack = myStacks[0];
+  var request = topStack.fetchState();
+  request.wait(goog.bind(withLoadedStack, this, topStack));
+};
+
+//get the top drawing of the stack, asynchronously fetch its contents
+var withLoadedStack = function(topStack) {
+  var topDrawing = topStack.drawings()[0];
+  var request = topDrawing.fetchState();
+  request.wait(goog.bind(withLoadedDrawing, this, topDrawing));
+};
+
+//just show that we got the drawing
+var withLoadedDrawing = function(topDrawing) {
+  console.log(topDrawing.player());
+  console.log(topDrawing.content());
+};
+
+
+//When we're done getting the initial game state...
+fetchRequest.wait(function(result) {
+  if(result.getError() !== undefined) {
+    return;
+  }
+
+  //start the game if need be and wait for stacks to be passed...
+  if(!game.isStarted()) {
+    var request = client.startGame();
+    goog.events.listen(game, _.EventType.PASS, withStartedGame);
+  } else {
+  //if the game's already started, we should already have stacks
+    withStartedGame();
+  }
+});
+
 
 
     </script>

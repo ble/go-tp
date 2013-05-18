@@ -371,7 +371,12 @@ _.GameImpl.Stack.prototype._processFetch = function(response) {
   this._drawings = [];
   for(var i = 0; i < drawings.length; i++) {
     var dObj = drawings[i];
-    var d = new _.GameImpl.Drawing(dObj['id'], /** TODO: fill me in */ null, this, this.client);
+    var player = this.game.playersById()[dObj['playerId']];
+    var d = new _.GameImpl.Drawing(
+        dObj['id'],
+        player,
+        this,
+        this.client);
     this._drawings.push(d);
   }
   console.log(response.getValue());
@@ -400,7 +405,19 @@ _.GameImpl.Drawing = function(id, player, stack, client) {
 
 /** @return {Result} */
 _.GameImpl.Drawing.prototype.fetchState = function() {
-  throw "unimplemented";
+  var request = this.client.getDrawing(this.id());
+  request.wait(goog.bind(this._processFetch, this));
+  return request;
+};
+
+_.GameImpl.Drawing.prototype._processFetch = function(response) {
+  //TODO: handle error case
+  var content = [];
+  var value = response.getValue();
+  for(var i = 0; i < value.length; i++) {
+    var stroke = ble.scribbleDeserializer.deserialize(value[i]);
+  };
+  this._content = content;
 };
 
 /** @return {?Array.<DrawPart>} */
