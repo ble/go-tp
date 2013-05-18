@@ -38,6 +38,12 @@ _.Client.prototype.getDrawing = function(drawingId){};
 _.Client.prototype.appendToDrawing = function(drawingId, part){};
 
 /**
+ * @param {string} drawingId
+ * @return Result.<*>
+ */
+_.Client.prototype.completeDrawing = function(drawingId){};
+
+/**
  * @param {string} stackId
  * @return Result.<*>
  */

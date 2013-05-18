@@ -86,6 +86,12 @@ goog.scope(function() {
             fromJson(hasEntries({'actionType':'draw','content':'hello'})),
             _.jsonHeader);
 
+        instance.completeDrawing('barfoo');
+        mock.verify(xhr.post)(
+            baseUrl+'drawing/barfoo/complete',
+            fromJson(hasEntries({'actionType':'complete'})),
+            _.jsonHeader);
+
         instance.passStack('piffler');
         mock.verify(xhr.post)(
             gameUrl+'pass',

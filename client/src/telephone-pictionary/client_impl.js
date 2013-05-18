@@ -48,6 +48,16 @@ _.ClientImpl.prototype.appendToDrawing = function(drawingId, part) {
   return xhr.post(this.baseUrl + 'drawing/' + drawingId, action, _.jsonHeader);
 };
 
+_.ClientImpl.prototype.completeDrawing = function(drawingId){
+  //TODO: good place for ClientImpl to hook into model of current game state
+  var action = {'actionType': 'complete'};
+  action = JSON.stringify(action);
+  return xhr.post(
+      this.baseUrl + 'drawing/' + drawingId + '/complete',
+      action,
+      _.jsonHeader);
+};
+
 _.ClientImpl.prototype.passStack = function(stackId){
   //TODO: this would be a good place for ClientImpl to hook into the
   //model of the current game state and enforce the logical rule
