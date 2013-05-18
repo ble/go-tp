@@ -17,6 +17,7 @@ func NewDrawingHandler(rs room.RoomService) Handler {
 
 //GET <drawing-id>
 //POST <drawing-id>
+//POST <drawing-id>/complete
 
 func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 	parts := pathParts(r)
@@ -70,11 +71,18 @@ func (d *drawingHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		if drawing.IsComplete() ||
 			!sameUserId(userId, drawing) {
 			Error(w, "not allowed to write to drawing", StatusBadRequest)
-		} else {
+		} else if len(parts) == 1 {
 			err := room.Draw(userId, drawing, r.Body)
 			if err != nil {
 				Error(w, err.Error(), StatusBadRequest)
 			}
+		} else if len(parts) == 2 && parts[1] == "complete" {
+			err := drawing.Complete()
+			if err != nil {
+				Error(w, err.Error(), StatusBadRequest)
+			}
+		} else {
+			Error(w, "", StatusNotFound)
 		}
 	} else {
 		Error(w, "method not allowed", StatusMethodNotAllowed)

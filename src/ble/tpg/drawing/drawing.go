@@ -35,10 +35,10 @@ func (d DrawPart) MarshalJSON() ([]byte, error) {
 	resultObj["_tag"] = d.Tag
 	resultObj["startTime"] = d.StartTime
 	resultObj["lineWidth"] = d.LineWidth
-	if d.Coordinates != nil && len(d.Coordinates) > 0 {
+	if d.Coordinates != nil {
 		resultObj["coordinates"] = d.Coordinates
 	}
-	if d.Times != nil && len(d.Times) > 0 {
+	if d.Times != nil {
 		resultObj["times"] = d.Times
 	}
 	if d.Controls != nil && len(d.Controls) > 0 {

@@ -28,8 +28,8 @@ type drawingJsonSimple struct {
 }
 
 func (d drawingJsonSimple) MarshalJSON() ([]byte, error) {
-	//TODO: add player ID
 	result := make(map[string]interface{})
+	result["playerId"] = d.Player().Pid()
 	result["id"] = d.Did()
 	url := d.URLOf(d.Drawing)
 	if url != nil {

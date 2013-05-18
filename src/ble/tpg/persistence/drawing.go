@@ -14,10 +14,12 @@ type drawingBackend struct {
 }
 
 func (d drawingBackend) validateDrawPart(interface{}) bool {
+	//TODO: actually validate
 	return true
 }
 
 func (d drawingBackend) validateDrawing(model.Drawing) bool {
+	//TODO: actually validate / make sure it's not empty
 	return true
 }
 
