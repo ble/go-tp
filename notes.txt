@@ -58,5 +58,3 @@ game.myPlayer().stacksHeld()[0].fetchState();
 var drawingId = game.myPlayer().stacksHeld()[0].drawings()[0].id();
 client.appendToDrawing(drawingId, {'trouble':'incoming'});
 `
-
-TODO: server-side, no way to complete drawing at present
