@@ -28,3 +28,10 @@ HTML page
 A fair amount of that code really needs to be put in a unified location
 that is not directly coupled to UI; call it ServerModel
 
+The full initialization of the page should look like this:
+  create a ServerModel
+  create a UI
+  create a UIBinding connecting the UI and the ServerModel
+  `start` the ServerModel
+
+and no other top-level code should be necessary.
