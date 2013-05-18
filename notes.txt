@@ -1,45 +1,30 @@
-okay, now I've got some pretty decent stuff going on
 
-the current glue code is not so well organized, though
+Where does it belong?
 
-first of all, it's living in the HTML page itself
-second of all, its structure has not been carefully thought out
-third, there's something more than a little inconvenient about present data
-access with long-ass stuff like
-`game.myPlayer().stacksHeld()[0].id()`
-game.myPlayer().stacksHeld()[0].fetchState();
-var drawingId = game.myPlayer().stacksHeld()[0].drawings()[0].id();
-client.appendToDrawing(drawingId, {'trouble':'incoming'});
-`
-but it's not clear that's a real liability
+passive_client.js
+  definition of PassiveClient
+server_model.js
+  initializing `client` with correct URL
+  initializing `game` with client
+  creation of comet
+  creation of PassiveHandler
+  coupling of PassiveHandler to comet
+  making PassiveHandler's parent event target be the server object itself
+server_model.js - some kind of start or initialize method
+  stopping `comet` if it's going
+  call to `game.fetchState()`
+  coupling `game.fetchState()` success to starting of comet loop
+  giving back a Result for following on the success / error
 
-
-What code lives there right now?
-
-convenient namespacing
-initializing `client` with correct URL
-initializing `game` with client
-starting `comet`
-sends a test chat
-definition of PassiveHandler
-creation of PassiveHandler
-coupling of PassiveHandler to comet
-diagnostic listening to game events
-
-call to `game.fetchState()`
-coupling `game.fetchState()` success to starting of comet loop
-
-making the following happen in an appropriate, async fashion,
-keyed off of the `fetchState` success:
-  start the game if it hasn't been started
-  fetch the contents of the first stack player is holding
-  fetch the contents of the top drawing in that stack
+HTML page
+  convenient namespacing
+  sends a test chat
+  making the following happen in an appropriate, async fashion,
+  keyed off of the `fetchState` success:
+    start the game if it hasn't been started
+    fetch the contents of the first stack player is holding
+    fetch the contents of the top drawing in that stack
 
 A fair amount of that code really needs to be put in a unified location
-that is not directly coupled to UI;
+that is not directly coupled to UI; call it ServerModel
 
-I think the combination of CLIENT, PASSIVE CLIENT, and MODEL should be
-considered to be the state of the SERVER as perceived by the browser
-
-so maybe call the thing Server or ServerInterface?
-ugh, not that cool
