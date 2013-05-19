@@ -84,7 +84,7 @@ cp.enterDocument = function() {
   goog.events.listen(
       this.game,
       ModelType.ALL,
-      this); 
+      this);
 };
 
 cp.exitDocument = function() {
@@ -183,7 +183,7 @@ cip.createDom = function() {
   var elt = this.getElement();
   var dom = this.getDomHelper();
   var text = dom.createDom(
-      'input', 
+      'input',
       {'type': 'text', 'name': 'content', 'class': 'chat-text'});
   var button = dom.createDom(
       'input',

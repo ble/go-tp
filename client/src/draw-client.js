@@ -67,7 +67,7 @@ scope.deserializeDrawing = function(json) {
   var time = Infinity;
   var d = deserializer;
   for(var i = 0; i < json.length; i++) {
-    var part = d.deserialize(json[i]); 
+    var part = d.deserialize(json[i]);
     if(part) {
       time = Math.min(time, part.start());
       parts.push(part);
@@ -81,7 +81,7 @@ scope.deserializeDrawing = function(json) {
 scope.onDrawEnd = function(event) {
   var xhr = /**@type {XhrIo}*/ this;
   var part = event.drawn;
-  xhr.send("./", "POST", JSON.stringify(part), {'Content-Type': 'application/json'}); 
+  xhr.send("./", "POST", JSON.stringify(part), {'Content-Type': 'application/json'});
 }
 scope.setupClient();
 });
