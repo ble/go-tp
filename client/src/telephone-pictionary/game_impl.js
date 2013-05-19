@@ -3,6 +3,7 @@ goog.provide('ble.telephone_pictionary.GameImpl');
 
 goog.require('ble.telephone_pictionary.Game');
 goog.require('ble.telephone_pictionary.GameUpdater');
+goog.require('ble.telephone_pictionary.LoadedEvent');
 goog.require('ble.telephone_pictionary.JoinEvent');
 goog.require('ble.telephone_pictionary.PassEvent');
 
@@ -122,7 +123,13 @@ _.GameImpl.prototype.finishFetchState = function(jsonResult) {
     case Result.State.ERROR:
       throw jsonResult.getError();
     case Result.State.SUCCESS:
-      return this.state.setFromJSON(jsonResult.getValue());
+      var setProper = this.state.setFromJSON(jsonResult.getValue());
+      if(setProper) {
+        var event = new _.LoadedEvent(this, this);
+        this.dispatchEvent(event);
+      } else {
+        console.error("didn't succeed in setting state");
+      }
   }
 };
 
@@ -176,7 +183,7 @@ _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
       [id, isComplete, isStarted, lastTime, players, stacks, stacksInPlay, url],
       function(elem, index, array) { return isDefNotNull(elem); })) {
     console.error("missing field in JSON");
-    return;
+    return false;
   }
   this.id = id;
   this.lastTime = lastTime;
@@ -196,7 +203,7 @@ _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
     var sId = stacks[i]['id'];
     var sUrl = stacks[i]['url'];
     if(!isDefNotNull(this.createStack(sId, sUrl))) {
-      return;
+      return false;
     }
   }
 
@@ -205,7 +212,7 @@ _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
     var pName = players[i]['pseudonym'];
     var pIsMe = Boolean(players[i]['isYou']);
     if(!isDefNotNull(this.addPlayer(pId, pName, pIsMe))) {
-      return;
+      return false;
     }
   }
 
@@ -213,10 +220,11 @@ _.GameImpl.GameState.prototype.setFromJSON = function(obj) {
     var held = stacksInPlay[playerId];
     for(var i = 0; i < held.length; i++) {
       if(!isDefNotNull(this.giveStackTo(held[i], playerId))) {
-        return;
+        return false;
       }
     }
   }
+  return true;
 };
 
 _.GameImpl.GameState.prototype.addPlayer = function(id, name, isMe) {

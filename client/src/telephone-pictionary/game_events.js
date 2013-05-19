@@ -1,8 +1,10 @@
 goog.provide('ble.telephone_pictionary.EventType');
 
+goog.provide('ble.telephone_pictionary.LoadedEvent');
 goog.provide('ble.telephone_pictionary.JoinEvent');
 goog.provide('ble.telephone_pictionary.PassEvent');
 goog.provide('ble.telephone_pictionary.StartEvent');
+goog.provide('ble.telephone_pictionary.ChatEvent');
 
 goog.require('goog.events.Event');
 goog.require('goog.events.Event');
@@ -17,10 +19,22 @@ var EventTarget = goog.events.EventTarget;
 
 /** @enum {string} */
 _.EventType = ({
+  LOADED: 'LOADED',
   JOIN: 'JOIN',
   PASS: 'PASS',
-  START: 'START'
+  START: 'START',
+  CHAT: 'CHAT'
 });
+
+/** @constructor
+ *  @param {EventTarget} target
+ *  @param {_.Game} game
+ *  @extends {Event} */
+_.LoadedEvent = function(target, game) {
+  Event.call(this, _.EventType.LOADED, target);
+  this.game = game;
+};
+goog.inherits(_.LoadedEvent, Event);
 
 /** @constructor
  *  @param {EventTarget} game
@@ -55,5 +69,16 @@ _.StartEvent = function(game, who) {
   this.who = who;
 };
 goog.inherits(_.StartEvent, Event);
+
+
+/** @constructor
+ *  @param {EventTarget} target
+ *  @param {string} chatContent
+ *  @extends {Event} */
+_.ChatEvent = function(target, chatContent) {
+  Event.call(this, _.EventType.CHAT, target);
+  this.content = chatContent;
+};
+goog.inherits(_.ChatEvent, Event);
 
 });

@@ -1,92 +1,31 @@
 <html>
   <body>
-    <script src="http://localhost:9810/compile?id=client"></script>
+    <script src="http://localhost:9810/compile?id=client&mode=RAW"></script>
     <script>
-var _ = ble.telephone_pictionary;
-var url = location.toString();
-url = url.replace(/\/[^\/]*$/, '/');
-var client = new _.ClientImpl(url);
-var game = new _.GameImpl(client);
-var comet = new ble.net.QueryTimeComet(url + 'events');
-/**
- @constructor
- @param {ble.telephone_pictionary.GameUpdater} game
-**/
-var PassiveHandler = function(game) {
-  this.game = game;
-};
 
-PassiveHandler.prototype.handleEvent = function(event) {
-  //console.log(event);
-  var text = event['responseText'];
-  if(text === undefined) {
-    console.error('missing response text');
-    return;
-  }
-  var obj = JSON.parse(text);
-  var events = obj['events'];
-  if(events === undefined) {
-    console.error('missing events');
-    return;
-  }
-  for(var i = 0; i < events.length; i++) {
-    var gameEvent = events[i];
-    var type = gameEvent['actionType'];
-    switch(type) {
-    case 'joinGame':
-      console.log(gameEvent['who']);
-      console.log(gameEvent['name']);
-      this.game.joinGame(gameEvent['who'], gameEvent['name'], false);
-      break;
-    case 'chat':
-      //TODO: wire this up to the chat UI
-      break;
-    case 'startGame':
-      game.startGame(gameEvent['who']);
-      break;
-    case 'passStack':
-      game.passStack(gameEvent['who'], gameEvent['toWhom'], gameEvent['stackId'], gameEvent['url']);
-      break;
-    }
-    console.log(events[i]);
-  }
-};
+var _ = ble.telephone_pictionary;
+var server = _.ServerModel.initialize(window);
+goog.events.listen(
+  server,
+  [_.EventType.JOIN,
+   _.EventType.PASS,
+   _.EventType.LOADED,
+   _.EventType.START,
+   _.EventType.CHAT],
+  function(event) {
+    console.log("GOT AN EVENT");
+    console.log(event);
+  });
+server.wireUp();
+server.run();
+
+      /*
 
 client.chat("What's up in this piece?");
-
-var handler = new PassiveHandler(game);
-comet.listen(ble.net.EventType.COMET_DATA, handler);
-
-var dumbEventLogger = function(event) {
-  console.log("A GAME EVENT OCCURRED:");
-  console.log(event);
-}
-game.listen(_.EventType.JOIN, dumbEventLogger);
-game.listen(_.EventType.PASS, dumbEventLogger);
-game.listen(_.EventType.START, dumbEventLogger);
-
-var fetchRequest = game.fetchState();
-fetchRequest.wait(function(result) {
-  if(result.getError() !== undefined) {
-    console.error(result.getError());
-    return;
-  }
-  var value = result.getValue();
-  var time = value['lastTime'];
-  if(time === undefined) {
-    console.error('didn\'t get a time');
-    return
-  }
-
-  console.log(value);
-  comet.runAt(time);
-});
-
-//test some basic functionality...
-
+//a bunch of testing stuff
 //check if we're holding a stack, asynchronously update its contents
 var withStartedGame = function() {
-  var me = game.myPlayer();  
+  var me = game.myPlayer();
   var myStacks = me.stacksHeld();
   if(myStacks.length < 1)
     return;
@@ -124,7 +63,7 @@ fetchRequest.wait(function(result) {
     withStartedGame();
   }
 });
-
+*/
 
 
     </script>
