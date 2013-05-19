@@ -1,21 +1,6 @@
 
 Where does it belong?
 
-passive_client.js
-  definition of PassiveClient
-server_model.js
-  initializing `client` with correct URL
-  initializing `game` with client
-  creation of comet
-  creation of PassiveHandler
-  coupling of PassiveHandler to comet
-  making PassiveHandler's parent event target be the server object itself
-server_model.js - some kind of start or initialize method
-  stopping `comet` if it's going
-  call to `game.fetchState()`
-  coupling `game.fetchState()` success to starting of comet loop
-  giving back a Result for following on the success / error
-
 HTML page
   convenient namespacing
   sends a test chat
