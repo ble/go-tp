@@ -34,6 +34,7 @@ _.ServerModel = function(client, passive, game, comet) {
   this.passive = passive;
   this.game = game;
   this.comet = comet;
+  this.wireUp_();
 };
 goog.inherits(_.ServerModel, EventTarget);
 
@@ -52,7 +53,10 @@ _.ServerModel.initialize = function(window) {
   return new _.ServerModel(client, passive, game, comet);
 };
 
-_.ServerModel.prototype.wireUp = function() {
+/**
+ * @private
+ */
+_.ServerModel.prototype.wireUp_ = function() {
   goog.events.listen(this.comet, NetEventType.COMET_DATA, this.passive);
   this.game.setParentEventTarget(this);
   this.passive.setParentEventTarget(this);
