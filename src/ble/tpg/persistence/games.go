@@ -12,11 +12,14 @@ type gamesBackend struct {
 	*Backend
 	createGame *sql.Stmt
 	allGames   map[string]model.Game
+	byName     map[string]model.Game
 	*sync.RWMutex
 }
 
 func (g *gamesBackend) CreateGame(roomName string) (model.Game, error) {
-	if _, present := g.allGames[roomName]; present {
+	g.Lock()
+	defer g.Unlock()
+	if _, present := g.byName[roomName]; present {
 		return nil, errors.New("game by that name already exists")
 	}
 	if err := g.prepStatement(
@@ -45,9 +48,8 @@ func (g *gamesBackend) CreateGame(roomName string) (model.Game, error) {
 		make(map[model.Player][]model.Stack),
 		false,
 		false}
-	g.Lock()
 	g.allGames[gameId] = newGame
-	g.Unlock()
+	g.byName[roomName] = newGame
 	return newGame, nil
 }
 

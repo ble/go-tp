@@ -17,16 +17,6 @@ func dieOnErr(e error, t *testing.T) {
 
 func TestSwitchboardMapping(t *testing.T) {
 
-	switchboard := NewSwitchboard()
-
-	canRoundTrip := func(i interface{}) bool {
-		u := switchboard.URLOf(i)
-		if u == nil {
-			return false
-		}
-		return switchboard.CanRoute(*u)
-	}
-
 	var backend *persistence.Backend
 	var err error
 	{
@@ -38,6 +28,16 @@ func TestSwitchboardMapping(t *testing.T) {
 		t.Log("set up backend")
 	}
 
+	switchboard := NewSwitchboard(backend)
+
+	canRoundTrip := func(i interface{}) bool {
+		u := switchboard.URLOf(i)
+		if u == nil {
+			return false
+		}
+		return switchboard.CanRoute(*u)
+	}
+
 	var user1, user2 model.User
 	{
 		user1, err = backend.CreateUser("a@b.com", "fliffKnight", "paindeer")
@@ -46,11 +46,10 @@ func TestSwitchboardMapping(t *testing.T) {
 		dieOnErr(err, t)
 	}
 
-	games := backend.CreateGamesService()
 	var game model.Game
 	var player1, player2 model.Player
 	{
-		game, err = games.CreateGame("grapnal vs. dognal")
+		game, err = backend.CreateGame("grapnal vs. dognal")
 		dieOnErr(err, t)
 		player1, err = game.JoinGame(user1, "swaggerjacker")
 		dieOnErr(err, t)

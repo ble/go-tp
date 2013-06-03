@@ -44,6 +44,7 @@ func OpenBackend(filename string) (*Backend, error) {
 	b.gamesBackend = &gamesBackend{
 		Backend:  b,
 		allGames: make(map[string]model.Game),
+		byName:   make(map[string]model.Game),
 		RWMutex:  new(sync.RWMutex)}
 	b.drawingsBackend = &drawingsBackend{
 		Backend:  b,

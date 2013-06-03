@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	DD "ble/drawing"
+	DD "ble/tpg/drawing"
 	"ble/tpg/model"
 	"os"
 	"runtime/debug"

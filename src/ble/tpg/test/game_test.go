@@ -49,6 +49,9 @@ func TestGameHandler(t *T) {
 	client0.CheckRedirect = func(req *Request, via []*Request) error {
 		return errors.New("no redirects followed")
 	}
+
+	client1 := http.CookieClient()
+
 	//sadpath: get join client before user is logged-in
 	joinClientUrl := harness.URL.String() +
 		"/game/" +
@@ -88,14 +91,6 @@ func TestGameHandler(t *T) {
 		r0, _ := json.Marshal(resp)
 		t.Log("Happypath: get client for joining game after logon", string(r0))
 	}
-
-	client1 := http.CookieClient()
-	client1Cookie := &Cookie{
-		Name:     "userId",
-		Value:    user1.Uid(),
-		Path:     "/",
-		HttpOnly: true}
-	client1.Jar.SetCookies(harness.URL, []*Cookie{client1Cookie})
 
 	join0Json := `{"actionType":"joinGame","name":"dazzler"}`
 	respJoin0, err := client0.Post(
