@@ -1,0 +1,27 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <div id="ui-container">
+      <div class="roomTitle"></div>
+      <div class="roster"></div>
+      <div class="chatroom"></div>
+      <div class="stateOfPlay"></div>
+      <div class="taskDescription"></div>
+      <div class="drawingToInterpret"></div>
+      <div class="drawingInProgress"></div>
+      <div class="stackToReview"></div>
+      <div class="allStacks"></div> 
+    </div>
+
+    <script src="http://localhost:9810/compile?id=ui"></script>
+
+
+    <script>
+var ui = new ble.telephone_pictionary.UI();
+ui.decorate(document.body);
+    </script>
+
+
+  </body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "inherits": "root-config.ijson",
+  "id": "ui",
+  "inputs": [ "../src/telephone-pictionary/ui/ui.js" ]
+}
