@@ -10,6 +10,7 @@ goog.require('ble.telephone_pictionary.PassEvent');
 goog.require('goog.events.EventTarget');
 goog.require('goog.result');
 goog.require('goog.result.Result');
+goog.require('goog.result.SimpleResult');
 
 goog.require('ble._2d.DrawPart');
 goog.require('ble.scribbleDeserializer');
@@ -18,7 +19,9 @@ goog.scope(function() {
 var _ = ble.telephone_pictionary;
 var isDefNotNull = goog.isDefAndNotNull;
 var Result = goog.result.Result;
-var result = goog.result;
+var SimpleResult = goog.result.SimpleResult;
+var transform = goog.result.transform;
+var chain = goog.result.chain;
 var EventTarget = goog.events.EventTarget;
 var DrawPart = ble._2d.DrawPart;
 var console = window.console;
@@ -40,8 +43,7 @@ goog.inherits(_.GameImpl, EventTarget);
 
 _.GameImpl.prototype.fetchState = function() {
   var requested = this.client.getGameState();
-  requested.wait(goog.bind(this.finishFetchState, this));
-  return result.transform(requested, function(result) { return result; });
+  return chain(requested, goog.bind(this.finishFetchState, this));
 };
 
 _.GameImpl.prototype.isStarted = function(){ return this.state.isStarted; };
@@ -117,20 +119,25 @@ _.GameImpl.prototype.updateTime = function(time) {
 
 
 _.GameImpl.prototype.finishFetchState = function(jsonResult) {
+  var result = new SimpleResult();
   switch(jsonResult.getState()) {
     case Result.State.PENDING:
-      throw "invalid state for call to finishFetchState";
+      result.setError("invalid state for call to finishFetchState");
     case Result.State.ERROR:
-      throw jsonResult.getError();
+      return jsonResult;
     case Result.State.SUCCESS:
       var setProper = this.state.setFromJSON(jsonResult.getValue());
       if(setProper) {
         var event = new _.LoadedEvent(this, this);
         this.dispatchEvent(event);
+        return jsonResult;
       } else {
-        console.error("didn't succeed in setting state");
+        result.setError("didn't succeed in setting state");
       }
   }
+  if(result.getError())
+    console.error(result.getError());
+  return result;
 };
 
 
@@ -369,26 +376,30 @@ _.GameImpl.Stack = function(id, url, game, client) {
 _.GameImpl.Stack.prototype.fetchState = function() {
   //TODO: actually cache as appropriate?
   var request = this.client.getStack(this.id());
-  request.wait(goog.bind(this._processFetch, this));
-  return request;
+  return chain(request, goog.bind(this._processFetch, this));
 };
 
 /** @param {Result} response */
 _.GameImpl.Stack.prototype._processFetch = function(response) {
-  var drawings = response.getValue()['drawings'];
-  this._drawings = [];
-  for(var i = 0; i < drawings.length; i++) {
-    var dObj = drawings[i];
-    var player = this.game.playersById()[dObj['playerId']];
-    var d = new _.GameImpl.Drawing(
-        dObj['id'],
-        player,
-        this,
-        this.client);
-    this._drawings.push(d);
+  try {
+    var drawings = response.getValue()['drawings'];
+    this._drawings = [];
+    for(var i = 0; i < drawings.length; i++) {
+      var dObj = drawings[i];
+      var player = this.game.playersById()[dObj['playerId']];
+      var d = new _.GameImpl.Drawing(
+          dObj['id'],
+          player,
+          this,
+          this.client);
+      this._drawings.push(d);
+    }
+    return response;
+  } catch(e) {
+    var result = new SimpleResult();
+    result.setError(e.toString());
+    return result;
   }
-  console.log(response.getValue());
-  console.log(response.getError());
 };
 
 /** @return {?Array.<_.Drawing>} */
@@ -414,8 +425,7 @@ _.GameImpl.Drawing = function(id, player, stack, client) {
 /** @return {Result} */
 _.GameImpl.Drawing.prototype.fetchState = function() {
   var request = this.client.getDrawing(this.id());
-  request.wait(goog.bind(this._processFetch, this));
-  return request;
+  return chain(request, goog.bind(this._processFetch, this));
 };
 
 _.GameImpl.Drawing.prototype._processFetch = function(response) {
@@ -426,7 +436,9 @@ _.GameImpl.Drawing.prototype._processFetch = function(response) {
     var stroke = ble.scribbleDeserializer.deserialize(value[i]);
   };
   this._content = content;
+  return response;
 };
+
 
 /** @return {?Array.<DrawPart>} */
 _.GameImpl.Drawing.prototype.content = function() {
