@@ -1,9 +1,11 @@
 <html>
   <body>
-    <script src="http://localhost:9810/compile?id=client&mode=RAW"></script>
+    <script src="http://localhost:9810/compile?id=client"></script>
     <script>
 
 var _ = ble.telephone_pictionary;
+var transform = goog.result.transform;
+var SimpleResult = goog.result.SimpleResult;
 var server = _.ServerModel.initialize(window);
 goog.events.listen(
   server,
@@ -19,6 +21,54 @@ goog.events.listen(
 server.wireUp();
 server.run();
 
+var myTopDrawing = function() {
+  var error = new SimpleResult();
+
+  var game = server.game;
+  if(!game.isStarted()) {
+    error.setError("game not started");
+    return error;
+  }
+
+  var me = game.myPlayer();
+  if(!me) {
+    error.setError("client not associated with a player");
+    return error;
+  }
+  var stacks = me.stacksHeld();
+  if(!stacks || stacks.length == 0) {
+    error.setError("player doesn't have stacks");
+    return error;
+  }
+  var topStack = stacks[0];
+
+  var fetchStack = topStack.fetchState();
+  var theDrawing = null;
+  var withStackLoaded = function() {
+    var drawings = topStack.drawings();
+    if(!drawings || drawings.length == 0) {
+      error.setError("no drawings");
+      return error;
+    }
+    theDrawing = drawings[0];
+    return drawings[0].fetchState();
+  };
+  var fetchDrawing = transform(fetchStack, withStackLoaded);
+
+  var withDrawingLoaded = function(response) {
+    if(response.getError() !== undefined)
+      return response
+    if(!theDrawing || !theDrawing.content()) {
+      error.setError("didn't get drawing");
+      return error;
+    }
+    var content = new SimpleResult();
+    content.setValue(theDrawing);
+  };
+  var drawingContent = transform(fetchDrawing, withDrawingLoaded);
+  return drawingContent;
+
+};
       /*
 
 client.chat("What's up in this piece?");
