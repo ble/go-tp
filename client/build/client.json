@@ -1,5 +1,5 @@
 {
   "inherits": "root-config.ijson",
   "id": "client",
-  "inputs": [ "../src/telephone-pictionary/server_model.js" ]
+  "inputs": [ "../src/telephone-pictionary/client/server_model.js" ]
 }

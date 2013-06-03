@@ -1,22 +1,27 @@
-
-Where does it belong?
-
-HTML page
-  convenient namespacing
-  sends a test chat
-  making the following happen in an appropriate, async fashion,
-  keyed off of the `fetchState` success:
-    start the game if it hasn't been started
-    fetch the contents of the first stack player is holding
-    fetch the contents of the top drawing in that stack
-
-A fair amount of that code really needs to be put in a unified location
-that is not directly coupled to UI; call it ServerModel
-
 The full initialization of the page should look like this:
   create a ServerModel
   create a UI
   create a UIBinding connecting the UI and the ServerModel
-  `start` the ServerModel
+  `start` the ServerModel (kicks off request for current game state)
 
 and no other top-level code should be necessary.
+
+
+Why am I throwing away the old UI code?
+
+  direct coupling of ui widget to XHR
+  kinda goofy dom assemblage
+  ad-hoc high level structure
+
+
+What are the pieces of the UI?
++ Roster of players
++ Chatroom
++ State of play
++ Player's current task description
++ Drawing to interpret
++ Drawing in progress
++ Stack to review
++ All stacks display 
++ Pass drawing button
++ Start game button
