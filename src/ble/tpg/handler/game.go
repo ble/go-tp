@@ -26,7 +26,7 @@ func NewGameHandler(rs room.RoomService) Handler {
 //POST <game-id>/join
 //POST <game-id>/chat
 //POST <game-id>/start
-//POST <game-id>/pass 
+//POST <game-id>/pass
 func (g *gameHandler) ServeHTTP(w ResponseWriter, r *Request) {
 	parts := pathParts(r)
 	if len(parts) < 1 || len(parts) > 2 {

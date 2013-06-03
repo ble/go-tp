@@ -15,7 +15,7 @@ import (
 
 //Request and response tests
 //JSON must be of correct format
-//Name must be acceptable 
+//Name must be acceptable
 //Name must not already be in use
 //Artist ID cookie must not already be set to something in use
 
