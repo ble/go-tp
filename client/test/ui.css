@@ -17,6 +17,33 @@ canvas.drawing {
   border: solid black 1px;
 }
 
+.drawingsContainer {
+  position: relative;
+}
+
+.drawingToInterpret {
+  position: absolute;
+  left: -50%;
+  background: cornflowerblue;
+  transition: left 0.5s ease-out 0.25s;
+  z-index: 1000;
+}
+
+.drawingToInterpret:hover {
+  position: absolute;
+  left: 0%;
+}
+
+.drawingInProgress {
+  position: relative;
+  left: 10%;
+}
+/*
+canvas.drawing:hover {
+  border: solid red 30px;
+}
+  */
+
 .drawing
 
 * {
