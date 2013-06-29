@@ -32,6 +32,8 @@ _.UI = function() {
     var child = new this.childrenCssClasses[className];
     this.tpgElements_[className] = child;
     this.addChild(child, true); 
+    //really stupid placeholder
+    child.getElement().appendChild(document.createTextNode(className));
   };
 };
 goog.inherits(_.UI, Component);
