@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="ui.css"></link>
+  </head>
+  <body>
+    <div id="ui-container">
+      <div class="roomTitle">{room title here}</div>
+      <div class="roster">{player roster here}</div>
+      <div class="chatroom">{chatroom here}</div>
+      <div class="stateOfPlay">{state of play here}</div>
+      <div class="taskDescription">{what player has to do here}</div>
+      <div class="drawingsContainer">
+        <div class="drawingToInterpret inactive">
+          <div>{drawing to interpret}</div>
+          <canvas class="drawing" width="480" height="360"></canvas>
+        </div>
+        <div class="drawingInProgress inactive"> 
+          <div>{drawing in progress}</div>
+          <canvas class="drawing" width="480" height="360"></canvas>
+        </div>
+      </div>
+      <div class="stackToReview inactive">{stack to review}</div>
+      <div class="allStacks inactive">{allStacks}</div> 
+    </div>
+    <!--
+    verbal concept:
+
+    inactive class is there for when a player can't actually work with something
+
+    -->
+    <script src="http://localhost:9810/compile?id=ui"></script>
+
+
+    <script>
+var ui = new ble.telephone_pictionary.UI();
+ui.decorate(document.body);
+    </script>
+
+
+  </body>
+</html>
