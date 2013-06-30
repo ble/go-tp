@@ -37,7 +37,6 @@ $offset-size: -25px;
 .drawingToInterpret {
   z-index: 1000;
 
-  border: solid black 1px;
   background: white;
 
   margin: 25px;
@@ -51,12 +50,10 @@ $offset-size: -25px;
 
   transition: left 0.5s, ease-out 0.25s, border 0.1s;
   &:hover {
-    border: solid yellow 1px;
     left: $offset-size;
     opacity: 1.0;
   }
   &.inactive {
-    border: solid black 1 px;
     left: $slide-out-width;
   }
 }
