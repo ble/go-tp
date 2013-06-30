@@ -3,13 +3,27 @@
   float: right;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+.inactive {
+  background-color: grey;
+}
+
+.inactive * {
+  opacity: 0.5;
+}
+
+
+
 canvas {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none; 
+  user-select: none;
 }
 
 canvas.drawing {
@@ -42,6 +56,11 @@ canvas.drawing {
   left: 0px;
 }
 
+.drawingToInterpret.inactive {
+  left: -500px;
+  border: solid black 5px;
+}
+
 .drawingInProgress {
   position: relative;
 }
@@ -51,6 +70,4 @@ canvas.drawing:hover {
 }
   */
 
-* {
-  box-sizing: border-box;
-}
+
