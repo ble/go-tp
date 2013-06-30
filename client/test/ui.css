@@ -15,6 +15,7 @@ canvas {
 canvas.drawing {
   display: block;
   border: solid black 1px;
+  margin: 5px;
 }
 
 .drawingsContainer {
@@ -22,15 +23,18 @@ canvas.drawing {
 }
 
 .drawingToInterpret {
+  box-sizing: content-box;
   position: absolute;
-  left: -50%;
+  left: -465px;
   background: cornflowerblue;
-  transition: left 0.5s ease-out 0.25s;
+  border: solid black 5px;
+  transition: left 0.5s ease-out 0.25s, border 0.1s;
   z-index: 1000;
 }
 
 .drawingToInterpret:hover {
   position: absolute;
+  border: solid yellow 5px;
   left: 0%;
 }
 
