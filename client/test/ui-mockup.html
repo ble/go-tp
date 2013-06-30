@@ -3,6 +3,21 @@
     <link rel="stylesheet" href="ui.css"></link>
   </head>
   <body>
+    <script>
+      var toggle = function() {
+        var inactive = document.getElementsByClassName("inactive");
+        var active = document.getElementsByClassName("active");
+        for(var i = 0; i < inactive.length; i++) {
+          inactive[i].classList.remove("inactive");
+          inactive[i].classList.add("active");
+        }
+        for(var i = 0; i < active.length; i++) {
+          active[i].classList.remove("active");
+          active[i].classList.add("inactive");
+        }
+      };
+      document.body.addEventListener("click", toggle);
+    </script>
     <div id="ui-container">
       <div class="roomTitle">{room title here}</div>
       <div class="roster">{player roster here}</div>
