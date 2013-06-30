@@ -33,11 +33,9 @@ canvas.drawing {
 
 $slide-out-width: -500px;
 $offset-size: -25px;
-
 .drawingToInterpret {
   z-index: 1000;
 
-  background: white;
 
   margin: 25px;
   padding: 5px;
@@ -52,10 +50,13 @@ $offset-size: -25px;
   &:hover {
     left: $offset-size;
     opacity: 1.0;
+    background: white;
   }
-  &.inactive {
+}
+
+.inactive .drawingToInterpret {
     left: $slide-out-width;
-  }
+    background: none;
 }
 
 .drawingInProgress {

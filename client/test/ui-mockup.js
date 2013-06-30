@@ -31,13 +31,17 @@ var canToggle = function(el) {
 }
 
 var toggler = function(event) {
-  if(canToggle(event.target)) {
-    console.log("toggling one");
-    toggleOne(event.target);
-  } else {
-    console.log("toggling all");
-    toggleAll();
+  var target = event.target;
+  while(target != null && target != event.currentTarget) {
+    if(canToggle(target)) {
+      console.log("toggling one");
+      toggleOne(target);
+      return;
+    }
+    target = target.parentElement;
   }
+  console.log("toggling all");
+  toggleAll();
 };
 document.body.addEventListener("click", toggler);
 
