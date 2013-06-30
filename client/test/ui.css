@@ -19,17 +19,17 @@ canvas.drawing {
 }
 
 .drawingsContainer {
+  display: inline-block;
   position: relative;
   border: solid blanchedalmond 10px; //development-only: so I can see
   padding: 10px;
-  overflow-x: hidden;
-  overflow-y: visible;
+  left: 25px;
 }
 
 .drawingToInterpret {
   box-sizing: content-box;
   position: absolute;
-  left: -480px;
+  left: -500px;
   background: cornflowerblue;
   border: solid black 5px;
   transition: left 0.5s ease-out 0.25s, border 0.1s;
@@ -50,8 +50,6 @@ canvas.drawing:hover {
   border: solid red 30px;
 }
   */
-
-.drawing
 
 * {
   box-sizing: border-box;
