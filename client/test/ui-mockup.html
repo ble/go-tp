@@ -6,7 +6,9 @@
     <script>
       var toggle = function() {
         var inactive = document.getElementsByClassName("inactive");
+        inactive = [].slice.call(inactive);
         var active = document.getElementsByClassName("active");
+        active = [].slice.call(active);
         for(var i = 0; i < inactive.length; i++) {
           inactive[i].classList.remove("inactive");
           inactive[i].classList.add("active");
