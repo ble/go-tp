@@ -20,12 +20,16 @@ canvas.drawing {
 
 .drawingsContainer {
   position: relative;
+  border: solid blanchedalmond 10px; //development-only: so I can see
+  padding: 10px;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .drawingToInterpret {
   box-sizing: content-box;
   position: absolute;
-  left: -465px;
+  left: -480px;
   background: cornflowerblue;
   border: solid black 5px;
   transition: left 0.5s ease-out 0.25s, border 0.1s;
@@ -35,12 +39,11 @@ canvas.drawing {
 .drawingToInterpret:hover {
   position: absolute;
   border: solid yellow 5px;
-  left: 0%;
+  left: 0px;
 }
 
 .drawingInProgress {
   position: relative;
-  left: 10%;
 }
 /*
 canvas.drawing:hover {
