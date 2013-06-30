@@ -1,9 +1,12 @@
+//general classes
 * {
-  box-sizing: border-box; }
+  box-sizing: border-box;
+}
 
 .inactive {
   background-color: grey;
-  opacity: 0.5; }
+  opacity: 0.5;
+}
 
 canvas {
   -webkit-touch-callout: none;
@@ -11,19 +14,24 @@ canvas {
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none; }
+  user-select: none;
+}
 
 canvas.drawing {
   display: block;
   border: solid black 1px;
-  margin: 5px; }
+  margin: 5px;
+}
 
+
+//drawing-related
 .drawingsContainer {
   display: inline-block;
   position: relative;
-  border: solid blanchedalmond 10px;
+  border: solid blanchedalmond 10px; //development-only: so I can see
   overflow: hidden;
-  left: 25px; }
+  left: 25px;
+}
 
 .drawingToInterpret {
   position: absolute;
@@ -33,25 +41,32 @@ canvas.drawing {
   transition: left 0.5s ease-out 0.25s, border 0.1s;
   margin: 15px;
   padding: 15px;
-  z-index: 1000; }
+  z-index: 1000;
+}
 
 .drawingToInterpret:hover {
   position: absolute;
   border: solid yellow 1px;
-  left: 0px; }
+  left: 0px;
+}
 
 .drawingToInterpret.inactive {
   left: -515px;
-  border: solid black 1px; }
+  border: solid black 1px;
+}
 
 .drawingInProgress {
   position: relative;
-  margin: 30px; }
-
+  margin: 30px;
+}
 /*
 canvas.drawing:hover {
   border: solid red 30px;
 }
   */
+
 .roomTitle {
-  float: right; }
+  float: right;
+}
+
+

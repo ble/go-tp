@@ -5,3 +5,4 @@
 pkg
 db
 db-*
+.sass-cache
