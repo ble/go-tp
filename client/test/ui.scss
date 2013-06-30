@@ -28,42 +28,43 @@ canvas.drawing {
 .drawingsContainer {
   display: inline-block;
   position: relative;
-  border: solid blanchedalmond 10px; //development-only: so I can see
-  overflow: hidden;
-  left: 25px;
+  overflow: hidden; //truncate the slide-in / slide-out view of previous drawing
 }
+
+$slide-out-width: -500px;
+$offset-size: -25px;
 
 .drawingToInterpret {
-  position: absolute;
-  left: -515px;
-  background: cornflowerblue;
-  border: solid black 1px;
-  transition: left 0.5s ease-out 0.25s, border 0.1s;
-  margin: 15px;
-  padding: 15px;
   z-index: 1000;
-}
 
-.drawingToInterpret:hover {
-  position: absolute;
-  border: solid yellow 1px;
-  left: 0px;
-}
-
-.drawingToInterpret.inactive {
-  left: -515px;
   border: solid black 1px;
+  background: white;
+
+  margin: 25px;
+  padding: 5px;
+
+  position: absolute;
+  left: $slide-out-width;
+  top: $offset-size;
+  opacity: 0.5;
+
+
+  transition: left 0.5s, ease-out 0.25s, border 0.1s;
+  &:hover {
+    border: solid yellow 1px;
+    left: $offset-size;
+    opacity: 1.0;
+  }
+  &.inactive {
+    border: solid black 1 px;
+    left: $slide-out-width;
+  }
 }
 
 .drawingInProgress {
   position: relative;
-  margin: 30px;
+  padding: 30px;
 }
-/*
-canvas.drawing:hover {
-  border: solid red 30px;
-}
-  */
 
 .roomTitle {
   float: right;
