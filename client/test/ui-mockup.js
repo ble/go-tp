@@ -27,20 +27,33 @@ var toggler = function(event) {
   }
 };
 
+var cycleClasses = function(classCycle) {
+
+  var N = classCycle.length;
+  var cc = classCycle.slice();
+
+  return function(element) {
+    var lst = element.classList;
+    for(var i = 0; i < classCycle.length; i++) {
+      var cl1 = cc[i], cl2 = cc[(i + 1) % N];
+      if(lst.contains(cl1)) {
+        lst.remove(cl1);
+        lst.add(cl2);
+        return;
+      }
+    }
+    
+    console.warn("didn't find any of the classes\n" + "\n\t".join(cc));
+    lst.add(cc[0]);
+  };
+};
+
+var cycleInstructions_internal = cycleClasses(["start","draw","describe"]);
 var cycleInstructions = function(element) {
   var cl = element.classList;
   if(!cl.contains("instructions"))
     return false;
-  if(cl.contains("start")) {
-    cl.remove("start");
-    cl.add("draw");
-  } else if(cl.contains("draw")) {
-    cl.remove("draw");
-    cl.add("describe");
-  } else if(cl.contains("describe")) {
-    cl.remove("describe");
-    cl.add("start");
-  }
+  cycleInstructions_internal(element);
   return true;
 };
 
@@ -51,4 +64,10 @@ var cycleInstructionListener = function(event) {
 
 document.body.addEventListener("click", cycleInstructionListener);
 document.body.addEventListener("click", toggler);
+
+var headline = document.getElementsByClassName("status-headline")[0];
+var statusCycler = cycleClasses(["before-game", "at-work", "waiting"]);
+headline.addEventListener("click", function(event) {
+  statusCycler(headline);
+});
 

@@ -127,6 +127,34 @@ $sidebar-height: 487px;
   border-right: solid black 1px;
   border-top: solid black 1px;
 }
+
+//status headers
+.status-headline {
+  text-align: center;
+  font-size: 1em;
+}
+
+.status-subhead {
+  font-size: 0.75em;
+}
+
+.status-headline.before-game::before {
+  content: "Waiting for game to start...";
+}
+
+.status-headline.at-work::before {
+  content: "You have something to work on.";
+};
+
+.status-headline.waiting::before {
+  content: "You're waiting for your next stack.";
+};
+
+.before-game .status-subhead::after {
+  content: "More players can still join.";
+}
+
+
 /*
 ...
 */
