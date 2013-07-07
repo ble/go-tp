@@ -7,10 +7,15 @@
     </script>
     <div id="ui-container">
       <div class="roomTitle">{room title here}</div>
-      <div class="roster">{player roster here}</div>
-      <div class="chatroom">{chatroom here}</div>
+      <!-- rather than a separate roster and state of play,
+           we'll collapse the roster and state of play into
+           one thing.
+
+           floating to the left of the drawing area?
+
+           this may be too crowded because the previous player's
+           drawing is on the left side of the drawing area... -->
       <div class="stateOfPlay">{state of play here}</div>
-      <div class="taskDescription">{what player has to do here}</div>
       <div class="drawingsContainer inactive">
         <div class="drawingToInterpret">
           <div>{drawing to interpret}</div>
@@ -24,6 +29,7 @@
         </div>
 
       </div>
+      <div class="chatroom">{chatroom here}</div>
       <div class="stackToReview inactive">{stack to review}</div>
       <div class="allStacks inactive">{allStacks}</div>
     </div>
