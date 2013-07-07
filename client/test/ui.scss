@@ -40,7 +40,7 @@ canvas.drawing {
 //Layout for the drawing container and its contents
 ////////////////////////////////////////////////////////////////////////////////
 
-.drawingsContainer {
+.drawings-container {
   display: inline-block;
   position: relative;
   overflow: hidden; //truncate the slide-in / slide-out view of previous drawing
@@ -50,7 +50,7 @@ canvas.drawing {
   transition: width 0.5s;
 }
 
-.drawingsContainer.inactive {
+.drawings-container.inactive {
   width: 226px;
 }
 
@@ -68,7 +68,7 @@ canvas.drawing {
 
 $slide-out-width: -495px;
 $offset-size: -24px;
-.drawingToInterpret {
+.drawing-to-interpret {
   z-index: 1000;
 
 
@@ -89,21 +89,21 @@ $offset-size: -24px;
   }
 }
 
-.inactive .drawingToInterpret {
+.inactive .drawing-to-interpret {
   left: $slide-out-width;
   background: none;
 }
 
-.firstDrawing .drawingToInterpret {
+.first-drawing .drawing-to-interpret {
   display: none;
 }
 
-.drawingInProgress {
+.drawing-in-progress {
   position: relative;
   padding: 30px;
 }
 
-.roomTitle {
+.room-title {
   display: block;
 
   text-align: center;
@@ -117,7 +117,7 @@ $sidebar-height: 487px;
 ////////////////////////////////////////////////////////////////////////////////
 //Presentation of the roster/state of play and its contents
 ////////////////////////////////////////////////////////////////////////////////
-.stateOfPlay {
+.state-of-play {
   display: inline-block;
   vertical-align: top;
 
@@ -152,10 +152,10 @@ $sidebar-height: 487px;
 ////////////////////////////////////////////////////////////////////////////////
 //Presentation of the game review
 ////////////////////////////////////////////////////////////////////////////////
-.stackToReview {
+.stack-to-review {
   display: none
 }
-.allStacks {
+.all-stacks {
   display: none
 }
 /*

@@ -6,27 +6,21 @@
     <script src="ui-mockup.js">
     </script>
     <div id="ui-container">
-      <!-- rather than a separate roster and state of play,
-           we'll collapse the roster and state of play into
-           one thing.
-
-           floating to the left of the drawing area?
-
-           this may be too crowded because the previous player's
-           drawing is on the left side of the drawing area... -->
       <div class="ui-body">
-        <div class="stateOfPlay">{state of play here}</div>
+        <div class="state-of-play">
+          {state of play here}
+        </div>
 
         <div class="ui-center-column">
-          <div class="roomTitle">{Room Title Here}</div>
-          <div class="drawingsContainer inactive">
-            <div class="drawingToInterpret">
+          <div class="room-title">{Room Title Here}</div>
+          <div class="drawings-container inactive">
+            <div class="drawing-to-interpret">
               <div>{drawing to interpret}</div>
               <canvas class="drawing" width="480" height="360"></canvas>
             </div>
 
 
-            <div class="drawingInProgress">
+            <div class="drawing-in-progress">
               <div class="instructions start"></div>
               <canvas class="drawing" width="480" height="360"></canvas>
             </div>
@@ -36,8 +30,8 @@
         <div class="chatroom">{chatroom here}</div>
       </div> <!-- end ui-body -->
 
-      <div class="stackToReview inactive">{stack to review}</div>
-      <div class="allStacks inactive">{allStacks}</div>
+      <div class="stack-to-review inactive">{stack to review}</div>
+      <div class="all-stacks inactive">{allStacks}</div>
     </div>
     <!--
 

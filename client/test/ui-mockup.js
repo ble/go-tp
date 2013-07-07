@@ -1,3 +1,4 @@
+/*
 var toggleAll = function() {
   var inactive = document.getElementsByClassName("inactive");
   inactive = [].slice.call(inactive);
@@ -12,6 +13,7 @@ var toggleAll = function() {
     active[i].classList.add("inactive");
   }
 };
+*/
 
 var toggleOne = function(el) {
   if(el.classList.contains("inactive")) {
@@ -40,8 +42,8 @@ var toggler = function(event) {
     }
     target = target.parentElement;
   }
-  console.log("toggling all");
-  toggleAll();
+  //console.log("toggling all");
+  //toggleAll();
 };
 
 var cycleInstructions = function(element) {
