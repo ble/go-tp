@@ -22,6 +22,21 @@ canvas.drawing {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//High-level containers
+////////////////////////////////////////////////////////////////////////////////
+.ui-center-column {
+  display: inline-block;
+}
+
+.ui-container {
+  position: relative;
+}
+
+.ui-body {
+  position: relative;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 //Layout for the drawing container and its contents
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,6 +45,13 @@ canvas.drawing {
   position: relative;
   overflow: hidden; //truncate the slide-in / slide-out view of previous drawing
   text-align: center;
+
+  width: 552px;
+  transition: width 0.5s;
+}
+
+.drawingsContainer.inactive {
+  width: 226px;
 }
 
 .instructions.draw::before {
@@ -83,20 +105,25 @@ $offset-size: -24px;
 
 .roomTitle {
   display: block;
-  width: 100%;
-  position: absolute;
 
   text-align: center;
   font-size: 2em;
 }
+
+//variables for terrible decisions
+$sidebar-width: 240px;
+$sidebar-height: 487px;
 
 ////////////////////////////////////////////////////////////////////////////////
 //Presentation of the roster/state of play and its contents
 ////////////////////////////////////////////////////////////////////////////////
 .stateOfPlay {
   display: inline-block;
-  width: 240px;
-  height: 420px;
+  vertical-align: top;
+
+  width: $sidebar-width;
+  height: $sidebar-height;
+
   border-right: solid black 1px;
   border-top: solid black 1px;
 }
@@ -109,11 +136,13 @@ $offset-size: -24px;
 ////////////////////////////////////////////////////////////////////////////////
 .chatroom {
   display: inline-block;
-  width: 240px;
-  height: 420px;
+  vertical-align: top;
+
+  width: $sidebar-width;
+  height: $sidebar-height;
+
   border-left: solid black 1px;
   border-top: solid black 1px;
-
 }
 /*
 ...

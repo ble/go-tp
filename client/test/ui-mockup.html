@@ -6,7 +6,6 @@
     <script src="ui-mockup.js">
     </script>
     <div id="ui-container">
-      <div class="roomTitle">{Room Title Here}</div>
       <!-- rather than a separate roster and state of play,
            we'll collapse the roster and state of play into
            one thing.
@@ -17,18 +16,22 @@
            drawing is on the left side of the drawing area... -->
       <div class="ui-body">
         <div class="stateOfPlay">{state of play here}</div>
-        <div class="drawingsContainer inactive">
-          <div class="drawingToInterpret">
-            <div>{drawing to interpret}</div>
-            <canvas class="drawing" width="480" height="360"></canvas>
+
+        <div class="ui-center-column">
+          <div class="roomTitle">{Room Title Here}</div>
+          <div class="drawingsContainer inactive">
+            <div class="drawingToInterpret">
+              <div>{drawing to interpret}</div>
+              <canvas class="drawing" width="480" height="360"></canvas>
+            </div>
+
+
+            <div class="drawingInProgress">
+              <div class="instructions start"></div>
+              <canvas class="drawing" width="480" height="360"></canvas>
+            </div>
+
           </div>
-
-
-          <div class="drawingInProgress">
-            <div class="instructions start"></div>
-            <canvas class="drawing" width="480" height="360"></canvas>
-          </div>
-
         </div>
         <div class="chatroom">{chatroom here}</div>
       </div> <!-- end ui-body -->
