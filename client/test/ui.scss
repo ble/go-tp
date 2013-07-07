@@ -9,9 +9,10 @@
   user-select: none;
 }
 
+$inactive-opacity: 0.25;
 .inactive {
   background-color: grey;
-  opacity: 0.5;
+  opacity: $inactive-opacity;
 }
 
 canvas.drawing {
@@ -43,8 +44,8 @@ canvas.drawing {
   content: "Your starting clue";
 }
 
-$slide-out-width: -500px;
-$offset-size: -25px;
+$slide-out-width: -495px;
+$offset-size: -24px;
 .drawingToInterpret {
   z-index: 1000;
 
@@ -55,7 +56,7 @@ $offset-size: -25px;
   position: absolute;
   left: $slide-out-width;
   top: $offset-size;
-  opacity: 0.5;
+  opacity: $inactive-opacity;
 
 
   transition: left 0.5s, ease-out 0.25s, border 0.1s;
@@ -80,11 +81,13 @@ $offset-size: -25px;
   padding: 30px;
 }
 
-//this rule is retarded
 .roomTitle {
   display: block;
   text-align: center;
   width: 100%;
+  position: relative;
+  font-size: 2em;
+  top: -0.5em;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,14 +95,40 @@ $offset-size: -25px;
 ////////////////////////////////////////////////////////////////////////////////
 .stateOfPlay {
   display: inline-block;
+  width: 240px;
+  height: 420px;
+  border-right: solid black 1px;
+  border-top: solid black 1px;
 }
+/*
+...
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 //Presentation of the chatroom
 ////////////////////////////////////////////////////////////////////////////////
 .chatroom {
   display: inline-block;
+  width: 240px;
+  height: 420px;
+  border-left: solid black 1px;
+  border-top: solid black 1px;
+
 }
 /*
-almost nothing here
+...
+*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+//Presentation of the game review
+////////////////////////////////////////////////////////////////////////////////
+.stackToReview {
+  display: none
+}
+.allStacks {
+  display: none
+}
+/*
+... nothing here ...
 */
