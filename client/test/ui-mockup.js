@@ -43,5 +43,29 @@ var toggler = function(event) {
   console.log("toggling all");
   toggleAll();
 };
+
+var cycleInstructions = function(element) {
+  var cl = element.classList;
+  if(!cl.contains("instructions"))
+    return false;
+  if(cl.contains("start")) {
+    cl.remove("start");
+    cl.add("draw");
+  } else if(cl.contains("draw")) {
+    cl.remove("draw");
+    cl.add("describe");
+  } else if(cl.contains("describe")) {
+    cl.remove("describe");
+    cl.add("start");
+  }
+  return true;
+};
+
+var cycleInstructionListener = function(event) {
+  if(cycleInstructions(event.target))
+    event.stopImmediatePropagation();
+};
+
+document.body.addEventListener("click", cycleInstructionListener);
 document.body.addEventListener("click", toggler);
 

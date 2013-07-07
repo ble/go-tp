@@ -1,20 +1,17 @@
 //general classes
 * {
   box-sizing: border-box;
-}
-
-.inactive {
-  background-color: grey;
-  opacity: 0.5;
-}
-
-canvas {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.inactive {
+  background-color: grey;
+  opacity: 0.5;
 }
 
 canvas.drawing {
@@ -29,6 +26,19 @@ canvas.drawing {
   display: inline-block;
   position: relative;
   overflow: hidden; //truncate the slide-in / slide-out view of previous drawing
+  text-align: center;
+}
+
+.instructions.draw::before {
+  content: "Your drawing";
+}
+
+.instructions.describe::before {
+  content: "Your description";
+}
+
+.instructions.start::before {
+  content: "Your starting clue";
 }
 
 $slide-out-width: -500px;
@@ -55,8 +65,12 @@ $offset-size: -25px;
 }
 
 .inactive .drawingToInterpret {
-    left: $slide-out-width;
-    background: none;
+  left: $slide-out-width;
+  background: none;
+}
+
+.firstDrawing .drawingToInterpret {
+  display: none;
 }
 
 .drawingInProgress {
