@@ -1,20 +1,3 @@
-/*
-var toggleAll = function() {
-  var inactive = document.getElementsByClassName("inactive");
-  inactive = [].slice.call(inactive);
-  var active = document.getElementsByClassName("active");
-  active = [].slice.call(active);
-  for(var i = 0; i < inactive.length; i++) {
-    inactive[i].classList.remove("inactive");
-    inactive[i].classList.add("active");
-  }
-  for(var i = 0; i < active.length; i++) {
-    active[i].classList.remove("active");
-    active[i].classList.add("inactive");
-  }
-};
-*/
-
 var toggleOne = function(el) {
   if(el.classList.contains("inactive")) {
     el.classList.remove("inactive");
@@ -42,8 +25,6 @@ var toggler = function(event) {
     }
     target = target.parentElement;
   }
-  //console.log("toggling all");
-  //toggleAll();
 };
 
 var cycleInstructions = function(element) {
