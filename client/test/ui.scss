@@ -32,17 +32,34 @@ canvas.drawing {
 //High-level containers
 ////////////////////////////////////////////////////////////////////////////////
 .ui-center-column {
-  display: inline-block;
 }
 
 .ui-container {
 
 }
 
-.ui-body {
-  display: flex;
+@mixin flexy-container {
+  -ms-box-orient: horizontal;
   display: -webkit-box;
-  -webkit-box-orient: horizontal;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -moz-flex;
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+@mixin flexy-side-item {
+  display: -webkit-box;
+  -webkit-box-flex: 1.0;
+  -webkit-flex-grow: 1.0;
+  min-width: 8em;
+}
+
+.ui-body {
+  @include flexy-container;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +67,6 @@ canvas.drawing {
 ////////////////////////////////////////////////////////////////////////////////
 
 .drawings-container {
-  display: inline-block;
   position: relative;
   overflow: hidden; //truncate the slide-in / slide-out view of previous drawing
   text-align: center;
@@ -119,28 +135,16 @@ $offset-size: -24px;
   font-size: 2em;
 }
 
-//variables for terrible decisions
-$sidebar-width: 240px;
-$sidebar-height: 487px;
-
 ////////////////////////////////////////////////////////////////////////////////
 //Presentation of the roster/state of play and its contents
 ////////////////////////////////////////////////////////////////////////////////
-@mixin flexy-side-item {
-  display: -webkit-box;
-  -webkit-box-flex: 1.0;
-  min-width: 10em;
-}
+
 
 .state-of-play {
-  display: inline-block;
 
   @include flexy-side-item;
 
   vertical-align: top;
-
-  width: $sidebar-width;
-  height: $sidebar-height;
 
   border-right: solid black 1px;
   border-top: solid black 1px;
@@ -181,14 +185,11 @@ $sidebar-height: 487px;
 //Presentation of the chatroom
 ////////////////////////////////////////////////////////////////////////////////
 .chatroom {
-  display: inline-block;
 
   @include flexy-side-item;
 
   vertical-align: top;
 
-  width: $sidebar-width;
-  height: $sidebar-height;
 
   border-left: solid black 1px;
   border-top: solid black 1px;
