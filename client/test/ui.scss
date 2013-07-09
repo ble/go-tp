@@ -36,11 +36,13 @@ canvas.drawing {
 }
 
 .ui-container {
-  position: relative;
+
 }
 
 .ui-body {
-  position: relative;
+  display: flex;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +60,7 @@ canvas.drawing {
 }
 
 .drawings-container.inactive {
-  width: 226px;
+  width: 260px;
 }
 
 .instructions.draw::before {
@@ -124,8 +126,17 @@ $sidebar-height: 487px;
 ////////////////////////////////////////////////////////////////////////////////
 //Presentation of the roster/state of play and its contents
 ////////////////////////////////////////////////////////////////////////////////
+@mixin flexy-side-item {
+  display: -webkit-box;
+  -webkit-box-flex: 1.0;
+  min-width: 10em;
+}
+
 .state-of-play {
   display: inline-block;
+
+  @include flexy-side-item;
+
   vertical-align: top;
 
   width: $sidebar-width;
@@ -171,6 +182,9 @@ $sidebar-height: 487px;
 ////////////////////////////////////////////////////////////////////////////////
 .chatroom {
   display: inline-block;
+
+  @include flexy-side-item;
+
   vertical-align: top;
 
   width: $sidebar-width;
