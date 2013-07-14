@@ -52,7 +52,6 @@ canvas.drawing {
 }
 
 @mixin flexy-side-item {
-  display: -webkit-box;
   -webkit-box-flex: 1.0;
   -webkit-flex-grow: 1.0;
   min-width: 8em;
@@ -150,32 +149,7 @@ $offset-size: -24px;
   border-top: solid black 1px;
 }
 
-//status headers
-.status-headline {
-  text-align: center;
-  font-size: 1em;
-}
-
-.status-subhead {
-  font-size: 0.75em;
-}
-
-.status-headline.before-game::before {
-  content: "Waiting for game to start...";
-}
-
-.status-headline.at-work::before {
-  content: "You have something to work on.";
-};
-
-.status-headline.waiting::before {
-  content: "You're waiting for your next stack.";
-};
-
-.before-game .status-subhead::after {
-  content: "More players can still join.";
-}
-
+//content styling in state-of-play.scss
 
 /*
 ...

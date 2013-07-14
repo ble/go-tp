@@ -42,7 +42,7 @@ var cycleClasses = function(classCycle) {
         return;
       }
     }
-    
+
     console.warn("didn't find any of the classes\n" + "\n\t".join(cc));
     lst.add(cc[0]);
   };
