@@ -16,6 +16,10 @@
   user-select: none;
 }
 
+body {
+  font-family: sans-serif;
+}
+
 $inactive-opacity: 0.25;
 .inactive {
   background-color: grey;
