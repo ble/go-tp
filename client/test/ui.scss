@@ -59,6 +59,7 @@ canvas.drawing {
   -webkit-box-flex: 1.0;
   -webkit-flex-grow: 1.0;
   min-width: 8em;
+  max-width: 16em;
 }
 
 .ui-body {
@@ -171,7 +172,13 @@ $offset-size: -24px;
 
   border-left: solid black 1px;
   border-top: solid black 1px;
+  position: relative;
 }
+
+.chat-transcript {
+  width: 100%;
+}
+
 /*
 ...
 */
