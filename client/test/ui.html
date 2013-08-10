@@ -1,20 +1,115 @@
 <html>
   <head>
+    <link rel="stylesheet" href="ui.css"></link>
+    <link rel="stylesheet" href="state-of-play.css"></link>
+    <link rel="stylesheet" href="chat.css"></link>
+    <link rel="stylesheet" href="players.css"></link>
+    <meta charset="utf-8"></meta> 
   </head>
   <body>
-    <div id="ui-container">
-      <div class="roomTitle"></div>
-      <div class="roster"></div>
-      <div class="chatroom"></div>
-      <div class="stateOfPlay"></div>
-      <div class="taskDescription"></div>
-      <div class="drawingToInterpret"></div>
-      <div class="drawingInProgress"></div>
-      <div class="stackToReview"></div>
-      <div class="allStacks"></div> 
-    </div>
 
-    <script src="http://localhost:9810/compile?id=ui"></script>
+    <div id="ui-container">
+      <div class="ui-body">
+        <div class="state-of-play">
+          <div class="status-headline before-game">
+            <div class="status-subhead"></div>
+          </div>
+
+          <div class="player-status">
+            <span class="player player0">eggdog</span> is writing the first clue.
+          </div>
+          <div class="player-status">
+            <span class="player player1">bw0yyy</span> is drawing.
+          </div>
+          <div class="player-status">
+            <span class="player player2">proseph</span> is interpreting a drawing.
+          </div>
+          <div class="player-status">
+            <span class="player player3">weezchizz</span> is waiting.
+          </div>
+          <div class="player-status">
+            <span class="player player4">stumps</span> is done!
+          </div>
+          <div class="player-status">
+            <span class="player player5">0xBEEFA55ASS1N</span>
+          </div>
+          <div class="player-status">
+            <span class="player player6">blurkle</span>
+          </div>
+        </div>
+
+        <div class="ui-center-column">
+          <div class="room-title">{Room Title Here}</div>
+          <div class="drawings-container inactive">
+            <div class="drawing-to-interpret">
+              <div>{drawing to interpret}</div>
+              <canvas class="drawing" width="480" height="360"></canvas>
+            </div>
+
+
+            <div class="drawing-in-progress">
+              <div class="instructions start"></div>
+              <canvas class="drawing" width="480" height="360"></canvas>
+            </div>
+
+          </div>
+        </div>
+        <div class="chatroom">
+          {chatroom here}
+          <div class="chat-transcript">
+
+            <div class="chat-message">
+              <span class="player player0">eggdog</span>
+              hol olololo holo oalofool aoosl domfo adoof kao kdf oadofo as dfoofaoo dfo
+            </div>
+
+
+            <div class="chat-message">
+              <span class="player player1">bw0yyy</span>
+              This set Γf is the graph of f; officially, a function really ‘is’ its graph
+            </div>
+
+            <div class="chat-message">
+              <span class="player player2">proseph</span>
+              Not all subsets Γ ⊆ A × B correspond to (‘are’) functions:
+            </div>
+
+            <div class="chat-message">
+              <span class="player player3">weezchizz</span>
+                we need to put one requirement on the graphs of functions, which can be expressed as follows:
+            </div>
+
+            <div class="chat-message">
+              <span class="player player4">stumps</span>
+                (∀a∈A)(∃!b∈B) (a,b)∈Γf , or (‘in functional notation’) (∀a∈A)(∃!b∈B) f(a)=b
+            </div>
+
+
+          </div>
+        </div>
+      </div> <!-- end ui-body -->
+
+      <div class="stack-to-review inactive">{stack to review}</div>
+      <div class="all-stacks inactive">{allStacks}</div>
+    </div>
+    <!--
+
+    -->
+    <!--
+    <script>
+var ui = new ble.telephone_pictionary.UI();
+ui.decorate(document.body);
+    </script>
+    -->
+
+    <script src="ui-mockup.js">
+    </script>
+
+  </body>
+
+
+
+    <script src="http://localhost:9810/compile?id=ui&mode=RAW"></script>
 
 
     <script>

@@ -1,0 +1,8 @@
+.chat-message .player::after {
+  content: ": ";
+}
+
+.chat-message {
+  padding-left: 0.25em;
+  padding-bottom: 0.1em;
+}

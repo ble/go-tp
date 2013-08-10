@@ -37,15 +37,22 @@ _.UI = function() {
   };
 };
 goog.inherits(_.UI, Component);
+
 _.UI.prototype.decorateInternal = function(element) {
   goog.base(this, 'decorateInternal', element);
   for(var className in this.childrenCssClasses) {
     var child = this.tpgElements_[className];
     var withName = this.getElement().getElementsByClassName(className);
-    if(withName.length != 1)
+    if(withName.length != 1) {
+      continue;
       throw "oh no";
+    }
     var node = withName[0];
-    node.parentNode.replaceChild(child.getElement(), node);
+    var childElement = child.getElement();
+    node.parentNode.replaceChild(childElement, node);
+    for(var childContent in node.childNodes) {
+      childElement.appendChild(node.childNodes[childContent]);
+    }
     child.getElement().classList.add(className);
   } 
 }
@@ -57,9 +64,10 @@ _.UI.prototype.canDecorate = function(element) {
   var allPresent = true;
   for(var className in this.childrenCssClasses) {
     var withName = element.getElementsByClassName(className);
-    if(withName.length == 0) {
-      allPresent = false;
+    if(withName.length == 0) { 
       window.console.error("missing " + className);
+      continue;
+      allPresent = false;
     }
     if(withName.length > 1) {
       allPresent = false;
@@ -70,15 +78,15 @@ _.UI.prototype.canDecorate = function(element) {
 };
 
 _.UI.prototype.childrenCssClasses = {
-  'roomTitle': _.RoomTitle,
+  'room-title': _.RoomTitle,
   'roster': _.Roster,
   'chatroom': _.Chatroom,
-  'stateOfPlay': _.StateOfPlay,
-  'taskDescription': _.TaskDescription,
-  'drawingToInterpret': _.DrawingToInterpret,
-  'drawingInProgress': _.DrawingInProgress,
-  'stackToReview': _.StackToReview,
-  'allStacks': _.AllStacks
+  'state-of-play': _.StateOfPlay,
+  'task-description': _.TaskDescription,
+  'drawing-to-interpret': _.DrawingToInterpret,
+  'drawing-in-progress': _.DrawingInProgress,
+  'stack-to-review': _.StackToReview,
+  'all-stacks': _.AllStacks
 };
 
 
